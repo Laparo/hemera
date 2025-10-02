@@ -123,9 +123,10 @@ jobs:
               `Artifacts: download the 'lighthouse-report' artifact from this workflow run for the full HTML report.`,
             ].join('\n');
             fs.writeFileSync('lhci-comment.md', body);
-            core.setOutput('perf', String(perf));
-            core.setOutput('acc', String(acc));
-            core.setOutput('url', url);
+            const { setOutput } = require('@actions/core');
+            setOutput('perf', String(perf));
+            setOutput('acc', String(acc));
+            setOutput('url', url);
 
       - name: Resolve PR number
         if: always()
@@ -134,8 +135,9 @@ jobs:
         with:
           script: |
             const { context, github } = require('@actions/github');
+            const { setOutput } = require('@actions/core');
             if (context.eventName === 'pull_request') {
-              core.setOutput('number', context.payload.pull_request.number.toString());
+              setOutput('number', context.payload.pull_request.number.toString());
             } else if (context.eventName === 'deployment_status') {
               const sha = context.payload.deployment?.sha;
               if (!sha) return;
@@ -143,7 +145,7 @@ jobs:
               const res = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner, repo, commit_sha: sha });
               if (res.data && res.data.length) {
                 const pr = res.data.find(p => p.state === 'open') || res.data[0];
-                core.setOutput('number', pr.number.toString());
+                setOutput('number', pr.number.toString());
               }
             }
 
