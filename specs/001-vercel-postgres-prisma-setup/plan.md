@@ -303,8 +303,7 @@ Fill ONLY if Constitution Check has violations that must be justified.
 |-----------|------------|-------------------------------------|
 | [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
 | [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
-
-
+ 
 ## Progress Tracking
 
 This checklist is updated during execution flow.

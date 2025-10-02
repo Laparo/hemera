@@ -66,4 +66,4 @@ This section describes how we validate performance for Preview and Production de
 
 - Start with the simple assertions in `.lighthouserc.json`.
 - Add a Lighthouse budgets file if/when we need resource- and route-specific budgets.
-
+ 
