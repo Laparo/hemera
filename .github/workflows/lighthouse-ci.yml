@@ -1,0 +1,158 @@
+name: Lighthouse CI
+
+on:
+  # Manual trigger with URL input (preferred)
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Target URL to analyze (e.g., Vercel Preview URL)'
+        required: true
+        type: string
+  # Optional: Run on PRs (will skip if no URL is provided via env PREVIEW_URL)
+  pull_request:
+    branches: [ "**" ]
+  # Auto-trigger after deployments update their status (e.g., Vercel GitHub App)
+  deployment_status:
+
+jobs:
+  lhci:
+    name: Run Lighthouse on Preview URL
+    # Only run for successful deployment statuses; allow manual and PR runs
+    if: |
+      github.event_name != 'deployment_status' ||
+      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Lighthouse CI
+        run: |
+          npm i -g @lhci/cli
+
+      - name: Extract preview URL from deployment_status
+        if: github.event_name == 'deployment_status'
+        run: |
+          # Prefer environment_url (actual preview URL); fallback to target_url
+          ENV_URL="${{ github.event.deployment_status.environment_url }}"
+          TGT_URL="${{ github.event.deployment_status.target_url }}"
+          URL="${ENV_URL:-$TGT_URL}"
+
+          # Optional: Only run for non-production environments (commonly 'preview')
+          ENV_NAME="${{ github.event.deployment.environment }}"
+          if [ "$ENV_NAME" = "Production" ] || [ "$ENV_NAME" = "production" ]; then
+            echo "Production deployment detected; skipping Lighthouse auto-run." && exit 78
+          fi
+
+          if [ -n "$URL" ]; then
+            echo "PREVIEW_URL=$URL" >> $GITHUB_ENV
+            echo "Using URL from deployment_status: $URL"
+          else
+            echo "No URL found in deployment_status payload; skipping." && exit 78
+          fi
+
+      - name: Determine target URL
+        id: target
+        run: |
+          # Preferred: workflow_dispatch input is available as env var INPUT_URL
+          if [ -n "$INPUT_URL" ]; then
+            echo "url=$INPUT_URL" >> $GITHUB_OUTPUT
+          # Fallback: env PREVIEW_URL can be provided by another step or repository env
+          elif [ -n "$PREVIEW_URL" ]; then
+            echo "url=$PREVIEW_URL" >> $GITHUB_OUTPUT
+          else
+            echo "No URL provided (INPUT_URL/PREVIEW_URL). Skipping Lighthouse." && exit 78
+          fi
+
+      - name: Run Lighthouse CI (collect)
+        if: steps.target.outputs.url != ''
+        run: |
+          lhci collect --url "${{ steps.target.outputs.url }}" --config=.lighthouserc.json
+
+      - name: Generate HTML report
+        if: steps.target.outputs.url != ''
+        run: |
+          lhci upload --target=filesystem --outputDir=./lhci-report
+
+      - name: Upload Lighthouse report artifact
+        if: always() && steps.target.outputs.url != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report
+          path: ./lhci-report
+
+      - name: Assert thresholds
+        if: steps.target.outputs.url != ''
+        run: |
+          lhci assert --config=.lighthouserc.json
+
+      - name: Summarize Lighthouse results
+        if: always() && steps.target.outputs.url != ''
+        id: summarize
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const cp = require('child_process');
+            const core = require('@actions/core');
+            const files = cp.execSync('ls -t .lighthouseci/*.json').toString().trim().split('\n');
+            const file = files[0];
+            const lhr = JSON.parse(fs.readFileSync(file, 'utf8'));
+            const pct = s => Math.round(((s?.score) ?? 0) * 100);
+            const c = lhr.categories;
+            const perf = pct(c.performance);
+            const acc = pct(c.accessibility);
+            const bp = pct(c['best-practices'] ?? c["best-practices"]);
+            const seo = pct(c.seo);
+            const url = lhr.requestedUrl;
+            const md = `\n## Lighthouse Summary\n\nURL: ${url}\nScores: Performance ${perf} | Accessibility ${acc} | Best-Practices ${bp} | SEO ${seo}\n`;
+            await core.summary.addRaw(md).write();
+            const body = [
+              `### 🌟 Lighthouse Report`,
+              `URL: ${url}`,
+              ``,
+              `- Performance: ${perf}`,
+              `- Accessibility: ${acc}`,
+              `- Best-Practices: ${bp}`,
+              `- SEO: ${seo}`,
+              ``,
+              `Artifacts: download the 'lighthouse-report' artifact from this workflow run for the full HTML report.`,
+            ].join('\n');
+            fs.writeFileSync('lhci-comment.md', body);
+            core.setOutput('perf', String(perf));
+            core.setOutput('acc', String(acc));
+            core.setOutput('url', url);
+
+      - name: Resolve PR number
+        if: always()
+        id: prnum
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const core = require('@actions/core');
+            const { context, github } = require('@actions/github');
+            if (context.eventName === 'pull_request') {
+              core.setOutput('number', context.payload.pull_request.number.toString());
+            } else if (context.eventName === 'deployment_status') {
+              const sha = context.payload.deployment?.sha;
+              if (!sha) return;
+              const { owner, repo } = context.repo;
+              const res = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner, repo, commit_sha: sha });
+              if (res.data && res.data.length) {
+                const pr = res.data.find(p => p.state === 'open') || res.data[0];
+                core.setOutput('number', pr.number.toString());
+              }
+            }
+
+      - name: Post sticky PR comment with Lighthouse summary
+        if: always() && steps.prnum.outputs.number != '' && steps.target.outputs.url != ''
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          number: ${{ steps.prnum.outputs.number }}
+          header: lighthouse-ci
+          path: lhci-comment.md

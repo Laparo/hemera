@@ -1,0 +1,61 @@
+{
+  "name": "hemera",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "lint:ci": "eslint --cache --max-warnings=0 --ext .ts,.tsx,.js,.jsx .",
+    "prepare": "husky install",
+    "test": "echo 'No unit tests yet'",
+    "db:status": "dotenv -e .env.development.local -- npx prisma migrate status",
+    "db:migrate": "dotenv -e .env.development.local -- npx prisma migrate dev",
+    "db:deploy": "dotenv -e .env.development.local -- npx prisma migrate deploy",
+    "db:seed": "dotenv -e .env.development.local -- node prisma/seed.ts",
+    "e2e": "npm run build && PW_WEB_SERVER_COMMAND='npm run start' playwright test",
+    "e2e:dev": "PW_WEB_SERVER_COMMAND='npm run dev' playwright test",
+    "e2e:install": "playwright install chromium",
+    "spellcheck": "cspell --config ./cspell.config.yaml --locale de,de-DE,en,en-US --no-progress --no-summary --exclude 'cspell.config.*' lint 'app/**/*.{ts,tsx,js,jsx,md,mdx}' 'src/**/*.{ts,tsx,js,jsx,md,mdx}' 'docs/**/*.{md,mdx}'",
+    "spellcheck:fix": "cspell --config ./cspell.config.yaml --locale de,de-DE,en,en-US --no-progress --no-summary --wordsOnly --unique --exclude 'cspell.config.*' lint 'app/**/*.{ts,tsx,js,jsx,md,mdx}' 'src/**/*.{ts,tsx,js,jsx,md,mdx}' 'docs/**/*.{md,mdx}'"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "cspell --config ./cspell.config.yaml --no-progress --no-summary --no-must-find-files",
+      "eslint --max-warnings=0 --cache --fix --no-error-on-unmatched-pattern"
+    ],
+    "*.{md,mdx}": [
+      "cspell --config ./cspell.config.yaml --no-progress --no-summary --no-must-find-files"
+    ]
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.10.0",
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^5.15.20",
+    "@mui/material": "^5.15.20",
+    "@prisma/client": "^6.16.3",
+  "next": "14.2.33",
+    "next-auth": "^4.24.11",
+    "pg": "^8.16.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@cspell/dict-de-de": "^4.1.2",
+    "@playwright/test": "^1.48.2",
+    "@types/node": "^20.14.10",
+    "@types/react": "^18.2.74",
+    "@types/react-dom": "^18.2.24",
+    "cspell": "^8.19.4",
+    "dotenv-cli": "^10.0.0",
+    "eslint": "^8.57.0",
+  "eslint-config-next": "14.2.33",
+    "husky": "^8.0.0",
+    "lint-staged": "^16.2.3",
+    "prisma": "^6.16.3",
+    "typescript": "^5.5.4"
+  }
+}

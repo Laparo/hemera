@@ -1,0 +1,25 @@
+name: Docs - link check
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+  push:
+    branches: [ main, master ]
+    paths:
+      - '**/*.md'
+  schedule:
+    - cron: '0 3 * * *'
+
+jobs:
+  lychee:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v1
+        with:
+          # Restrict to markdown files for speed in PRs
+          args: --config .lychee.toml **/*.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
