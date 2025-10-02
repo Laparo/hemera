@@ -53,3 +53,5 @@ Fokuszustand
 Überschriftenstruktur
 passwordless
 parallelizable
+Eventlisten
+Chakra

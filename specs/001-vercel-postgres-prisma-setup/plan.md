@@ -1,8 +1,10 @@
 
 # Implementation Plan: 001-vercel-postgres-prisma-setup
 
-**Branch**: `001-vercel-postgres-prisma-setup` | **Date**: 2025-10-01 | **Spec**: `/Users/Zauberflocke/Documents/GitHub/hemera/specs/001-vercel-postgres-prisma-setup/spec.md`
+**Branch**: `001-vercel-postgres-prisma-setup` | **Date**: 2025-10-01 | **Spec**: `./spec.md`
 **Input**: Feature specification from `/specs/001-vercel-postgres-prisma-setup/spec.md`
+
+> Hinweis – Documentation Quality Gates: PRs prüfen Markdown-Lint, Rechtschreibung (DE/EN) und Links. Bei Fehlschlägen siehe README Abschnitt „Docs checks – fixing failures“.
 
 ## Execution Flow (/plan command scope)
 
@@ -27,37 +29,63 @@
 9. STOP - Ready for /tasks command
 ```
 
+**IMPORTANT**: The /plan command STOPS at step 7. Phases 2-4 are executed by other commands. No implementation has been performed for this feature; repository remains in planning-only state:
 
-**IMPORTANT**: The /plan command STOPS at step 7. Phases 2-4 are executed by other commands:
 - Phase 2: /tasks command creates tasks.md
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
 
-Baseline setup for Next.js (App Router) with Prisma ORM on PostgreSQL (Neon/Vercel Postgres), NextAuth.js for authentication, and Material UI for the design system. Clarified decisions: JWT stateless sessions; PR preview deployments provision an ephemeral database per PR (migrate/seed, auto tear‑down on close/merge); DB connections on Vercel use Neon pooled connection strings; open signup (no org/domain restriction). Providers at launch: Email, Google, Apple, Instagram.
+Einrichtung von Vercel Postgres (Neon) mit Prisma ORM in einem Next.js (App Router) Projekt inklusive NextAuth.js (Prisma Adapter, JWT Sessions) und MUI (Material Design) UI-Basis. Öffentlicher Bereich wird SEO-freundlich via SSG/ISR ausgeliefert, nicht-öffentlicher Bereich (Buchungen/Materialien) per SSR auf Node mit serverseitiger AuthZ und noindex.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x  
 **Primary Dependencies**: Next.js (App Router), React 18, Prisma Client, NextAuth.js, @mui/material, @mui/icons-material  
-**Storage**: PostgreSQL (Neon/Vercel Postgres) via Prisma ORM  
-**Testing**: Vitest + Playwright (smoke)  
-**Target Platform**: Web (SSR/SSG/ISR) on Vercel  
+**Storage**: PostgreSQL (Vercel Postgres/Neon) via Prisma ORM  
+**Identity**: NextAuth.js mit Prisma Adapter, JWT Sessions  
+**Testing**: Vitest + Playwright (smoke), jest-compat optional  
+**Target Platform**: Web (SSR/SSG/ISR), Deployment auf Vercel
 **Project Type**: web (Next.js app)  
-**Performance Goals**: Good CWV; SSG/ISR for SEO pages; minimal TTFB for SSR-protected pages  
-**Constraints**: Prisma/NextAuth on Node runtime; JWT sessions; Neon pooled connection string on Vercel; public pages indexable, non‑public noindex; A11y WCAG 2.1 AA  
-**Scale/Scope**: Small to medium (auth/DB baseline)
+**Performance Goals**: Gute CWV; SSG/ISR für SEO-Seiten; minimale TTFB für SSR-geschützte Seiten  
+**Constraints**: Prisma/NextAuth nur auf Node Runtime; Non-Public Seiten noindex; A11y WCAG 2.1 AA  
+**Scale/Scope**: Klein bis mittel (erste Auth/DB-Basis, wenige Seiten)  
+**Design System**: Material Design via MUI
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-PASS:
-- Hybrid rendering policy acknowledged (SSG/ISR for SEO; SSR only when necessary)
-- Test-first principle planned (contract/integration tests defined conceptually; no implementation in /plan)
-- Security boundaries stated (open signup but provider linking rules; protected routes SSR on Node)
-- Observability/light checks planned (basic logs, preview verification via logs)
-- Governance: Branch naming matches; docs quality gates active
+PASS (v1.7.0):
+
+- Hybrid Rendering Policy eingehalten (SSG/ISR bevorzugt, SSR nur wenn nötig)
+- Prisma & NextAuth auf Node Runtime dokumentiert
+- Domain & Access Segmentation (Öffentlich vs Nicht-Öffentlich) umgesetzt inkl. SEO/noindex
+- MUI als einziges UI-Toolkit, SSR-Styling via AppRouterCacheProvider
+
+Hinweis: FR-007 (Retention Policy) ist bewusst DEFERRED und blockiert die Umsetzung dieser Basisfunktion nicht. Klärung nach MVP.
+
+## Rendering Strategy Matrix
+
+For each route/page, specify rendering and runtime per the Hybrid Rendering Policy:
+
+| Route                                | Strategy | Revalidate | Runtime | SEO Critical |
+|--------------------------------------|----------|-----------:|---------|--------------|
+| /                                    | SSG      |     300 s | edge    | Yes          |
+| /protected                           | SSR      |          - | node    | No           |
+| /api/auth/[...nextauth]              | SSR      |          - | node    | No           |
+
+Notes:
+
+- SSR only if necessary (auth/personalization). Prefer SSG/ISR for SEO pages.
+- Document `fetch` caching and headers where applicable.
+- If using Prisma Adapter in NextAuth, auth route MUST run on Node runtime
+    (Prisma is unsupported on Edge); document runtime choice.
+
+### Domain Segmentation Notes
+
+- Öffentlich: Inhalte wie Kurs-/Eventlisten sind SEO-relevant → SSG/ISR, strukturierte Daten optional, Open Graph/Meta gepflegt.
+- Nicht-öffentlich: Teilnehmerbereiche (Buchungen/Materialien) → SSR auf Node, serverseitige AuthZ (getServerSession), robots noindex/nofollow.
 
 ## Project Structure
 
@@ -81,32 +109,11 @@ specs/[###-feature]/
   not include Option labels.
 -->
 ```text
-// No source changes are applied by /plan. Application structure will be established during implementation.
+// No changes applied to source code by this plan. Concrete file trees will be generated during implementation phases.
 ```
 
-**Structure Decision**: Single Next.js app (App Router) with Node runtime for server-only pieces (NextAuth/Prisma). Planned layout (created during implementation, not by /plan):
-
-- App Router (pages/features): `app/` with server components for protected areas.
-- Auth route (Node runtime): `app/api/auth/[...nextauth]/route.ts` (exports `runtime = "nodejs"`).
-- Shared modules:
-  - `lib/db/prisma.ts` — Prisma Client singleton (prevents hot-reload leaks).
-  - `lib/auth/options.ts` — NextAuth config (providers: Email, Google, Apple, Instagram; JWT sessions).
-- Prisma artifacts:
-  - `prisma/schema.prisma` — Data model for PostgreSQL (Neon/Vercel Postgres) without Session table (JWT).
-  - `prisma/migrations/` — Generated by Prisma migrate.
-  - `prisma/seed.ts` — Idempotent seed (minimal data for sign-in flows).
-- Preview lifecycle (ephemeral DB per PR): `scripts/preview/`
-  - `scripts/preview/provision-db.ts` — Create/clone DB, set pooled DSN, run migrate+seed.
-  - `scripts/preview/teardown-db.ts` — Drop preview DB on PR close/merge; write verification logs.
-- CI hooks (future wiring): `.github/workflows/` to call preview scripts and keep docs lint checks.
-- Config/Env: Vercel Project Env for production/preview vars; local `.env.local` for dev only.
-
-## Artifacts (Phase 1)
-
-- OpenAPI (source of truth): `specs/001-vercel-postgres-prisma-setup/contracts/openapi.yaml`
-- Contracts README: `specs/001-vercel-postgres-prisma-setup/contracts/README.md`
-- Data model: `specs/001-vercel-postgres-prisma-setup/data-model.md`
-- Quickstart: `specs/001-vercel-postgres-prisma-setup/quickstart.md`
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
 ## Phase 0: Outline & Research
 
@@ -129,11 +136,58 @@ specs/[###-feature]/
    - Rationale: [why chosen]
    - Alternatives considered: [what else evaluated]
 
-Output: research.md with all NEEDS CLARIFICATION resolved
+**Output**: research.md with all NEEDS CLARIFICATION resolved
+
+### Prisma Planning Notes
+
+If the feature involves data persistence with a relational DB:
+
+- Default DB: PostgreSQL. If different, justify in this plan.
+- Add or update `prisma/schema.prisma` with new models/relations.
+- Plan migrations: name, order, and any backfill/cleanup steps.
+- Identify routes/server modules that use Prisma → ensure Node runtime.
+- Consider connection pooling strategy in the target environment (e.g., Vercel).
+- Define testing approach: separate test DB, migrate before tests, seed/reset.
+
+### Identity Planning Notes (NextAuth)
+
+### UI/Material Design Planning Notes
+
+If the feature introduces UI components or pages:
+
+- Components: List new Material components (e.g., Button, Dialog, Snackbar,
+   TextField) and their props/variants used.
+- Theming: Note any theme tokens or overrides (palette, typography, spacing,
+   shape) needed. Prefer theme customization over local styles.
+- SSR Styling: Use MUI’s Next.js App Router integration (`AppRouterCacheProvider`).
+- Accessibility: Identify ARIA roles/labels, keyboard navigation, focus traps
+   (e.g., in Dialogs), and contrast considerations.
+- Performance: Import icons individually, prefer lazy/dynamic imports for
+   heavy components.
+- Testing: Include accessibility checks and snapshot/interaction tests for UI
+   states (hover, focus, error), and verify SSR hydration without style flash.
+
+If the feature requires authentication/authorization:
+
+- Providers: List the identity providers (e.g., Email magic link, GitHub, Google)
+   and required scopes. Note any custom provider config.
+- Session Strategy: Default JWT (stateless). Use database sessions only with
+   clear invalidation needs; justify choice if deviating.
+- Adapter: If user/account persistence is needed, prefer Prisma Adapter; ensure
+   Node runtime for auth route when Prisma is used.
+- Environment: Define required envs: `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, and
+   provider credentials. Document how they’re set in Vercel/GitHub.
+- Routing: Use App Router path `app/api/auth/[...nextauth]/route.ts`.
+- Authorization: Describe protected routes and server-side checks using
+   `getServerSession` and optional middleware.
+- Security: Cookie flags (secure, SameSite), HTTPS enforcement, callback URL
+   validation, CSRF considerations.
+- Testing: Scenarios for login/logout, OAuth callback errors, and protected
+   route access (positive and negative cases).
 
 ## Phase 1: Design & Contracts
 
-Prerequisite: research.md complete
+Prerequisite: research.md complete.
 
 1. **Extract entities from feature spec** → `data-model.md`:
    - Entity name, fields, relationships
@@ -163,13 +217,14 @@ Prerequisite: research.md complete
    - Keep under 150 lines for token efficiency
    - Output to repository root
 
-Output: data-model.md, /contracts/*, failing tests, quickstart.md, agent-specific file
+**Output**: data-model.md, /contracts/*, failing tests, quickstart.md, agent-specific file
 
 ## Phase 2: Task Planning Approach
 
-Note: This section describes what the /tasks command will do - DO NOT execute during /plan
+This section describes what the /tasks command will do - DO NOT execute during /plan.
 
 **Task Generation Strategy**:
+
 - Load `.specify/templates/tasks-template.md` as base
 - Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
 - Each contract → contract test task [P]
@@ -178,6 +233,7 @@ Note: This section describes what the /tasks command will do - DO NOT execute du
 - Implementation tasks to make tests pass
 
 **Ordering Strategy**:
+
 - TDD order: Tests before implementation
 - Dependency order: Models before services before UI
 - Mark [P] for parallel execution (independent files)
@@ -186,9 +242,54 @@ Note: This section describes what the /tasks command will do - DO NOT execute du
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
+## Branching & CI Gates
+
+Ensure the plan respects branching and CI rules defined in the constitution:
+
+- Branch name matches: `feat/<###>-<slug>` or appropriate type
+- Constitution gates mapped to checks: spec-validation, plan-constitution-check
+- Lint, typecheck, tests, nextjs-build listed in checks
+- Vercel preview expected for PRs; note environment variables if required
+
+## Monitoring & Access Segmentation
+
+- GitHub Checks: required → Lint, Typecheck, Unit/E2E Smoke, Next Build; Branch Protection aktiv.
+- Security: Dependabot/Code Scanning aktiv; Prisma Migrate nur via CI/CD (deploy-time `prisma migrate deploy`).
+- Access: Nicht-öffentliche Routen prüfen serverseitig via `getServerSession` (Node Runtime); `robots`-Header/meta auf noindex setzen.
+- Observability (lightweight): Vercel Analytics optional; Log-Inspection über Vercel Dashboard.
+
+## Documentation Quality Gates
+
+### Objectives
+
+- Automate documentation quality checks in pull requests and on main.
+- Cover Markdown linting, spelling (DE/EN), and link validation.
+- Defer FR-007 (retention policy) without blocking current work.
+
+### What's included
+
+- Markdown linting: Central rules configured; permissive for long lines, inline HTML in docs, and consistent bullet indentation.
+- Spelling: Project-level dictionary that includes common tech terms (NextAuth, Prisma, Vercel, SSR/SSG/ISR); honors .gitignore; checks markdown and common source files.
+- Link checking: Configuration for timeouts, concurrency, and exclusions; private links are ignored to avoid false positives.
+
+### Workflows
+
+- PR and main checks:
+  - Run markdown linting on all markdown files.
+  - Run spelling checks across docs and common code files.
+  - Run a lightweight link checker on markdown to catch obvious dead links early.
+- Nightly link scan:
+  - Scheduled deep link validation to detect link rot without adding noise to PRs.
+
+### Quality gates mapping
+
+- Lint/Markdown: Enforced in PRs and on main; settings tuned to documentation needs.
+- Spelling: Enforced in PRs; dictionary can be extended as new terms appear.
+- Links: Light check in PRs; deeper nightly scan to avoid flakiness and rate limits.
+
 ## Phase 3+: Future Implementation
 
-Note: These phases are beyond the scope of the /plan command
+These phases are beyond the scope of the /plan command.
 
 **Phase 3**: Task execution (/tasks command creates tasks.md)  
 **Phase 4**: Implementation (execute tasks.md following constitutional principles)  
@@ -196,7 +297,7 @@ Note: These phases are beyond the scope of the /plan command
 
 ## Complexity Tracking
 
-Fill ONLY if Constitution Check has violations that must be justified
+Fill ONLY if Constitution Check has violations that must be justified.
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
@@ -206,21 +307,24 @@ Fill ONLY if Constitution Check has violations that must be justified
 
 ## Progress Tracking
 
-This checklist is updated during execution flow
+This checklist is updated during execution flow.
 
 **Phase Status**:
-- [x] Phase 0: Research complete (/plan command)
-- [x] Phase 1: Design complete (/plan command)
+
+- [ ] Phase 0: Research complete (/plan command)
+- [ ] Phase 1: Design complete (/plan command)
 - [ ] Phase 2: Task planning complete (/plan command - describe approach only)
-- [ ] Phase 3: Tasks generated (/tasks command)
-- [ ] Phase 4: Implementation complete
-- [ ] Phase 5: Validation passed
+- [ ] Phase 3: Tasks generated (/tasks command) — not executed
+- [ ] Phase 4: Implementation complete — not executed
+- [ ] Phase 5: Validation passed — not executed
 
 **Gate Status**:
-- [x] Initial Constitution Check: PASS
-- [x] Post-Design Constitution Check: PASS
-- [x] All NEEDS CLARIFICATION resolved
+
+- [ ] Initial Constitution Check: PASS
+- [ ] Post-Design Constitution Check: PASS
+- [ ] All NEEDS CLARIFICATION resolved
+      - Ausnahme: FR-007 ist DEFERRED (Retention Policy) → kein Blocker für diese Implementierung
 - [ ] Complexity deviations documented
 
 ---
-*Based on Constitution v2.1.1 - See `/memory/constitution.md`*
+*Based on Constitution v1.7.0 - See `/.specify/memory/constitution.md`*
