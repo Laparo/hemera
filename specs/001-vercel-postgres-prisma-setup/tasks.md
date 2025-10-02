@@ -66,7 +66,6 @@ Legend:
 5. [X] Performance: run Lighthouse CI gegen Preview-Deployment mit Budgets (Fail on Regression).
 6. [X] Performance: Web Vitals Ziele und Vorgehen dokumentiert in `docs/ops/performance.md`.
 
-
 ## Notes
 
 - All secrets remain out of VCS; use `.env.local` for dev and Vercel Project Env for preview/prod.

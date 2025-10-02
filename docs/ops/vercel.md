@@ -25,7 +25,7 @@ Required
 - `NEXT_PUBLIC_APP_ENV` — one of `development|preview|production`
 - `NEXT_PUBLIC_APP_URL` — base URL of the app for links
 - `DATABASE_URL` — Postgres connection string (Neon/Vercel Postgres), use pooled DSN on Vercel
-	- Hinweis: Für lokale Entwicklung kannst du Werte via `vercel env pull .env.development.local` ziehen.
+  - Hinweis: Für lokale Entwicklung kannst du Werte via `vercel env pull .env.development.local` ziehen.
 - `NEXTAUTH_URL` — external URL of the app per environment
 - `NEXTAUTH_SECRET` — strong secret for JWT encryption
 
@@ -59,8 +59,8 @@ Vercel CI-only (as GitHub Secrets, not app env)
 - Go to Vercel → Project `hemera` → Settings → Environment Variables
 - Add variables for `Preview` and `Production` with the same names as in `.env.example`
 - Use pooled Neon DSN for serverless runtimes; include `?sslmode=require&schema=hemera`
-	- Achte auf `?sslmode=require&schema=hemera` in der DSN. Für Previews unbedingt die gepoolte DSN verwenden.
-	- Migrationsreihenfolge: Zuerst die Initialmigration (`init`), danach die partielle Unique‑Index‑Migration auf `User.email`.
+  - Achte auf `?sslmode=require&schema=hemera` in der DSN. Für Previews unbedingt die gepoolte DSN verwenden.
+  - Migrationsreihenfolge: Zuerst die Initialmigration (`init`), danach die partielle Unique‑Index‑Migration auf `User.email`.
 
 1. GitHub Secrets (for CI/CD)
 

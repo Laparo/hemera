@@ -35,7 +35,6 @@ Notes:
 - Ensure server-side `getServerSession` checks for all protected routes.
 - Apply noindex headers/meta for protected pages.
 
-
 ## Phase 0: Outline & Research
 
 - Define minimal Prisma model for `Booking` with User and Course references.

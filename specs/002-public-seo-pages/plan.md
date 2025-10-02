@@ -41,7 +41,6 @@ Notes:
 - Prefer `generateMetadata` for meta/OG; include JSON-LD where applicable.
 - Ensure public routes are listed in sitemap; robots allows crawling for public only.
 
-
 ## Phase 0: Outline & Research
 
 - Identify structured data types (WebSite, Course, BreadcrumbList) and mapping rules.
