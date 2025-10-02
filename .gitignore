@@ -8,6 +8,8 @@ node_modules/
 dist/
 build/
 coverage/
+.eslintcache
+next-env.d.ts
 
 # Logs
 logs/
