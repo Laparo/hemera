@@ -1,0 +1,24 @@
+name: Docs - markdownlint
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+  push:
+    branches: [ main, master ]
+    paths:
+      - '**/*.md'
+
+jobs:
+  markdownlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install markdownlint-cli
+        run: npm i -g markdownlint-cli@0.39.0
+      - name: Run markdownlint
+        run: markdownlint "**/*.md" --ignore ".git" --config .markdownlint.jsonc

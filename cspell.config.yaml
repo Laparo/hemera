@@ -1,0 +1,83 @@
+version: "0.2"
+language: de,de-DE,en,en-US
+useGitignore: true
+import:
+  - "@cspell/dict-de-de/cspell-ext.json"
+dictionaryDefinitions:
+  - name: de-de-local
+    path: "node_modules/@cspell/dict-de-de/de_DE.trie.gz"
+    description: "German (de-DE) local dictionary"
+  - name: project-words
+    path: "./cspell.words.txt"
+    description: "Project-specific terms"
+    type: S
+dictionaries:
+  - de-DE
+  - de-de
+  - de-de-local
+  - en_US
+  - node
+  - softwareTerms
+  - project-words
+languageSettings:
+  - languageId: "*"
+    dictionaries:
+      - de-DE
+      - de-de
+      - de-de-local
+      - en_US
+      - node
+      - softwareTerms
+  - languageId: "typescriptreact"
+    locale: de,de-DE,en,en-US
+    dictionaries:
+      - de-de-local
+      - en_US
+      - node
+      - softwareTerms
+  - languageId: "typescript"
+    locale: de,de-DE,en,en-US
+    dictionaries:
+      - de-de-local
+      - en_US
+      - node
+      - softwareTerms
+  - languageId: "javascriptreact"
+    locale: de,de-DE,en,en-US
+    dictionaries:
+      - de-de-local
+      - en_US
+      - node
+      - softwareTerms
+  - languageId: "markdown"
+    locale: de,de-DE,en,en-US
+    dictionaries:
+      - de-de-local
+      - en_US
+      - node
+      - softwareTerms
+  - languageId: "mdx"
+    locale: de,de-DE,en,en-US
+    dictionaries:
+      - de-de-local
+      - en_US
+      - node
+      - softwareTerms
+ 
+ignorePaths:
+  - "**/node_modules/**"
+  - "**/.git/**"
+  - "**/.next/**"
+  - "**/out/**"
+  - "**/dist/**"
+  - "**/coverage/**"
+  - "**/playwright-report/**"
+  - "**/public/**"
+  - "**/prisma/migrations/**"
+  - "**/package-lock.json"
+  - "**/pnpm-lock.yaml"
+  - "**/yarn.lock"
+  - "**/.turbo/**"
+  - "**/.vercel/**"
+  - "**/cspell.config.*"
+  - "cspell.config.yaml"

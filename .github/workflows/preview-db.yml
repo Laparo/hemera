@@ -1,0 +1,83 @@
+name: Preview DB per PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+jobs:
+  preview-db:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      schema: ${{ steps.provision.outputs.schema }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Provision schema (on open/sync)
+        if: ${{ github.event.action != 'closed' }}
+        env:
+          PREVIEW_DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        id: provision
+        run: |
+          if [ -z "${PREVIEW_DATABASE_URL}" ]; then
+            echo "Skipping preview DB provision: PREVIEW_DATABASE_URL secret not set."; exit 0;
+          fi
+          export DATABASE_URL="${PREVIEW_DATABASE_URL}"
+          export PR_NUMBER="${PR_NUMBER}"
+          node scripts/preview/provision-db.js | tee provision.json
+          SCHEMA_VALUE=$(jq -r '.schema' provision.json)
+          echo "SCHEMA=${SCHEMA_VALUE}" >> "$GITHUB_ENV"
+          echo "schema=${SCHEMA_VALUE}" >> "$GITHUB_OUTPUT"
+
+      - name: Teardown schema (on close)
+        if: ${{ github.event.action == 'closed' }}
+        env:
+          PREVIEW_DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -z "${PREVIEW_DATABASE_URL}" ]; then
+            echo "Skipping preview DB teardown: PREVIEW_DATABASE_URL secret not set."; exit 0;
+          fi
+          export DATABASE_URL="${PREVIEW_DATABASE_URL}"
+          export PR_NUMBER="${PR_NUMBER}"
+          node scripts/preview/teardown-db.js
+
+      - name: Comment schema on PR
+        if: ${{ github.event.action != 'closed' }}
+        uses: actions/github-script@v7
+        env:
+          SCHEMA: ${{ env.SCHEMA }}
+        with:
+          script: |
+            const schema = process.env.SCHEMA;
+            if (!schema || schema === 'null' || schema === '') {
+              core.info('No SCHEMA detected; skipping PR comment.');
+              return;
+            }
+            const bodyMarker = '<!-- hemera-preview-schema -->';
+            const body = `${bodyMarker}\nPreview DB Schema: \`${schema}\`\nVercel Preview deployments will automatically use this schema at runtime.`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const { data: comments } = await github.rest.issues.listComments({ owner, repo, issue_number });
+            const existing = comments.find(c => (c.user?.type === 'Bot' || c.user?.login?.includes('[bot]')) && c.body?.includes(bodyMarker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

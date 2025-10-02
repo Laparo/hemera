@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
+    "lint:ci": "eslint --cache --max-warnings=0 --ext .ts,.tsx,.js,.jsx .",
     "prepare": "husky install",
     "test": "echo 'No unit tests yet'",
     "db:status": "dotenv -e .env.development.local -- npx prisma migrate status",
@@ -21,9 +22,12 @@
     "spellcheck:fix": "cspell --config ./cspell.config.yaml --locale de,de-DE,en,en-US --no-progress --no-summary --wordsOnly --unique --exclude 'cspell.config.*' lint 'app/**/*.{ts,tsx,js,jsx,md,mdx}' 'src/**/*.{ts,tsx,js,jsx,md,mdx}' 'docs/**/*.{md,mdx}'"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,md,mdx}": [
+    "*.{ts,tsx,js,jsx}": [
       "cspell --config ./cspell.config.yaml --no-progress --no-summary --no-must-find-files",
       "eslint --max-warnings=0 --cache --fix --no-error-on-unmatched-pattern"
+    ],
+    "*.{md,mdx}": [
+      "cspell --config ./cspell.config.yaml --no-progress --no-summary --no-must-find-files"
     ]
   },
   "dependencies": {
@@ -33,7 +37,7 @@
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
     "@prisma/client": "^6.16.3",
-    "next": "14.2.5",
+  "next": "14.2.33",
     "next-auth": "^4.24.11",
     "pg": "^8.16.3",
     "react": "18.3.1",
@@ -48,7 +52,7 @@
     "cspell": "^8.19.4",
     "dotenv-cli": "^10.0.0",
     "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.5",
+  "eslint-config-next": "14.2.33",
     "husky": "^8.0.0",
     "lint-staged": "^16.2.3",
     "prisma": "^6.16.3",

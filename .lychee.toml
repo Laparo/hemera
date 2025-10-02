@@ -1,0 +1,11 @@
+exclude = [
+  "https://localhost",
+  "http://localhost",
+  "https://127.0.0.1",
+  "http://127.0.0.1",
+  "https://vercel.com/*/deployments*"
+]
+retry_wait_time = 2
+max_retries = 2
+timeout = 10
+user_agent = "hemera-docs-link-check/1.0"

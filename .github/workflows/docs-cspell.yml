@@ -1,0 +1,30 @@
+name: Docs - cspell
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.js'
+  push:
+    branches: [ main, master ]
+    paths:
+      - '**/*.md'
+      - '**/*.ts'
+      - '**/*.tsx'
+      - '**/*.js'
+
+jobs:
+  cspell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install cspell
+        run: npm i -g cspell@8.14.1
+      - name: Run cspell
+        run: cspell lint "**/*.{md,ts,tsx,js}" --no-must-find-files --config .cspell.json
