@@ -72,7 +72,7 @@ jobs:
       - name: Run Prisma setup
         run: |
           npx prisma generate
-          npx prisma migrate deploy
+          npx prisma db push --force-reset
           npx prisma db seed
         env:
           DATABASE_URL: file:./test.db
