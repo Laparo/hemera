@@ -1,0 +1,25 @@
+---
+- name: "type:bug"
+  color: "d73a4a"
+  description: Fehler/Regression
+- name: "type:feature"
+  color: "a2eeef"
+  description: Neue Funktion/Verbesserung
+- name: "type:chore"
+  color: "cfd3d7"
+  description: Wartung/Refactor/Build
+- name: "priority:high"
+  color: "b60205"
+  description: Hohe Priorität
+- name: "priority:medium"
+  color: "d93f0b"
+  description: Mittlere Priorität
+- name: "priority:low"
+  color: "0e8a16"
+  description: Niedrige Priorität
+- name: "status:triage"
+  color: "ededed"
+  description: Wartet auf Triage
+- name: "status:blocked"
+  color: "5319e7"
+  description: Blockiert

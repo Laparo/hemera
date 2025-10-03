@@ -1,0 +1,28 @@
+name: Issues - Triage
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - name: Label new issues
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue } = context.payload;
+            const labels = new Set((issue.labels || []).map(l => typeof l === 'string' ? l : l.name));
+            if (!labels.has('status:triage')) labels.add('status:triage');
+            if ((issue.title || '').toLowerCase().startsWith('vercel:')) labels.add('type:bug');
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: Array.from(labels)
+            });

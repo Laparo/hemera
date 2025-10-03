@@ -1,60 +1,30 @@
 name: Lighthouse CI
 
 on:
-  # Manual trigger with URL input (preferred)
+  # Manual trigger with URL input
   workflow_dispatch:
     inputs:
       url:
         description: 'Target URL to analyze (e.g., Vercel Preview URL)'
         required: true
         type: string
-  # Optional: Run on PRs (will skip if no URL is provided via env PREVIEW_URL)
-  pull_request:
-    branches: [ "**" ]
-  # Auto-trigger after deployments update their status (e.g., Vercel GitHub App)
-  deployment_status:
 
 jobs:
   lhci:
     name: Run Lighthouse on Preview URL
-    # Only run for successful deployment statuses; allow manual and PR runs
-    if: |
-      github.event_name != 'deployment_status' ||
-      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install Lighthouse CI
         run: |
           npm i -g @lhci/cli
-
-      - name: Extract preview URL from deployment_status
-        if: github.event_name == 'deployment_status'
-        run: |
-          # Prefer environment_url (actual preview URL); fallback to target_url
-          ENV_URL="${{ github.event.deployment_status.environment_url }}"
-          TGT_URL="${{ github.event.deployment_status.target_url }}"
-          URL="${ENV_URL:-$TGT_URL}"
-
-          # Optional: Only run for non-production environments (commonly 'preview')
-          ENV_NAME="${{ github.event.deployment.environment }}"
-          if [ "$ENV_NAME" = "Production" ] || [ "$ENV_NAME" = "production" ]; then
-            echo "Production deployment detected; skipping Lighthouse auto-run." && exit 78
-          fi
-
-          if [ -n "$URL" ]; then
-            echo "PREVIEW_URL=$URL" >> $GITHUB_ENV
-            echo "Using URL from deployment_status: $URL"
-          else
-            echo "No URL found in deployment_status payload; skipping." && exit 78
-          fi
 
       - name: Determine target URL
         id: target

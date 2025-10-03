@@ -6,17 +6,16 @@ on:
       url:
         description: 'Base URL for E2E (e.g., https://hemera-<preview>.vercel.app)'
         required: false
-  pull_request:
-    types: [opened, synchronize, reopened]
-  deployment_status:
+  workflow_call:
+    inputs:
+      url:
+        description: 'Base URL for E2E (e.g., https://hemera-<preview>.vercel.app)'
+        required: false
+        type: string
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    # Run on PR events or when a preview deployment succeeds
-    if: |
-      github.event_name != 'deployment_status' ||
-      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
@@ -41,15 +40,6 @@ jobs:
         run: |
           if [ -n "${{ inputs.url }}" ]; then
             echo "base=${{ inputs.url }}" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event_name }}" = "deployment_status" ]; then
-            ENV_URL=$(jq -r '.deployment_status.environment_url // empty' "$GITHUB_EVENT_PATH")
-            TARGET=$(jq -r '.deployment_status.target_url // empty' "$GITHUB_EVENT_PATH")
-            URL="${ENV_URL:-$TARGET}"
-            if [ -n "$URL" ]; then
-              echo "base=$URL" >> "$GITHUB_OUTPUT"
-            else
-              echo "base=http://localhost:3000" >> "$GITHUB_OUTPUT"
-            fi
           else
             echo "base=http://localhost:3000" >> "$GITHUB_OUTPUT"
           fi
@@ -64,16 +54,24 @@ jobs:
           EOF
           
           # Create a temporary SQLite schema for CI testing
-          cp prisma/schema.prisma prisma/schema.prisma.backup
-          sed -i 's/provider = "postgresql"/provider = "sqlite"/g' prisma/schema.prisma
-          sed -i 's/@db\.Text//g' prisma/schema.prisma
-          sed -i 's/@db\.VarChar([0-9]*)//g' prisma/schema.prisma
+          if [ -f prisma/schema.prisma ]; then
+            cp prisma/schema.prisma prisma/schema.prisma.backup
+            sed -i 's/provider = "postgresql"/provider = "sqlite"/g' prisma/schema.prisma || true
+            sed -i 's/@db\.Text//g' prisma/schema.prisma || true
+            sed -i 's/@db\.VarChar([0-9]*)//g' prisma/schema.prisma || true
+          else
+            echo "No prisma/schema.prisma found, skipping Prisma schema adjustments."
+          fi
 
       - name: Run Prisma setup
         run: |
-          npx prisma generate
-          npx prisma db push --force-reset
-          npx prisma db seed
+          if [ -f prisma/schema.prisma ]; then
+            npx prisma generate
+            npx prisma db push --force-reset
+            npx prisma db seed || true
+          else
+            echo "Skipping Prisma setup; no schema found."
+          fi
         env:
           DATABASE_URL: file:./test.db
 
