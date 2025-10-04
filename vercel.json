@@ -1,0 +1,36 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm ci",
+  "devCommand": "npm run dev",
+  "functions": {
+    "app/api/auth/[...nextauth]/route.ts": {
+      "memory": 1024,
+      "maxDuration": 30
+    },
+    "app/api/courses/route.ts": {
+      "memory": 512,
+      "maxDuration": 10
+    }
+  },
+  "env": {
+    "POSTGRES_PRISMA_URL": "@postgres_prisma_url",
+    "POSTGRES_URL_NON_POOLING": "@postgres_url_non_pooling",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
+    "NEXTAUTH_URL": "@nextauth_url",
+    "GITHUB_ID": "@github_id",
+    "GITHUB_SECRET": "@github_secret",
+    "CLERK_SECRET_KEY": "@clerk_secret_key",
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "@next_public_clerk_publishable_key"
+  },
+  "build": {
+    "env": {
+      "POSTGRES_PRISMA_URL": "@postgres_prisma_url",
+      "POSTGRES_URL_NON_POOLING": "@postgres_url_non_pooling"
+    }
+  },
+  "regions": ["fra1"],
+  "cleanUrls": true,
+  "trailingSlash": false
+}
