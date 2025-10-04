@@ -7,7 +7,9 @@ Für Hemera benötigst du eine PostgreSQL‑Datenbank. Wähle eine der folgenden
 1. Projekt anlegen: [Neon](https://neon.tech) → neues Project → Database + Role werden erzeugt.
 1. Connection Details öffnen → "Pooled" (Serverless Pooler) auswählen.
 1. Verbindungs‑URL kopieren und den Schema‑Parameter ergänzen:
+
 - `?sslmode=require&schema=hemera`
+
 1. In `.env.local` setzen:
 
 ```bash
@@ -72,7 +74,8 @@ node prisma/seed.ts
 - SSL Fehler: Setze `sslmode=require` (Neon/Vercel) in der URL.
 - Schema fehlt: Ergänze `schema=hemera` in der Query.
 - Verbindungsfehler lokal: Prüfe Docker‑Container läuft (`docker ps`) und Port 5432 ist frei.
-- Prisma schema validation / get-config (wasm): Stelle sicher, dass die richtige `.env` geladen ist. Verwende die npm‑Skripte:
+- Prisma schema validation / get-config (wasm): Stelle sicher, dass die richtige `.env` geladen ist.
+  Verwende die npm‑Skripte:
   - `npm run db:status`
   - `npm run db:migrate`
   - `npm run db:deploy`
@@ -82,5 +85,6 @@ node prisma/seed.ts
 
 - GitHub Actions Workflow: `.github/workflows/preview-db.yml`
 - Erfordert GitHub Secret `PREVIEW_DATABASE_URL` (gepoolte Postgres‑DSN)
-- Provisionierung: `scripts/preview/provision-db.js` erstellt ein Schema `hemera_pr_<PR>`, führt Migrationen und Seed aus.
+- Provisionierung: `scripts/preview/provision-db.js` erstellt ein Schema `hemera_pr_<PR>`, führt
+  Migrationen und Seed aus.
 - Teardown: `scripts/preview/teardown-db.js` löscht das Schema beim Schließen der PR.

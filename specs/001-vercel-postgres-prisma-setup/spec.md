@@ -3,7 +3,8 @@
 **Feature Branch**: `001-vercel-postgres-prisma-setup`  
 **Created**: 2025-09-30  
 **Status**: Draft  
-**Input**: User description: "Configure Vercel Next.js & Prisma Postgres NextAuth per guideline; install dependencies; enable MUI; prepare PR previews"
+**Input**: User description: "Configure Vercel Next.js & Prisma Postgres NextAuth per guideline;
+install dependencies; enable MUI; prepare PR previews"
 
 ## Execution Flow (main)
 
@@ -46,13 +47,17 @@
 
 ### Primary User Story
 
-As a user, I can sign in securely to the app and access a protected page. As a developer, I can deploy the app to Vercel with a managed Postgres database and have migrations/seed ready for CI/CD.
+As a user, I can sign in securely to the app and access a protected page. As a developer, I can
+deploy the app to Vercel with a managed Postgres database and have migrations/seed ready for CI/CD.
 
 ### Acceptance Scenarios
 
-1. Given the app is deployed, When I visit the sign-in flow, Then I can authenticate via GitHub and reach a protected page.
-2. Given a fresh environment, When CI runs, Then database migrations run successfully against the configured Postgres instance.
-3. Given the UI loads, When I browse components, Then the UI follows Material Design (theme, baseline, accessible patterns).
+1. Given the app is deployed, When I visit the sign-in flow, Then I can authenticate via GitHub and
+   reach a protected page.
+2. Given a fresh environment, When CI runs, Then database migrations run successfully against the
+   configured Postgres instance.
+3. Given the UI loads, When I browse components, Then the UI follows Material Design (theme,
+   baseline, accessible patterns).
 
 ### Edge Cases
 
@@ -63,7 +68,8 @@ As a user, I can sign in securely to the app and access a protected page. As a d
 
 ### Functional Requirements
 
-- FR-001: System MUST provide user authentication with a third-party provider (GitHub) and a protected page.
+- FR-001: System MUST provide user authentication with a third-party provider (GitHub) and a
+  protected page.
 - FR-002: System MUST persist auth-related data in a managed Postgres database.
 - FR-003: System MUST run schema migrations during deployment.
 - FR-004: System MUST render UI using Material Design components and theming.

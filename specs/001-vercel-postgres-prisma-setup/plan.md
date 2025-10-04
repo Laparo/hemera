@@ -1,10 +1,10 @@
-
 # Implementation Plan: 001-vercel-postgres-prisma-setup
 
 **Branch**: `001-vercel-postgres-prisma-setup` | **Date**: 2025-10-01 | **Spec**: `./spec.md`
 **Input**: Feature specification from `/specs/001-vercel-postgres-prisma-setup/spec.md`
 
-> Hinweis – Documentation Quality Gates: PRs prüfen Markdown-Lint, Rechtschreibung (DE/EN) und Links. Bei Fehlschlägen siehe README Abschnitt „Docs checks – fixing failures“.
+> Hinweis – Documentation Quality Gates: PRs prüfen Markdown-Lint, Rechtschreibung (DE/EN) und
+> Links. Bei Fehlschlägen siehe README Abschnitt „Docs checks – fixing failures“.
 
 ## Execution Flow (/plan command scope)
 
@@ -29,24 +29,28 @@
 9. STOP - Ready for /tasks command
 ```
 
-**IMPORTANT**: The /plan command STOPS at step 7. Phases 2-4 are executed by other commands. No implementation has been performed for this feature; repository remains in planning-only state:
+**IMPORTANT**: The /plan command STOPS at step 7. Phases 2-4 are executed by other commands. No
+implementation has been performed for this feature; repository remains in planning-only state:
 
 - Phase 2: /tasks command creates tasks.md
 - Phase 3-4: Implementation execution (manual or via tools)
 
 ## Summary
 
-Einrichtung von Vercel Postgres (Neon) mit Prisma ORM in einem Next.js (App Router) Projekt inklusive NextAuth.js (Prisma Adapter, JWT Sessions) und MUI (Material Design) UI-Basis. Öffentlicher Bereich wird SEO-freundlich via SSG/ISR ausgeliefert, nicht-öffentlicher Bereich (Buchungen/Materialien) per SSR auf Node mit serverseitiger AuthZ und noindex.
+Einrichtung von Vercel Postgres (Neon) mit Prisma ORM in einem Next.js (App Router) Projekt
+inklusive NextAuth.js (Prisma Adapter, JWT Sessions) und MUI (Material Design) UI-Basis.
+Öffentlicher Bereich wird SEO-freundlich via SSG/ISR ausgeliefert, nicht-öffentlicher Bereich
+(Buchungen/Materialien) per SSR auf Node mit serverseitiger AuthZ und noindex.
 
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x  
-**Primary Dependencies**: Next.js (App Router), React 18, Prisma Client, NextAuth.js, @mui/material, @mui/icons-material  
+**Primary Dependencies**: Next.js (App Router), React 18, Prisma Client, NextAuth.js, @mui/material,
+@mui/icons-material  
 **Storage**: PostgreSQL (Vercel Postgres/Neon) via Prisma ORM  
 **Identity**: NextAuth.js mit Prisma Adapter, JWT Sessions  
 **Testing**: Vitest + Playwright (smoke), jest-compat optional  
-**Target Platform**: Web (SSR/SSG/ISR), Deployment auf Vercel
-**Project Type**: web (Next.js app)  
+**Target Platform**: Web (SSR/SSG/ISR), Deployment auf Vercel **Project Type**: web (Next.js app)  
 **Performance Goals**: Gute CWV; SSG/ISR für SEO-Seiten; minimale TTFB für SSR-geschützte Seiten  
 **Constraints**: Prisma/NextAuth nur auf Node Runtime; Non-Public Seiten noindex; A11y WCAG 2.1 AA  
 **Scale/Scope**: Klein bis mittel (erste Auth/DB-Basis, wenige Seiten)  
@@ -54,7 +58,7 @@ Einrichtung von Vercel Postgres (Neon) mit Prisma ORM in einem Next.js (App Rout
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 PASS (v1.7.0):
 
@@ -63,29 +67,32 @@ PASS (v1.7.0):
 - Domain & Access Segmentation (Öffentlich vs Nicht-Öffentlich) umgesetzt inkl. SEO/noindex
 - MUI als einziges UI-Toolkit, SSR-Styling via AppRouterCacheProvider
 
-Hinweis: FR-007 (Retention Policy) ist bewusst DEFERRED und blockiert die Umsetzung dieser Basisfunktion nicht. Klärung nach MVP.
+Hinweis: FR-007 (Retention Policy) ist bewusst DEFERRED und blockiert die Umsetzung dieser
+Basisfunktion nicht. Klärung nach MVP.
 
 ## Rendering Strategy Matrix
 
 For each route/page, specify rendering and runtime per the Hybrid Rendering Policy:
 
-| Route                                | Strategy | Revalidate | Runtime | SEO Critical |
-|--------------------------------------|----------|-----------:|---------|--------------|
-| /                                    | SSG      |     300 s | edge    | Yes          |
-| /protected                           | SSR      |          - | node    | No           |
-| /api/auth/[...nextauth]              | SSR      |          - | node    | No           |
+| Route                   | Strategy | Revalidate | Runtime | SEO Critical |
+| ----------------------- | -------- | ---------: | ------- | ------------ |
+| /                       | SSG      |      300 s | edge    | Yes          |
+| /protected              | SSR      |          - | node    | No           |
+| /api/auth/[...nextauth] | SSR      |          - | node    | No           |
 
 Notes:
 
 - SSR only if necessary (auth/personalization). Prefer SSG/ISR for SEO pages.
 - Document `fetch` caching and headers where applicable.
-- If using Prisma Adapter in NextAuth, auth route MUST run on Node runtime
-    (Prisma is unsupported on Edge); document runtime choice.
+- If using Prisma Adapter in NextAuth, auth route MUST run on Node runtime (Prisma is unsupported on
+  Edge); document runtime choice.
 
 ### Domain Segmentation Notes
 
-- Öffentlich: Inhalte wie Kurs-/Eventlisten sind SEO-relevant → SSG/ISR, strukturierte Daten optional, Open Graph/Meta gepflegt.
-- Nicht-öffentlich: Teilnehmerbereiche (Buchungen/Materialien) → SSR auf Node, serverseitige AuthZ (getServerSession), robots noindex/nofollow.
+- Öffentlich: Inhalte wie Kurs-/Eventlisten sind SEO-relevant → SSG/ISR, strukturierte Daten
+  optional, Open Graph/Meta gepflegt.
+- Nicht-öffentlich: Teilnehmerbereiche (Buchungen/Materialien) → SSR auf Node, serverseitige AuthZ
+  (getServerSession), robots noindex/nofollow.
 
 ## Project Structure
 
@@ -102,18 +109,20 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
+
 <!--
   ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
   for this feature. Delete unused options and expand the chosen structure with
   real paths (e.g., apps/admin, packages/something). The delivered plan must
   not include Option labels.
 -->
+
 ```text
 // No changes applied to source code by this plan. Concrete file trees will be generated during implementation phases.
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: [Document the selected structure and reference the real directories captured
+above]
 
 ## Phase 0: Outline & Research
 
@@ -124,11 +133,11 @@ directories captured above]
 
 2. **Generate and dispatch research agents**:
 
-    ```text
+   ```text
    For each unknown in Technical Context:
-     Task: "Research {unknown} for {feature context}"
+    Task: "Research {unknown} for {feature context}"
    For each technology choice:
-     Task: "Find best practices for {tech} in {domain}"
+    Task: "Find best practices for {tech} in {domain}"
    ```
 
 3. **Consolidate findings** in `research.md` using format:
@@ -155,35 +164,34 @@ If the feature involves data persistence with a relational DB:
 
 If the feature introduces UI components or pages:
 
-- Components: List new Material components (e.g., Button, Dialog, Snackbar,
-   TextField) and their props/variants used.
-- Theming: Note any theme tokens or overrides (palette, typography, spacing,
-   shape) needed. Prefer theme customization over local styles.
+- Components: List new Material components (e.g., Button, Dialog, Snackbar, TextField) and their
+  props/variants used.
+- Theming: Note any theme tokens or overrides (palette, typography, spacing, shape) needed. Prefer
+  theme customization over local styles.
 - SSR Styling: Use MUI’s Next.js App Router integration (`AppRouterCacheProvider`).
-- Accessibility: Identify ARIA roles/labels, keyboard navigation, focus traps
-   (e.g., in Dialogs), and contrast considerations.
-- Performance: Import icons individually, prefer lazy/dynamic imports for
-   heavy components.
-- Testing: Include accessibility checks and snapshot/interaction tests for UI
-   states (hover, focus, error), and verify SSR hydration without style flash.
+- Accessibility: Identify ARIA roles/labels, keyboard navigation, focus traps (e.g., in Dialogs),
+  and contrast considerations.
+- Performance: Import icons individually, prefer lazy/dynamic imports for heavy components.
+- Testing: Include accessibility checks and snapshot/interaction tests for UI states (hover, focus,
+  error), and verify SSR hydration without style flash.
 
 If the feature requires authentication/authorization:
 
-- Providers: List the identity providers (e.g., Email magic link, GitHub, Google)
-   and required scopes. Note any custom provider config.
-- Session Strategy: Default JWT (stateless). Use database sessions only with
-   clear invalidation needs; justify choice if deviating.
-- Adapter: If user/account persistence is needed, prefer Prisma Adapter; ensure
-   Node runtime for auth route when Prisma is used.
-- Environment: Define required envs: `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, and
-   provider credentials. Document how they’re set in Vercel/GitHub.
+- Providers: List the identity providers (e.g., Email magic link, GitHub, Google) and required
+  scopes. Note any custom provider config.
+- Session Strategy: Default JWT (stateless). Use database sessions only with clear invalidation
+  needs; justify choice if deviating.
+- Adapter: If user/account persistence is needed, prefer Prisma Adapter; ensure Node runtime for
+  auth route when Prisma is used.
+- Environment: Define required envs: `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, and provider credentials.
+  Document how they’re set in Vercel/GitHub.
 - Routing: Use App Router path `app/api/auth/[...nextauth]/route.ts`.
-- Authorization: Describe protected routes and server-side checks using
-   `getServerSession` and optional middleware.
-- Security: Cookie flags (secure, SameSite), HTTPS enforcement, callback URL
-   validation, CSRF considerations.
-- Testing: Scenarios for login/logout, OAuth callback errors, and protected
-   route access (positive and negative cases).
+- Authorization: Describe protected routes and server-side checks using `getServerSession` and
+  optional middleware.
+- Security: Cookie flags (secure, SameSite), HTTPS enforcement, callback URL validation, CSRF
+  considerations.
+- Testing: Scenarios for login/logout, OAuth callback errors, and protected route access (positive
+  and negative cases).
 
 ## Phase 1: Design & Contracts
 
@@ -209,15 +217,15 @@ Prerequisite: research.md complete.
    - Quickstart test = story validation steps
 
 5. **Update agent file incrementally** (O(1) operation):
-   - Run `.specify/scripts/bash/update-agent-context.sh copilot`
-     **IMPORTANT**: Execute it exactly as specified above. Do not add or remove any arguments.
+   - Run `.specify/scripts/bash/update-agent-context.sh copilot` **IMPORTANT**: Execute it exactly
+     as specified above. Do not add or remove any arguments.
    - If exists: Add only NEW tech from current plan
    - Preserve manual additions between markers
    - Update recent changes (keep last 3)
    - Keep under 150 lines for token efficiency
    - Output to repository root
 
-**Output**: data-model.md, /contracts/*, failing tests, quickstart.md, agent-specific file
+**Output**: data-model.md, /contracts/\*, failing tests, quickstart.md, agent-specific file
 
 ## Phase 2: Task Planning Approach
 
@@ -254,8 +262,10 @@ Ensure the plan respects branching and CI rules defined in the constitution:
 ## Monitoring & Access Segmentation
 
 - GitHub Checks: required → Lint, Typecheck, Unit/E2E Smoke, Next Build; Branch Protection aktiv.
-- Security: Dependabot/Code Scanning aktiv; Prisma Migrate nur via CI/CD (deploy-time `prisma migrate deploy`).
-- Access: Nicht-öffentliche Routen prüfen serverseitig via `getServerSession` (Node Runtime); `robots`-Header/meta auf noindex setzen.
+- Security: Dependabot/Code Scanning aktiv; Prisma Migrate nur via CI/CD (deploy-time
+  `prisma migrate deploy`).
+- Access: Nicht-öffentliche Routen prüfen serverseitig via `getServerSession` (Node Runtime);
+  `robots`-Header/meta auf noindex setzen.
 - Observability (lightweight): Vercel Analytics optional; Log-Inspection über Vercel Dashboard.
 
 ## Documentation Quality Gates
@@ -268,9 +278,12 @@ Ensure the plan respects branching and CI rules defined in the constitution:
 
 ### What's included
 
-- Markdown linting: Central rules configured; permissive for long lines, inline HTML in docs, and consistent bullet indentation.
-- Spelling: Project-level dictionary that includes common tech terms (NextAuth, Prisma, Vercel, SSR/SSG/ISR); honors .gitignore; checks markdown and common source files.
-- Link checking: Configuration for timeouts, concurrency, and exclusions; private links are ignored to avoid false positives.
+- Markdown linting: Central rules configured; permissive for long lines, inline HTML in docs, and
+  consistent bullet indentation.
+- Spelling: Project-level dictionary that includes common tech terms (NextAuth, Prisma, Vercel,
+  SSR/SSG/ISR); honors .gitignore; checks markdown and common source files.
+- Link checking: Configuration for timeouts, concurrency, and exclusions; private links are ignored
+  to avoid false positives.
 
 ### Workflows
 
@@ -299,10 +312,10 @@ These phases are beyond the scope of the /plan command.
 
 Fill ONLY if Constitution Check has violations that must be justified.
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
+| -------------------------- | ------------------ | ------------------------------------ |
+| [e.g., 4th project]        | [current need]     | [why 3 projects insufficient]        |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient]  |
 
 ## Progress Tracking
 
@@ -321,9 +334,10 @@ This checklist is updated during execution flow.
 
 - [ ] Initial Constitution Check: PASS
 - [ ] Post-Design Constitution Check: PASS
-- [ ] All NEEDS CLARIFICATION resolved
-      - Ausnahme: FR-007 ist DEFERRED (Retention Policy) → kein Blocker für diese Implementierung
+- [ ] All NEEDS CLARIFICATION resolved - Ausnahme: FR-007 ist DEFERRED (Retention Policy) → kein
+      Blocker für diese Implementierung
 - [ ] Complexity deviations documented
 
 ---
-*Based on Constitution v1.7.0 - See `/.specify/memory/constitution.md`*
+
+_Based on Constitution v1.7.0 - See `/.specify/memory/constitution.md`_

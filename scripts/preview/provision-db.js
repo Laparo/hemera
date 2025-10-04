@@ -25,9 +25,19 @@ async function main() {
     console.error('DATABASE_URL is required');
     process.exit(2);
   }
-  const pr = process.env.PR_NUMBER || process.env.GITHUB_EVENT_NUMBER || process.env.GITHUB_REF_NAME || 'local';
-  const schema = (process.env.FALLBACK_SCHEMA || `hemera_pr_${pr}`).replace(/[^a-zA-Z0-9_]/g, '_');
-  const client = new pg.Client({ connectionString: baseUrl, ssl: { rejectUnauthorized: false } });
+  const pr =
+    process.env.PR_NUMBER ||
+    process.env.GITHUB_EVENT_NUMBER ||
+    process.env.GITHUB_REF_NAME ||
+    'local';
+  const schema = (process.env.FALLBACK_SCHEMA || `hemera_pr_${pr}`).replace(
+    /[^a-zA-Z0-9_]/g,
+    '_'
+  );
+  const client = new pg.Client({
+    connectionString: baseUrl,
+    ssl: { rejectUnauthorized: false },
+  });
   await client.connect();
   try {
     await client.query(`CREATE SCHEMA IF NOT EXISTS "${schema}";`);
@@ -36,13 +46,19 @@ async function main() {
   }
   const urlWithSchema = withSchemaParam(baseUrl, schema);
   // Run prisma migrate deploy with overridden DATABASE_URL
-  execSync('npx prisma migrate deploy', { stdio: 'inherit', env: { ...process.env, DATABASE_URL: urlWithSchema } });
+  execSync('npx prisma migrate deploy', {
+    stdio: 'inherit',
+    env: { ...process.env, DATABASE_URL: urlWithSchema },
+  });
   // Seed
-  execSync('node prisma/seed.ts', { stdio: 'inherit', env: { ...process.env, DATABASE_URL: urlWithSchema } });
+  execSync('node prisma/seed.ts', {
+    stdio: 'inherit',
+    env: { ...process.env, DATABASE_URL: urlWithSchema },
+  });
   console.log(JSON.stringify({ ok: true, schema }));
 }
 
-main().catch((e) => {
+main().catch(e => {
   console.error(e);
   process.exit(1);
 });

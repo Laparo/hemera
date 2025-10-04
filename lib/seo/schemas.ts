@@ -2,10 +2,10 @@ import type { Course } from '@prisma/client';
 
 /**
  * Schema.org JSON-LD generators for structured data
- * 
+ *
  * Provides type-safe generation of structured data for:
  * - Organization schema
- * - WebPage schema  
+ * - WebPage schema
  * - Course schema
  * - BreadcrumbList schema
  * - WebSite schema with search action
@@ -13,7 +13,8 @@ import type { Course } from '@prisma/client';
 
 const ORGANIZATION_CONFIG = {
   name: 'Hemera Academy',
-  description: 'Transform your career with expert-led courses in technology, business, and creative skills.',
+  description:
+    'Transform your career with expert-led courses in technology, business, and creative skills.',
   url: 'https://hemera.academy',
   logo: 'https://hemera.academy/images/logo.png',
   email: 'contact@hemera.academy',
@@ -85,7 +86,8 @@ export function generateLandingPageSchema() {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
     name: 'Hemera Academy - Transform Your Career with Expert-Led Courses',
-    description: 'Transform your career with expert-led courses in technology, business, and creative skills. Join thousands of students advancing their careers.',
+    description:
+      'Transform your career with expert-led courses in technology, business, and creative skills. Join thousands of students advancing their careers.',
     url: ORGANIZATION_CONFIG.url,
     isPartOf: {
       '@type': 'WebSite',
@@ -117,7 +119,8 @@ export function generateCourseListPageSchema() {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: 'All Courses - Hemera Academy',
-    description: 'Explore our complete catalog of expert-led courses in technology, business, and creative skills.',
+    description:
+      'Explore our complete catalog of expert-led courses in technology, business, and creative skills.',
     url: `${ORGANIZATION_CONFIG.url}/courses`,
     isPartOf: {
       '@type': 'WebSite',
@@ -162,7 +165,8 @@ export function generateCourseSchema(course: Course) {
       name: ORGANIZATION_CONFIG.name,
       url: ORGANIZATION_CONFIG.url,
     },
-    coursePrerequisites: course.level === 'ADVANCED' ? 'Basic knowledge recommended' : undefined,
+    coursePrerequisites:
+      course.level === 'ADVANCED' ? 'Basic knowledge recommended' : undefined,
     audience: {
       '@type': 'Audience',
       audienceType: 'Professionals',
@@ -177,7 +181,9 @@ export function generateCourseSchema(course: Course) {
 /**
  * Generate BreadcrumbList schema
  */
-export function generateBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
+export function generateBreadcrumbSchema(
+  items: Array<{ name: string; url: string }>
+) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -185,7 +191,9 @@ export function generateBreadcrumbSchema(items: Array<{ name: string; url: strin
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      item: item.url.startsWith('http') ? item.url : `${ORGANIZATION_CONFIG.url}${item.url}`,
+      item: item.url.startsWith('http')
+        ? item.url
+        : `${ORGANIZATION_CONFIG.url}${item.url}`,
     })),
   };
 }
@@ -221,11 +229,13 @@ export function generateCourseListSchema(courses: Course[]) {
 /**
  * Generate FAQ schema (for future use)
  */
-export function generateFAQSchema(faqs: Array<{ question: string; answer: string }>) {
+export function generateFAQSchema(
+  faqs: Array<{ question: string; answer: string }>
+) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: faqs.map((faq) => ({
+    mainEntity: faqs.map(faq => ({
       '@type': 'Question',
       name: faq.question,
       acceptedAnswer: {
@@ -248,14 +258,14 @@ export function generateMultipleSchemas(schemas: object[]): string {
  */
 export function sanitizeSchemaData<T extends Record<string, any>>(data: T): T {
   const sanitized = { ...data };
-  
+
   // Remove undefined values
   Object.keys(sanitized).forEach(key => {
     if (sanitized[key] === undefined) {
       delete sanitized[key];
     }
   });
-  
+
   return sanitized;
 }
 
@@ -268,13 +278,13 @@ export const SCHEMA_COMBINATIONS = {
     generateWebSiteSchema(),
     generateLandingPageSchema(),
   ],
-  
+
   courseList: (courses: Course[]) => [
     generateOrganizationSchema(),
     generateCourseListPageSchema(),
     generateCourseListSchema(courses),
   ],
-  
+
   coursePage: (course: Course) => [
     generateOrganizationSchema(),
     generateCourseSchema(course),

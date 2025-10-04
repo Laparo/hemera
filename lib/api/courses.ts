@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db/prisma';
 
 /**
  * Course model with Prisma types and API utilities
- * 
+ *
  * Provides type-safe access to course data for public pages with:
  * - Type definitions for course entities
  * - Query utilities for published courses
@@ -47,7 +47,9 @@ export async function getPublishedCourses(): Promise<CourseWithSEO[]> {
 /**
  * Get a single course by slug for public display
  */
-export async function getCourseBySlug(slug: string): Promise<CourseWithSEO | null> {
+export async function getCourseBySlug(
+  slug: string
+): Promise<CourseWithSEO | null> {
   const course = await prisma.course.findFirst({
     where: {
       slug,
@@ -74,7 +76,9 @@ export async function getPublishedCourseCount(): Promise<number> {
 /**
  * Get featured courses for landing page
  */
-export async function getFeaturedCourses(limit: number = 3): Promise<CourseWithSEO[]> {
+export async function getFeaturedCourses(
+  limit: number = 3
+): Promise<CourseWithSEO[]> {
   const courses = await prisma.course.findMany({
     where: {
       status: CourseStatus.PUBLISHED,
@@ -96,9 +100,10 @@ function enrichCourseWithSEO(course: Course): CourseWithSEO {
   return {
     ...course,
     seoTitle: `${course.title} | Hemera Academy`,
-    seoDescription: course.description.length > 160 
-      ? `${course.description.substring(0, 157)}...`
-      : course.description,
+    seoDescription:
+      course.description.length > 160
+        ? `${course.description.substring(0, 157)}...`
+        : course.description,
     canonicalUrl: `https://hemera.academy/courses/${course.slug}`,
   };
 }
@@ -115,22 +120,22 @@ export function isValidCourseSlug(slug: string): boolean {
  */
 export function formatCourseDuration(duration: string): string {
   const durationMinutes = parseInt(duration, 10);
-  
+
   if (isNaN(durationMinutes)) {
     return duration; // Return as-is if not a number
   }
-  
+
   if (durationMinutes < 60) {
     return `${durationMinutes} min`;
   }
-  
+
   const hours = Math.floor(durationMinutes / 60);
   const minutes = durationMinutes % 60;
-  
+
   if (minutes === 0) {
     return `${hours}h`;
   }
-  
+
   return `${hours}h ${minutes}min`;
 }
 
@@ -141,7 +146,7 @@ export function formatCoursePrice(price: Decimal | null): string {
   if (!price || Number(price) === 0) {
     return 'Free';
   }
-  
+
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',

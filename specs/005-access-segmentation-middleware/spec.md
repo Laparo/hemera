@@ -9,13 +9,17 @@
 
 ### Primary User Story
 
-As a signed-out user, when I navigate to non-public routes, I am redirected to sign-in; as a signed-in user, I can access them and they are not indexed by search engines.
+As a signed-out user, when I navigate to non-public routes, I am redirected to sign-in; as a
+signed-in user, I can access them and they are not indexed by search engines.
 
 ### Acceptance Scenarios
 
-1. Given a non-public route, when an unauthenticated user requests it, then the user is redirected to sign-in.
-2. Given a non-public route, when a signed-in user requests it, then the response includes noindex headers/meta.
-3. Given public routes, when a crawler requests them, then noindex is not present and crawl is allowed.
+1. Given a non-public route, when an unauthenticated user requests it, then the user is redirected
+   to sign-in.
+2. Given a non-public route, when a signed-in user requests it, then the response includes noindex
+   headers/meta.
+3. Given public routes, when a crawler requests them, then noindex is not present and crawl is
+   allowed.
 
 ### Edge Cases
 

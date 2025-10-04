@@ -5,7 +5,11 @@ import fs from 'node:fs';
 // Requires env E2E_EMAIL_CAPTURE=1 so that the app writes the magic link to /tmp/hemera-e2e-last-magic-link.txt
 // Also requires NEXTAUTH_URL to match PLAYWRIGHT_BASE_URL.
 
-test('email magic link sign-in (capture)', async ({ page, request, baseURL }) => {
+test('email magic link sign-in (capture)', async ({
+  page,
+  request,
+  baseURL,
+}) => {
   test.skip(!process.env.E2E_EMAIL_CAPTURE, 'E2E_EMAIL_CAPTURE not set');
   const email = 'e2e@example.com';
 

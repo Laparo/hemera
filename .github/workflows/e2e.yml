@@ -62,7 +62,7 @@ jobs:
           NEXTAUTH_SECRET=test-secret-for-ci-only
           DATABASE_URL=file:./test.db
           EOF
-          
+
           # Create a temporary SQLite schema for CI testing
           cp prisma/schema.prisma prisma/schema.prisma.backup
           sed -i 's/provider = "postgresql"/provider = "sqlite"/g' prisma/schema.prisma
@@ -135,7 +135,7 @@ jobs:
         run: |
           echo "E2E tests failed" >&2
           exit 1
-          
+
       - name: Restore Prisma schema
         if: always()
         run: |

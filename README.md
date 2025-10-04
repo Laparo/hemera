@@ -1,6 +1,8 @@
 # Hemera – Specs-first Workspace
 
-This repository is currently in a planning/documentation phase. Features are defined and refined under `specs/` using a specs-first workflow. No application code has been committed yet; implementation starts only after tasks are generated and approved.
+This repository is currently in a planning/documentation phase. Features are defined and refined
+under `specs/` using a specs-first workflow. No application code has been committed yet;
+implementation starts only after tasks are generated and approved.
 
 ## Workflow
 
@@ -14,11 +16,13 @@ See `.github/prompts/*.prompt.md` and `.specify/templates/*` for automation guid
 ## Quality Gates (Docs)
 
 Automated checks run on pull requests and on main:
+
 - Markdown lint: `.markdownlint.jsonc`
 - Spell check (cspell): `.cspell.json`
 - Link check (lychee): `.lychee.toml`
 
-Workflows live in `.github/workflows/` and are tuned to be helpful but not noisy. If a check fails, address the reported issues or amend the configuration where appropriate.
+Workflows live in `.github/workflows/` and are tuned to be helpful but not noisy. If a check fails,
+address the reported issues or amend the configuration where appropriate.
 
 ## Structure
 

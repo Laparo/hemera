@@ -8,7 +8,7 @@ on:
       - '**/*.tsx'
       - '**/*.js'
   push:
-    branches: [ main, master ]
+    branches: [main, master]
     paths:
       - '**/*.md'
       - '**/*.ts'

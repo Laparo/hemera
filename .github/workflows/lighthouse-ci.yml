@@ -10,7 +10,7 @@ on:
         type: string
   # Optional: Run on PRs (will skip if no URL is provided via env PREVIEW_URL)
   pull_request:
-    branches: [ "**" ]
+    branches: ['**']
   # Auto-trigger after deployments update their status (e.g., Vercel GitHub App)
   deployment_status:
 

@@ -5,7 +5,7 @@
 ## ✅ Vollständig abgeschlossen
 
 1. ✅ GitHub Action Workflow konfiguriert (.github/workflows/qodo-pr-agent.yml)
-2. ✅ Projektspezifische Einstellungen (.pr_agent.toml)  
+2. ✅ Projektspezifische Einstellungen (.pr_agent.toml)
 3. ✅ Sicherheits-Best-Practices implementiert (v0.30 gepinnt)
 4. ✅ Umfassende Dokumentation erstellt
 5. ✅ OPENAI_KEY Repository Secret konfiguriert

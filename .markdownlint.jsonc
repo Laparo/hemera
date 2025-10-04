@@ -10,5 +10,5 @@
   // Require blank lines around headings
   "MD022": true,
   // Consistent bullet list markers
-  "default": true
+  "default": true,
 }

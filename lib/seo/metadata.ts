@@ -3,10 +3,10 @@ import type { Course } from '@prisma/client';
 
 /**
  * SEO metadata utilities for public pages
- * 
+ *
  * Provides standardized metadata generation for:
  * - Open Graph tags
- * - Twitter Card tags  
+ * - Twitter Card tags
  * - Meta descriptions and titles
  * - Canonical URLs
  * - SEO-optimized content
@@ -14,7 +14,8 @@ import type { Course } from '@prisma/client';
 
 const SITE_CONFIG = {
   name: 'Hemera Academy',
-  description: 'Transform your career with expert-led courses in technology, business, and creative skills.',
+  description:
+    'Transform your career with expert-led courses in technology, business, and creative skills.',
   url: 'https://hemera.academy',
   ogImage: '/images/og-default.jpg',
   twitterHandle: '@hemeraacademy',
@@ -34,18 +35,19 @@ export interface SEOMetadata {
  */
 export function generateLandingPageMetadata(): Metadata {
   const title = 'Hemera Academy - Transform Your Career';
-  const description = 'Transform your career with expert-led courses in technology, business, and creative skills. Join thousands advancing their careers.';
+  const description =
+    'Transform your career with expert-led courses in technology, business, and creative skills. Join thousands advancing their careers.';
 
   return {
     title,
     description,
     keywords: [
       'online courses',
-      'career development', 
+      'career development',
       'technology training',
       'professional development',
       'skill building',
-      'expert instruction'
+      'expert instruction',
     ],
     authors: [{ name: 'Hemera Academy' }],
     creator: 'Hemera Academy',
@@ -102,7 +104,8 @@ export function generateLandingPageMetadata(): Metadata {
  */
 export function generateCourseListMetadata(): Metadata {
   const title = 'All Courses - Hemera Academy';
-  const description = 'Explore our complete catalog of expert-led courses. Find the perfect course to advance your career in technology, business, and creative skills.';
+  const description =
+    'Explore our complete catalog of expert-led courses. Find the perfect course to advance your career in technology, business, and creative skills.';
 
   return {
     title,
@@ -112,7 +115,7 @@ export function generateCourseListMetadata(): Metadata {
       'online learning',
       'professional courses',
       'skill development',
-      'career advancement'
+      'career advancement',
     ],
     authors: [{ name: 'Hemera Academy' }],
     creator: 'Hemera Academy',
@@ -164,9 +167,10 @@ export function generateCourseListMetadata(): Metadata {
  */
 export function generateCourseMetadata(course: Course): Metadata {
   const title = `${course.title} - Hemera Academy`;
-  const description = course.description.length > 160 
-    ? `${course.description.substring(0, 157)}...`
-    : course.description;
+  const description =
+    course.description.length > 160
+      ? `${course.description.substring(0, 157)}...`
+      : course.description;
 
   return {
     title,
@@ -175,7 +179,7 @@ export function generateCourseMetadata(course: Course): Metadata {
       course.title.toLowerCase(),
       course.level.toLowerCase(),
       'online course',
-      'professional development'
+      'professional development',
     ],
     authors: [{ name: 'Hemera Academy' }],
     creator: 'Hemera Academy',
@@ -228,8 +232,8 @@ export function generateCourseMetadata(course: Course): Metadata {
  * Generate custom SEO metadata object
  */
 export function generateSEOMetadata(config: SEOMetadata): Metadata {
-  const fullTitle = config.title.includes(SITE_CONFIG.name) 
-    ? config.title 
+  const fullTitle = config.title.includes(SITE_CONFIG.name)
+    ? config.title
     : `${config.title} | ${SITE_CONFIG.name}`;
 
   return {
@@ -237,9 +241,11 @@ export function generateSEOMetadata(config: SEOMetadata): Metadata {
     description: config.description,
     keywords: config.keywords,
     metadataBase: new URL(SITE_CONFIG.url),
-    alternates: config.canonicalUrl ? {
-      canonical: config.canonicalUrl,
-    } : undefined,
+    alternates: config.canonicalUrl
+      ? {
+          canonical: config.canonicalUrl,
+        }
+      : undefined,
     openGraph: {
       type: 'website',
       locale: 'en_US',
@@ -264,35 +270,40 @@ export function generateSEOMetadata(config: SEOMetadata): Metadata {
       creator: SITE_CONFIG.twitterHandle,
       images: [config.ogImage || SITE_CONFIG.ogImage],
     },
-    robots: config.noIndex ? {
-      index: false,
-      follow: false,
-    } : {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
+    robots: config.noIndex
+      ? {
+          index: false,
+          follow: false,
+        }
+      : {
+          index: true,
+          follow: true,
+          googleBot: {
+            index: true,
+            follow: true,
+            'max-video-preview': -1,
+            'max-image-preview': 'large',
+            'max-snippet': -1,
+          },
+        },
   };
 }
 
 /**
  * Truncate text for SEO descriptions
  */
-export function truncateDescription(text: string, maxLength: number = 160): string {
+export function truncateDescription(
+  text: string,
+  maxLength: number = 160
+): string {
   if (text.length <= maxLength) {
     return text;
   }
-  
+
   const truncated = text.substring(0, maxLength - 3);
   const lastSpace = truncated.lastIndexOf(' ');
-  
-  return lastSpace > 0 
+
+  return lastSpace > 0
     ? `${truncated.substring(0, lastSpace)}...`
     : `${truncated}...`;
 }
@@ -300,7 +311,9 @@ export function truncateDescription(text: string, maxLength: number = 160): stri
 /**
  * Generate breadcrumb schema for SEO
  */
-export function generateBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
+export function generateBreadcrumbSchema(
+  items: Array<{ name: string; url: string }>
+) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',

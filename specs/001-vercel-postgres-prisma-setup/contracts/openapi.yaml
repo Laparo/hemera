@@ -9,7 +9,7 @@ paths:
     get:
       summary: Health check endpoint
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
@@ -28,7 +28,7 @@ paths:
     get:
       summary: List configured auth providers
       responses:
-        '200':
+        "200":
           description: Provider list
           content:
             application/json:
