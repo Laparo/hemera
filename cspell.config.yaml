@@ -63,7 +63,7 @@ languageSettings:
       - en_US
       - node
       - softwareTerms
- 
+
 ignorePaths:
   - "**/node_modules/**"
   - "**/.git/**"

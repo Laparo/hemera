@@ -4,7 +4,7 @@ import { SITEMAP_CONFIG } from '@/lib/seo/constants';
 
 /**
  * Dynamic sitemap generation
- * 
+ *
  * Generates sitemap.xml with:
  * - Static pages (homepage, courses list)
  * - Dynamic course pages
@@ -34,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // Dynamic course pages
-  const coursePages: MetadataRoute.Sitemap = courses.map((course) => ({
+  const coursePages: MetadataRoute.Sitemap = courses.map(course => ({
     url: `${baseUrl}/courses/${course.slug}`,
     lastModified: course.updatedAt,
     changeFrequency: SITEMAP_CONFIG.changeFrequency.static,

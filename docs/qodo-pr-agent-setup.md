@@ -1,12 +1,14 @@
 # Qodo PR Agent Setup
 
-Dieses Projekt verwendet [Qodo PR Agent](https://qodo-merge-docs.qodo.ai/) als GitHub Action für automatisierte Code-Reviews, PR-Beschreibungen und Code-Verbesserungsvorschläge.
+Dieses Projekt verwendet [Qodo PR Agent](https://qodo-merge-docs.qodo.ai/) als GitHub Action für
+automatisierte Code-Reviews, PR-Beschreibungen und Code-Verbesserungsvorschläge.
 
 ## Konfiguration
 
 ### GitHub Action
 
-Die GitHub Action ist in `.github/workflows/pr-agent.yml` konfiguriert und wird automatisch ausgelöst bei:
+Die GitHub Action ist in `.github/workflows/pr-agent.yml` konfiguriert und wird automatisch
+ausgelöst bei:
 
 - Neuen Pull Requests
 - Wiedereröffneten Pull Requests

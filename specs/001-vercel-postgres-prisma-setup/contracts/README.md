@@ -5,4 +5,5 @@ This setup feature does not introduce public business APIs. Contracts are limite
 - OAuth callback endpoints (NextAuth route handler)
 - Protected page requires authenticated session
 
-Contract tests are represented as integration tests for auth and protected routes, rather than OpenAPI/GraphQL specs.
+Contract tests are represented as integration tests for auth and protected routes, rather than
+OpenAPI/GraphQL specs.

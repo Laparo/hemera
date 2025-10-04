@@ -41,7 +41,7 @@
 
 ```text
 ✅ ESLint/eslint (31s)
-✅ Spellcheck/cspell (32s)  
+✅ Spellcheck/cspell (32s)
 ✅ E2E Tests/e2e (3m13s)
 ✅ Docs - cspell/cspell (36s)
 ✅ Docs - markdownlint/markdownlint (13s)
@@ -87,10 +87,11 @@
 
 ## 🎉 **Fazit**
 
-Die Qodo PR Agent Integration ist **vollständig implementiert und production-ready**. Das System hat bereits während der Entwicklung bewiesen, dass es wertvolle, actionable Insights liefert.
+Die Qodo PR Agent Integration ist **vollständig implementiert und production-ready**. Das System hat
+bereits während der Entwicklung bewiesen, dass es wertvolle, actionable Insights liefert.
 
 **Ready for Action!** 🤖✨
 
 ---
 
-*Für Support und Updates siehe: `docs/qodo-pr-agent-setup.md`*
+_Für Support und Updates siehe: `docs/qodo-pr-agent-setup.md`_

@@ -1,23 +1,23 @@
-import type { NextAuthOptions, Account } from "next-auth";
-import type { JWT } from "next-auth/jwt";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import EmailProvider from "next-auth/providers/email";
-import CredentialsProvider from "next-auth/providers/credentials";
-import fs from "node:fs";
-import path from "node:path";
-import GoogleProvider from "next-auth/providers/google";
-import AppleProvider from "next-auth/providers/apple";
-import InstagramProvider from "next-auth/providers/instagram";
-import { prisma } from "@/lib/db/prisma";
+import type { NextAuthOptions, Account } from 'next-auth';
+import type { JWT } from 'next-auth/jwt';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import EmailProvider from 'next-auth/providers/email';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import fs from 'node:fs';
+import path from 'node:path';
+import GoogleProvider from 'next-auth/providers/google';
+import AppleProvider from 'next-auth/providers/apple';
+import InstagramProvider from 'next-auth/providers/instagram';
+import { prisma } from '@/lib/db/prisma';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+  session: { strategy: 'jwt' },
   pages: {
     // Friendly pages for email magic link and other auth errors
-    error: "/auth/error",
-    signIn: "/auth/signin",
-    verifyRequest: "/auth/verify-request",
+    error: '/auth/error',
+    signIn: '/auth/signin',
+    verifyRequest: '/auth/verify-request',
   },
   providers: [
     EmailProvider({
@@ -27,8 +27,8 @@ export const authOptions: NextAuthOptions = {
         // In E2E mode, capture the verification URL to a temp file for the test runner
         if (process.env.E2E_EMAIL_CAPTURE) {
           try {
-            const file = path.join("/tmp", "hemera-e2e-last-magic-link.txt");
-            fs.writeFileSync(file, params.url, { encoding: "utf8" });
+            const file = path.join('/tmp', 'hemera-e2e-last-magic-link.txt');
+            fs.writeFileSync(file, params.url, { encoding: 'utf8' });
           } catch {
             // ignore write errors in non-linux envs
           }
@@ -59,22 +59,23 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   // Add a test-only Credentials provider for E2E flows
-  ...(process.env.E2E_AUTH === "credentials"
+  ...(process.env.E2E_AUTH === 'credentials'
     ? {
         providers: [
           CredentialsProvider({
-            id: "e2e-credentials",
-            name: "E2E Credentials",
+            id: 'e2e-credentials',
+            name: 'E2E Credentials',
             credentials: {
-              email: { label: "Email", type: "text" },
-              password: { label: "Password", type: "password" },
+              email: { label: 'Email', type: 'text' },
+              password: { label: 'Password', type: 'password' },
             },
             async authorize(credentials) {
               const email = credentials?.email as string | undefined;
               const password = credentials?.password as string | undefined;
               if (!email || !password) return null;
               // Very simple gate for tests
-              if (password !== (process.env.E2E_TEST_PASSWORD || "password")) return null;
+              if (password !== (process.env.E2E_TEST_PASSWORD || 'password'))
+                return null;
               // Minimal user object for JWT sessions; no DB write required
               return { id: email, email } as any;
             },
@@ -93,23 +94,29 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signIn(message: { user?: any; account?: any }) {
-      console.info("[auth:event] signIn", {
+      console.info('[auth:event] signIn', {
         userId: message.user?.id,
         provider: message.account?.provider,
         email: message.user?.email,
       });
     },
     async createUser(message: { user?: any }) {
-      console.info("[auth:event] createUser", { userId: message.user?.id, email: message.user?.email });
+      console.info('[auth:event] createUser', {
+        userId: message.user?.id,
+        email: message.user?.email,
+      });
     },
     async linkAccount(message: { user?: any; account?: any }) {
-      console.info("[auth:event] linkAccount", { userId: message.user?.id, provider: message.account?.provider });
+      console.info('[auth:event] linkAccount', {
+        userId: message.user?.id,
+        provider: message.account?.provider,
+      });
     },
   },
 };
 
-export type ProviderId = "email" | "google" | "apple" | "instagram";
+export type ProviderId = 'email' | 'google' | 'apple' | 'instagram';
 
 export function getActiveProviderIds(): ProviderId[] {
-  return ["email", "google", "apple", "instagram"];
+  return ['email', 'google', 'apple', 'instagram'];
 }

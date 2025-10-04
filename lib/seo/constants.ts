@@ -1,6 +1,6 @@
 /**
  * SEO constants and configuration
- * 
+ *
  * Centralized configuration for:
  * - Site metadata
  * - SEO limits and constraints
@@ -11,7 +11,8 @@
 
 export const SITE_CONFIG = {
   name: 'Hemera Academy',
-  description: 'Transform your career with expert-led courses in technology, business, and creative skills.',
+  description:
+    'Transform your career with expert-led courses in technology, business, and creative skills.',
   tagline: 'Transform Your Career with Expert-Led Courses',
   url: 'https://hemera.academy',
   domain: 'hemera.academy',
@@ -24,7 +25,8 @@ export const SEO_DEFAULTS = {
     maxLength: 60,
   },
   description: {
-    default: 'Transform your career with expert-led courses in technology, business, and creative skills. Join thousands of students advancing their careers with Hemera Academy.',
+    default:
+      'Transform your career with expert-led courses in technology, business, and creative skills. Join thousands of students advancing their careers with Hemera Academy.',
     maxLength: 160,
   },
   keywords: [
@@ -234,22 +236,28 @@ export function getFullUrl(path: string): string {
  * Validate SEO title length
  */
 export function isValidTitleLength(title: string): boolean {
-  return title.length >= VALIDATION_RULES.title.minLength && 
-         title.length <= VALIDATION_RULES.title.maxLength;
+  return (
+    title.length >= VALIDATION_RULES.title.minLength &&
+    title.length <= VALIDATION_RULES.title.maxLength
+  );
 }
 
 /**
  * Validate SEO description length
  */
 export function isValidDescriptionLength(description: string): boolean {
-  return description.length >= VALIDATION_RULES.description.minLength && 
-         description.length <= VALIDATION_RULES.description.maxLength;
+  return (
+    description.length >= VALIDATION_RULES.description.minLength &&
+    description.length <= VALIDATION_RULES.description.maxLength
+  );
 }
 
 /**
  * Validate course slug format
  */
 export function isValidSlug(slug: string): boolean {
-  return VALIDATION_RULES.slug.pattern.test(slug) && 
-         slug.length <= VALIDATION_RULES.slug.maxLength;
+  return (
+    VALIDATION_RULES.slug.pattern.test(slug) &&
+    slug.length <= VALIDATION_RULES.slug.maxLength
+  );
 }
