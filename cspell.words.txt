@@ -48,6 +48,10 @@ Contentful
 NEXTAUTH
 Initialmigration
 firefox
+Qodo
+qodo
+Sicherheitsvulnerabilitäten
+OPENAI
 opencode
 Fokuszustand
 Überschriftenstruktur
