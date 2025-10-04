@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const hasExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
-const webServerCommand = process.env.PW_WEB_SERVER_COMMAND || 'npm run start';
+const webServerCommand = process.env.PW_WEB_SERVER_COMMAND || 'npm run dev';
 
 export default defineConfig({
   testDir: './tests/e2e',
