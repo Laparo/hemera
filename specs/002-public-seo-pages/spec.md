@@ -40,27 +40,37 @@ As a visitor, I can discover the site via search engines and view public pages (
 
 ### Edge Cases
 
-- Missing or sparse data for listings → graceful fallbacks and consistent meta.
+- Missing or sparse data for listings → display placeholder courses with "Bald verfügbar" status and consistent meta.
 - Overly frequent revalidation causing rate limits → tuned revalidate values.
 
 ## Requirements (mandatory)
 
 ### Functional Requirements
 
-- FR-001: System MUST provide a public landing page with SSG.
-- FR-002: System MUST provide a public course list page with ISR and defined revalidate.
-- FR-003: System MUST include SEO meta, Open Graph, and structured data (JSON-LD) where applicable.
+- FR-001: System MUST provide a public landing page with SSG containing hero section, course overview, and registration area.
+- FR-002: System MUST provide a public course list page with ISR and 24-hour revalidation.
+- FR-003: System MUST include SEO meta, Open Graph, and structured data (JSON-LD) with Organization, WebPage, and Course schemas.
 - FR-004: System MUST expose sitemap and robots for public pages.
 - FR-005: System MUST avoid leaking non-public paths in sitemap/metadata.
 
 ### Non-Functional Requirements
 
 - NFR-001: Lighthouse SEO score ≥ 90 for public pages.
-- NFR-002: Core Web Vitals inline with best practices for SSG/ISR pages.
+- NFR-002: Core Web Vitals MUST meet: LCP < 2.5s, FID < 100ms, CLS < 0.1 for SSG/ISR pages.
 
 ### Key Entities
 
-- None required initially; pages may consume existing summaries or mock data.
+- Course: Basic course information retrieved via database queries through API routes for public display
+
+## Clarifications
+
+### Session 2025-10-04
+
+- Q: Welche konkreten Inhalte soll die Landing Page anzeigen? → A: Hero-Sektion + Kursübersicht + Anmeldebereich
+- Q: Welche ISR-Revalidierung-Zeit ist für die Kursliste angemessen? → A: 24 Stunden (minimal für selten ändernde Inhalte)
+- Q: Welche Datenquelle soll für die Kursinformationen verwendet werden? → A: Database queries via API routes
+- Q: Welche spezifischen Schema.org structured data Typen sollen implementiert werden? → A: + Course schema für Kurslisten
+- Q: Welches Fallback-Verhalten soll bei fehlenden Kursdaten implementiert werden? → A: Placeholder-Kurse mit "Bald verfügbar"
 
 ---
 

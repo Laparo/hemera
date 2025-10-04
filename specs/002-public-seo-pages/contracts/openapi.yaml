@@ -1,0 +1,253 @@
+openapi: 3.0.0
+info:
+  title: Hemera Public SEO Pages API
+  description: API endpoints for public course data and SEO functionality
+  version: 1.0.0
+  contact:
+    name: Hemera Team
+
+servers:
+  - url: https://hemera.example.com/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
+
+paths:
+  /courses:
+    get:
+      summary: Get public course list
+      description: Retrieve a list of published courses for public display
+      tags:
+        - Courses
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of courses per page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 12
+        - name: level
+          in: query
+          description: Filter by course level
+          required: false
+          schema:
+            type: string
+            enum: [Beginner, Intermediate, Advanced]
+      responses:
+        '200':
+          description: Successful response with course list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseListResponse'
+              example:
+                courses:
+                  - id: "clx1234567890"
+                    title: "Einführung in Next.js"
+                    description: "Lernen Sie die Grundlagen des modernen React-Frameworks"
+                    slug: "einfuehrung-nextjs"
+                    imageUrl: "https://example.com/course-images/nextjs.jpg"
+                    level: "Beginner"
+                    duration: "4 Wochen"
+                    price: 299.00
+                  - id: "clx0987654321"
+                    title: "Advanced TypeScript"
+                    description: "Vertiefen Sie Ihre TypeScript-Kenntnisse für professionelle Entwicklung"
+                    slug: "advanced-typescript"
+                    imageUrl: "https://example.com/course-images/typescript.jpg"
+                    level: "Advanced"
+                    duration: "6 Wochen"
+                    price: 399.00
+                meta:
+                  total: 2
+                  page: 1
+                  pageSize: 12
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /sitemap:
+    get:
+      summary: Get sitemap data
+      description: Retrieve sitemap information for public pages
+      tags:
+        - SEO
+      responses:
+        '200':
+          description: Sitemap data for XML generation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SitemapResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    PublicCourse:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - slug
+        - level
+        - duration
+      properties:
+        id:
+          type: string
+          description: Unique course identifier
+          example: "clx1234567890"
+        title:
+          type: string
+          minLength: 3
+          maxLength: 100
+          description: Course title for public display
+          example: "Einführung in Next.js"
+        description:
+          type: string
+          minLength: 50
+          maxLength: 500
+          description: Course description for SEO and course cards
+          example: "Lernen Sie die Grundlagen des modernen React-Frameworks"
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+          description: URL-friendly course identifier
+          example: "einfuehrung-nextjs"
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: Optional course image URL
+          example: "https://example.com/course-images/nextjs.jpg"
+        level:
+          type: string
+          enum: [Beginner, Intermediate, Advanced]
+          description: Course difficulty level
+          example: "Beginner"
+        duration:
+          type: string
+          description: Human-readable course duration
+          example: "4 Wochen"
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          nullable: true
+          description: Course price (null for free courses)
+          example: 299.00
+
+    CourseListResponse:
+      type: object
+      required:
+        - courses
+        - meta
+      properties:
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicCourse'
+          description: Array of public courses
+        meta:
+          type: object
+          required:
+            - total
+            - page
+            - pageSize
+          properties:
+            total:
+              type: integer
+              minimum: 0
+              description: Total number of available courses
+              example: 2
+            page:
+              type: integer
+              minimum: 1
+              description: Current page number
+              example: 1
+            pageSize:
+              type: integer
+              minimum: 1
+              description: Number of courses per page
+              example: 12
+
+    SitemapEntry:
+      type: object
+      required:
+        - url
+        - lastModified
+        - priority
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Full URL of the page
+          example: "https://hemera.example.com/courses/einfuehrung-nextjs"
+        lastModified:
+          type: string
+          format: date-time
+          description: Last modification date
+          example: "2025-10-04T10:00:00Z"
+        priority:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          description: Relative priority for search engines
+          example: 0.8
+
+    SitemapResponse:
+      type: object
+      required:
+        - pages
+      properties:
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/SitemapEntry'
+          description: Array of public pages for sitemap
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error type
+          example: "INTERNAL_SERVER_ERROR"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Unable to fetch courses at this time"
+        details:
+          type: object
+          description: Additional error details (development only)
+          additionalProperties: true
+
+  securitySchemes: {}
+
+tags:
+  - name: Courses
+    description: Public course data operations
+  - name: SEO
+    description: SEO-related endpoints
