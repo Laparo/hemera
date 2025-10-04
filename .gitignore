@@ -35,3 +35,13 @@ pnpm-debug.log*
 **/*.swp
 .vercel
 .env*.local
+
+# Testing/Build artifacts
+test-results/
+playwright-report/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+vercel.json.full
+
+# Backup files
+*.backup
