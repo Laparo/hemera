@@ -90,6 +90,7 @@ export const CourseCard: FC<CourseCardProps> = ({
               size="small"
               color={levelColor}
               sx={{ fontWeight: 'bold' }}
+              data-testid="course-level"
             />
           </Box>
         )}
@@ -107,6 +108,7 @@ export const CourseCard: FC<CourseCardProps> = ({
               fontSize: '1.25rem',
             }),
           }}
+          data-testid="course-title"
         >
           {course.title}
         </Typography>
@@ -122,6 +124,7 @@ export const CourseCard: FC<CourseCardProps> = ({
               fontSize: '0.875rem',
             }),
           }}
+          data-testid="course-description"
         >
           {truncatedDescription}
         </Typography>

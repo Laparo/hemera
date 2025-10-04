@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { Container, Typography, Box, Grid, Card, CardContent, Chip } from '@mui/material';
 import { generateCourseListMetadata } from '@/lib/seo/metadata';
-import { SCHEMA_COMBINATIONS } from '@/lib/seo/schemas';
+import { SCHEMA_COMBINATIONS, generateCourseSchema } from '@/lib/seo/schemas';
 import { getPublishedCourses } from '@/lib/api/courses';
 import { formatCoursePrice, formatCourseDuration } from '@/lib/api/courses';
 import { PERFORMANCE_CONFIG } from '@/lib/seo/constants';
@@ -81,7 +81,7 @@ export default async function CoursesPage() {
         {/* Courses Grid */}
         <Box
           component="section"
-          data-testid="course-list"
+          data-testid="course-overview"
           sx={{ py: { xs: 6, md: 8 } }}
         >
           <Container maxWidth="lg">
@@ -123,6 +123,7 @@ export default async function CoursesPage() {
                                 course.level === 'INTERMEDIATE' ? 'warning' : 'error'
                               }
                               sx={{ fontWeight: 'bold' }}
+                              data-testid="course-level"
                             />
                           </Box>
 
@@ -136,6 +137,7 @@ export default async function CoursesPage() {
                               mb: 2,
                               lineHeight: 1.3,
                             }}
+                            data-testid="course-title"
                           >
                             {course.title}
                           </Typography>
@@ -146,6 +148,7 @@ export default async function CoursesPage() {
                             color="text.secondary"
                             paragraph
                             sx={{ mb: 3 }}
+                            data-testid="course-description"
                           >
                             {course.description.length > 150
                               ? `${course.description.substring(0, 150)}...`
@@ -196,6 +199,7 @@ export default async function CoursesPage() {
                   py: 8,
                   px: 2,
                 }}
+                data-testid="courses-fallback"
               >
                 <Typography
                   variant="h4"
@@ -203,7 +207,7 @@ export default async function CoursesPage() {
                   gutterBottom
                   sx={{ fontWeight: 'bold' }}
                 >
-                  No Courses Available Yet
+                  Bald verfügbar
                 </Typography>
                 
                 <Typography
