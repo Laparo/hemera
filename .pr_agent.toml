@@ -1,0 +1,44 @@
+[config]
+model = "gpt-4o"
+fallback_models = ["gpt-4o", "gpt-3.5-turbo"]
+verbosity_level = 1
+ai_timeout = 300
+large_patch_policy = "clip"
+max_model_tokens = 32000
+patch_extra_lines_before = 3
+patch_extra_lines_after = 1
+
+[pr_reviewer]
+extra_instructions = """
+Focus on the following areas for this TypeScript/Next.js project:
+- TypeScript best practices and type safety
+- Next.js 14 App Router patterns and conventions
+- React 18 hooks usage and component patterns
+- Prisma ORM query optimization and type safety
+- Material-UI component usage and theming
+- Security vulnerabilities and authentication patterns
+- Performance issues and optimization opportunities
+- Proper error handling and async/await patterns
+- Adherence to project constitution requirements
+- Code quality and maintainability
+"""
+require_tests_review = true
+require_score_review = false
+require_soc2_ticket = false
+
+[pr_code_suggestions]
+num_code_suggestions = 6
+suggestions_score_threshold = 7
+auto_extended_mode = true
+rank_suggestions = true
+
+[pr_description]
+add_original_user_description = true
+keep_original_user_title = true
+enable_pr_type = true
+
+[github_action_config]
+auto_review = true
+auto_describe = true
+auto_improve = true
+pr_actions = ["opened", "reopened", "ready_for_review", "review_requested"]
