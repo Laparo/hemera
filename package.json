@@ -11,6 +11,8 @@
     "lint:ci": "eslint --cache --max-warnings=0 --ext .ts,.tsx,.js,.jsx .",
     "prepare": "husky install",
     "test": "echo 'No unit tests yet'",
+    "vercel-build": "npx prisma generate && npx prisma migrate deploy && next build",
+    "postbuild": "next-sitemap --config next-sitemap.config.cjs",
     "db:status": "dotenv -e .env.development.local -- npx prisma migrate status",
     "db:migrate": "dotenv -e .env.development.local -- npx prisma migrate dev",
     "db:deploy": "dotenv -e .env.development.local -- npx prisma migrate deploy",

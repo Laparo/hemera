@@ -48,6 +48,7 @@ zgkd
 Estjh
 lighthouserc
 pooled
+pgbouncer
 pooler
 DBNAME
 dotenv

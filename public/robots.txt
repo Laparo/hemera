@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /auth/
+Disallow: /protected/
+Disallow: /api/auth/
+Disallow: /admin/
+
+# Host
+Host: https://hemera.vercel.app
+
+# Sitemaps
+Sitemap: https://hemera.vercel.app/sitemap.xml
