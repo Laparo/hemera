@@ -1,5 +1,6 @@
 sslmode
-NextAuth
+Clerk
+ClerkProvider
 Prisma
 Vercel
 Zauberflocke
@@ -60,7 +61,6 @@ postgres
 datasource
 zeitoptimiert
 Contentful
-NEXTAUTH
 Initialmigration
 firefox
 opencode
@@ -68,3 +68,7 @@ Fokuszustand
 Überschriftenstruktur
 passwordless
 parallelizable
+Qodo
+qodo
+Sicherheitsvulnerabilitäten
+Typvalidierung
