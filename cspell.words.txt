@@ -50,6 +50,7 @@ Initialmigration
 firefox
 Qodo
 Sicherheitsvulnerabilitäten
+OPENAI
 opencode
 Fokuszustand
 Überschriftenstruktur
