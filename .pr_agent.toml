@@ -1,6 +1,6 @@
 [config]
 model = "gpt-4o"
-fallback_models = ["gpt-4o", "gpt-3.5-turbo"]
+fallback_models = ["gpt-3.5-turbo"]
 verbosity_level = 1
 ai_timeout = 300
 large_patch_policy = "clip"

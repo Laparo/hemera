@@ -7,7 +7,7 @@ on:
 
 jobs:
   pr_agent_job:
-    if: ${{ github.event.sender.type != 'Bot' }}
+    if: ${{ github.event.sender.type != 'Bot' && (github.event_name == 'pull_request' || github.event.issue.pull_request) }}
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: PR Agent action step
         id: pragent
-        uses: qodo-ai/pr-agent@main
+        uses: qodo-ai/pr-agent@v0.30
         env:
           OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
