@@ -1,50 +1,83 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# Hemera Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Test-First Development (NON-NEGOTIABLE)
+TDD is mandatory: Tests written → User approved → Tests fail → Then implement. Red-Green-Refactor cycle strictly enforced. All features must have comprehensive test coverage before implementation.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Quality Gates
+Every pull request must pass all automated quality checks including:
+- TypeScript compilation without errors
+- ESLint linting without warnings
+- Automated test suite (unit, integration, e2e)
+- **Qodo PR Agent analysis and approval**
+- Documentation completeness verification
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Specs-First Workflow
+Every feature starts with a complete specification in `specs/`. Implementation begins only after tasks are generated and approved. No code changes without corresponding spec documentation.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Authentication & Security
+- Production-grade authentication required (Clerk implementation)
+- Environment variables must be properly configured
+- Security best practices enforced in all components
+- Protected routes must implement proper authorization
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Performance & SEO
+- Core Web Vitals compliance required
+- SEO optimization for all public pages
+- Lighthouse scores >= 90 for production pages
+- Static generation where applicable
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Development Workflow
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### Pull Request Requirements
+All pull requests MUST satisfy these requirements before merge:
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+1. **Automated Tests**: All tests pass (unit, integration, e2e)
+2. **Code Quality**: ESLint and TypeScript checks pass
+3. **Qodo PR Agent**: PR must receive approval from Qodo PR Agent analysis
+4. **Specification Alignment**: Changes must align with corresponding spec
+5. **Documentation**: Updates to docs/ when functionality changes
+6. **Performance**: No regression in Core Web Vitals
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### Review Process
+- Minimum one human reviewer approval required
+- Qodo PR Agent analysis must pass before human review
+- Spec compliance verification mandatory
+- Security review for authentication/authorization changes
+
+## Technology Constraints
+
+### Required Stack
+- Next.js 14+ with App Router
+- TypeScript 5.x
+- Clerk for authentication
+- Prisma with PostgreSQL
+- Material-UI (MUI) for components
+- Playwright for e2e testing
+
+### Quality Tools
+- ESLint for code quality
+- Playwright for e2e testing
+- Lighthouse CI for performance monitoring
+- Qodo PR Agent for automated code review
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### Constitution Authority
+This constitution supersedes all other development practices. All PRs and reviews must verify compliance with these principles.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+### Amendment Process
+Constitution amendments require:
+1. Documentation of proposed change
+2. Team approval via PR review
+3. Migration plan for existing code
+4. Update to all dependent templates
+
+### Non-Negotiable Requirements
+- **Qodo PR Agent approval is mandatory for all PRs**
+- Test-first development cannot be bypassed
+- Security and authentication standards are absolute
+- Performance thresholds must be maintained
+
+**Version**: 2.1.2 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-04

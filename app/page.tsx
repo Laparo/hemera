@@ -240,7 +240,7 @@ export default async function HomePage() {
                 variant="contained"
                 color="primary"
                 size="large"
-                href="/auth/signin"
+                href="/sign-in"
                 sx={{
                   px: 4,
                   py: 1.5,

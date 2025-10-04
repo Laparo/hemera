@@ -11,12 +11,24 @@ This repository is currently in a planning/documentation phase. Features are def
 
 See `.github/prompts/*.prompt.md` and `.specify/templates/*` for automation guidance.
 
-## Quality Gates (Docs)
+## Quality Gates (Docs & Code)
 
 Automated checks run on pull requests and on main:
+
+### Documentation Quality
 - Markdown lint: `.markdownlint.jsonc`
 - Spell check (cspell): `.cspell.json`
 - Link check (lychee): `.lychee.toml`
+
+### Code Quality & Review
+- **Qodo PR Agent**: Mandatory automated code review and approval
+- TypeScript compilation and type checking
+- ESLint linting (zero warnings required)
+- Automated test suite (unit, integration, e2e)
+- Performance monitoring with Lighthouse CI
+
+### Non-Negotiable Requirements
+All pull requests **MUST** pass Qodo PR Agent analysis before human review. This is enforced by our constitution and cannot be bypassed.
 
 Workflows live in `.github/workflows/` and are tuned to be helpful but not noisy. If a check fails, address the reported issues or amend the configuration where appropriate.
 

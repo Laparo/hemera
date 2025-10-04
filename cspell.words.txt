@@ -72,3 +72,4 @@ Qodo
 qodo
 Sicherheitsvulnerabilitäten
 Typvalidierung
+CODEOWNERS

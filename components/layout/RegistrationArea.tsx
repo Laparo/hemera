@@ -40,7 +40,7 @@ export const RegistrationArea: FC<RegistrationAreaProps> = ({
   description = 'Join our community of learners and take the next step in your career journey',
   primaryCta = {
     text: 'Get Started',
-    href: '/auth/signin',
+    href: '/sign-in',
     variant: 'contained',
     color: 'primary',
   },

@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Metadata } from 'next';
+import { ClerkProvider } from '@clerk/nextjs';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import { SITE_CONFIG, SEO_DEFAULTS, IMAGE_CONFIG } from '@/lib/seo/constants';
 
@@ -73,12 +74,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <ThemeRegistry>
-          {children}
-        </ThemeRegistry>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body>
+          <ThemeRegistry>
+            {children}
+          </ThemeRegistry>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

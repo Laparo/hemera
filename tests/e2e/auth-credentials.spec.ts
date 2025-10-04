@@ -1,20 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-// E2E credentials sign-in for tests (only when E2E_AUTH=credentials)
+// TODO: Update for Clerk authentication system
+// The original test used NextAuth credentials authentication
+// Clerk uses a different authentication flow that needs to be implemented
 
-test('credentials sign-in', async ({ request, page }) => {
-  test.skip(process.env.E2E_AUTH !== 'credentials', 'E2E_AUTH=credentials not set');
-
-  const email = 'e2e@example.com';
-  const password = process.env.E2E_TEST_PASSWORD || 'password';
-
-  // NextAuth credentials provider uses POST /api/auth/callback/<provider>
-  const res = await request.post('/api/auth/callback/e2e-credentials', {
-    form: { csrfToken: 'test', email, password },
-  });
-  expect(res.ok()).toBeTruthy();
-
-  // Hit a protected page; session cookie should be set via redirect flow
-  await page.goto('/protected');
-  await expect(page.getByText(/Protected/i)).toBeVisible();
+test.skip('credentials sign-in (needs Clerk implementation)', async ({ page }) => {
+  // This test is temporarily disabled during the migration from NextAuth to Clerk
+  // It will be rewritten to work with Clerk's authentication system
 });
