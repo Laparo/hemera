@@ -48,6 +48,12 @@ Contentful
 NEXTAUTH
 Initialmigration
 firefox
+Googlebot
+hemeraacademy
+noarchive
+noimageindex
+networkidle
+domcontentloaded
 Qodo
 qodo
 Sicherheitsvulnerabilitäten

@@ -1,0 +1,151 @@
+import { test, expect } from '@playwright/test';
+
+test.describe('Core Web Vitals Validation', () => {
+  test('landing page should meet Core Web Vitals thresholds', async ({ page }) => {
+    // Navigate to page and wait for load
+    const startTime = Date.now();
+    await page.goto('/', { waitUntil: 'networkidle' });
+    const navigationTime = Date.now() - startTime;
+    
+    // LCP (Largest Contentful Paint) < 2.5s
+    // Approximate with navigation time + largest image/text load
+    expect(navigationTime).toBeLessThan(2500);
+    
+    // Ensure largest content element is visible
+    const hero = page.locator('[data-testid="hero-section"]');
+    await expect(hero).toBeVisible();
+    
+    // CLS (Cumulative Layout Shift) < 0.1
+    // Check for layout stability by ensuring no elements shift unexpectedly
+    await page.waitForTimeout(500); // Wait for any dynamic content
+    
+    const mainContent = page.locator('main');
+    const initialBox = await mainContent.boundingBox();
+    
+    await page.waitForTimeout(1000); // Wait for potential shifts
+    
+    const finalBox = await mainContent.boundingBox();
+    
+    // Content should not shift significantly
+    if (initialBox && finalBox) {
+      const heightDifference = Math.abs(initialBox.height - finalBox.height);
+      expect(heightDifference).toBeLessThan(50); // Allow minor differences
+    }
+    
+    // FID (First Input Delay) < 100ms
+    // Test by clicking an interactive element and measuring response time
+    const ctaButton = page.locator('button, a').first();
+    await expect(ctaButton).toBeVisible();
+    
+    const clickStart = Date.now();
+    await ctaButton.click();
+    const clickTime = Date.now() - clickStart;
+    
+    // Input delay should be minimal
+    expect(clickTime).toBeLessThan(100);
+  });
+
+  test('course list page should meet Core Web Vitals thresholds', async ({ page }) => {
+    const startTime = Date.now();
+    await page.goto('/courses', { waitUntil: 'networkidle' });
+    const navigationTime = Date.now() - startTime;
+    
+    // LCP < 2.5s - should be fast with ISR
+    expect(navigationTime).toBeLessThan(2500);
+    
+    // Check for content visibility
+    const courseContent = page.locator('[data-testid="course-overview"], [data-testid="courses-fallback"]');
+    await expect(courseContent.first()).toBeVisible();
+    
+    // Layout stability test
+    await page.waitForTimeout(500);
+    const contentContainer = page.locator('main');
+    const initialBox = await contentContainer.boundingBox();
+    
+    await page.waitForTimeout(1000);
+    const finalBox = await contentContainer.boundingBox();
+    
+    if (initialBox && finalBox) {
+      const heightDifference = Math.abs(initialBox.height - finalBox.height);
+      expect(heightDifference).toBeLessThan(30); // Stricter for list page
+    }
+  });
+
+  test('images should be optimized for performance', async ({ page }) => {
+    await page.goto('/');
+    
+    // Check image optimization
+    const images = await page.locator('img').all();
+    
+    for (const img of images) {
+      // Should have proper sizing attributes
+      const width = await img.getAttribute('width');
+      const height = await img.getAttribute('height');
+      
+      // Modern format or proper sizing
+      const src = await img.getAttribute('src');
+      if (src) {
+        // Check for Next.js Image optimization or proper formats
+        const isOptimized = src.includes('/_next/image') || 
+                           src.includes('.webp') || 
+                           (width && height);
+        expect(isOptimized).toBe(true);
+      }
+    }
+  });
+
+  test('fonts should load efficiently', async ({ page }) => {
+    await page.goto('/');
+    
+    // Check for font-display optimization
+    const styles = await page.evaluate(() => {
+      const styleSheets = Array.from(document.styleSheets);
+      const fontRules: string[] = [];
+      
+      styleSheets.forEach(sheet => {
+        try {
+          const rules = Array.from(sheet.cssRules || []);
+          rules.forEach(rule => {
+            if (rule.cssText.includes('@font-face')) {
+              fontRules.push(rule.cssText);
+            }
+          });
+        } catch (e) {
+          // Cross-origin stylesheets may not be accessible
+        }
+      });
+      
+      return fontRules;
+    });
+    
+    // Should use font-display: swap or similar for performance
+    if (styles.length > 0) {
+      const hasDisplayOptimization = styles.some(rule => 
+        rule.includes('font-display: swap') || 
+        rule.includes('font-display: fallback') ||
+        rule.includes('font-display: optional')
+      );
+      
+      // If custom fonts are used, they should be optimized
+      expect(hasDisplayOptimization || styles.length === 0).toBe(true);
+    }
+  });
+
+  test('critical resources should load quickly', async ({ page }) => {
+    const startTime = Date.now();
+    
+    // Measure time to first paint
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const domLoadTime = Date.now() - startTime;
+    
+    // DOM should load quickly
+    expect(domLoadTime).toBeLessThan(1500);
+    
+    // Check for critical CSS
+    const criticalCSS = await page.locator('style').count();
+    const externalCSS = await page.locator('link[rel="stylesheet"]').count();
+    
+    // Should have some critical CSS or very fast external CSS
+    expect(criticalCSS > 0 || externalCSS < 3).toBe(true);
+  });
+});
