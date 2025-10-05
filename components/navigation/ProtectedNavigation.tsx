@@ -1,6 +1,6 @@
+import { User } from '@clerk/nextjs/server';
 import { Box, Tab, Tabs } from '@mui/material';
 import Link from 'next/link';
-import { User } from '@clerk/nextjs/server';
 
 interface ProtectedNavigationProps {
   'data-testid'?: string;

@@ -1,5 +1,36 @@
 # Hemera Constitution
 
+<!--
+SYNC IMPACT REPORT - Constitution Amendment
+Version Change: 1.0.0 → 1.1.0
+Amendment Date: 2025-10-05
+Amendment Type: MINOR (new deployment standards and GitHub Actions workflow requirements added)
+
+Modified Sections:
+- Added: Deployment Standards (new section with CI/CD pipeline requirements)
+- Added: GitHub Actions Workflow Requirements (new section defining deployment workflow standards)
+- Enhanced: Technology Stack Requirements (expanded Development Tools section)
+
+New Files Created:
+- .github/workflows/deploy.yml (GitHub Actions deployment workflow)
+
+Templates Requiring Updates:
+✅ Constitution updated with deployment standards
+✅ Deployment workflow created with quality gates
+⚠ Templates may need review for deployment-related guidance
+
+Key Changes:
+- Mandatory quality gates for all deployments (TypeScript, Prettier, ESLint, tests, build)
+- Automatic preview deployments for pull requests via Vercel
+- Production deployment restricted to main branch only
+- Post-deployment E2E testing against production environment
+- Proper secret management for Vercel integration
+
+Rationale: Adding structured deployment process ensures constitutional compliance extends
+to production releases, maintaining code quality and testing standards throughout the
+entire software delivery lifecycle.
+-->
+
 <!-- Next.js Learning Platform with Clerk Authentication -->
 
 ## Core Principles
@@ -85,6 +116,20 @@ All code changes must pass these gates before merge:
 - **Unit Test Coverage**: Minimum 80% coverage for new code
 - **E2E Test Suite**: Critical path tests must pass
 - **Build Verification**: `npm run build` completes successfully
+- **Deployment Pipeline**: GitHub Actions deployment workflow must complete successfully
+- **Preview Testing**: All pull requests must deploy successfully to preview environment
+
+## Deployment Requirements
+
+### CI/CD Pipeline Standards
+
+All deployments follow the GitHub Actions workflow (`.github/workflows/deploy.yml`):
+
+- **Quality Gates First**: No deployment without passing all quality checks
+- **Preview Environment**: Every PR gets a unique Vercel preview deployment
+- **Production Deployment**: Only main branch triggers production releases
+- **Post-Deployment Validation**: E2E tests run against live production environment
+- **Rollback Capability**: Failed deployments trigger immediate rollback procedures
 
 ## Technology Stack Requirements
 
@@ -104,6 +149,34 @@ All code changes must pass these gates before merge:
 - **CI/CD**: GitHub Actions for automated testing and deployment
 - **Code Editor**: VSCode with recommended extensions for Prettier and ESLint
 - **Database Migration**: Prisma migrations with proper versioning
+
+### Deployment Standards
+
+All deployments follow a structured CI/CD pipeline with mandatory quality gates:
+
+- **Quality Gates**: Every deployment must pass TypeScript compilation, Prettier formatting, ESLint
+  validation, unit tests, and build verification
+- **Preview Deployments**: All pull requests automatically deploy to Vercel preview environments
+  with unique URLs
+- **Production Deployment**: Only `main` branch pushes trigger production deployments to Vercel
+- **Post-Deployment Testing**: E2E tests run against production environment after successful
+  deployment
+- **Rollback Strategy**: Failed deployments must be immediately rolled back with incident
+  documentation
+- **Environment Secrets**: All sensitive configuration managed through Vercel environment variables
+  and GitHub secrets
+
+### GitHub Actions Workflow Requirements
+
+The deployment workflow (`.github/workflows/deploy.yml`) enforces constitutional compliance:
+
+- **Multi-Stage Pipeline**: Separate jobs for quality gates, preview deployment, production
+  deployment, and E2E validation
+- **Dependency Chain**: Production deployment only occurs after all quality gates pass
+- **Automated PR Comments**: Preview deployment URLs automatically posted to pull request comments
+- **Artifact Management**: Playwright reports uploaded for debugging failed E2E tests
+- **Security**: VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID managed as GitHub repository
+  secrets
 
 ## Governance
 
@@ -131,4 +204,4 @@ This constitution supersedes all other development practices and must be followe
 - **Performance Benchmarks**: Authentication flows must meet sub-100ms response requirements
 - **Security Validation**: All auth-related code requires security review and testing
 
-**Version**: 1.0.0 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-04
+**Version**: 1.1.0 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-05

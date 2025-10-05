@@ -1,7 +1,6 @@
 // Server-side auth utilities for Clerk
-import { currentUser } from '@clerk/nextjs/server';
+import { currentUser, type User } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { type User } from '@clerk/nextjs/server';
 
 /**
  * Require authentication on the server side

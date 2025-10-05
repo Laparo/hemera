@@ -1,15 +1,15 @@
 import {
-  requireAuthenticatedUser,
   getUserDisplayName,
+  requireAuthenticatedUser,
 } from '@/lib/auth/helpers';
 import {
   Box,
   Card,
   CardContent,
-  Typography,
+  Chip,
   Grid,
   Paper,
-  Chip,
+  Typography,
 } from '@mui/material';
 import { Metadata } from 'next';
 

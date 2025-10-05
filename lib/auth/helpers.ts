@@ -1,7 +1,7 @@
 // Clerk-based auth helpers
+import type { User } from '@clerk/nextjs/server';
 import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import type { User } from '@clerk/nextjs/server';
 
 /**
  * Require authentication - redirect to sign-in if not authenticated
