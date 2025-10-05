@@ -1,3 +1,6 @@
+// Force dynamic rendering to avoid prerendering issues
+export const dynamic = 'force-dynamic';
+
 import { UserButton } from '@clerk/nextjs';
 import { currentUser } from '@clerk/nextjs/server';
 import { Box, Button, Container, Paper, Typography } from '@mui/material';

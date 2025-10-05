@@ -1,4 +1,7 @@
 import { Metadata } from 'next';
+// Force dynamic rendering to avoid prerendering issues
+export const dynamic = 'force-dynamic';
+
 import { Container, Typography, Box } from '@mui/material';
 import { generateSEOMetadata as generateSEOMetadata } from '@/lib/seo/metadata';
 

@@ -1,3 +1,6 @@
+// Force dynamic rendering to avoid prerendering issues
+export const dynamic = 'force-dynamic';
+
 import { isAdmin, requireAuth } from '@/lib/auth/server';
 import { Box, Card, CardContent, Grid, Typography } from '@mui/material';
 

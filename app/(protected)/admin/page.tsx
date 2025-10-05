@@ -1,3 +1,6 @@
+// Force dynamic rendering to avoid prerendering issues
+export const dynamic = 'force-dynamic';
+
 import { requireAdmin } from '@/lib/auth/helpers';
 import {
   Alert,
