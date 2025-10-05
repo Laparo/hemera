@@ -136,9 +136,12 @@ test.describe('Role-Based Navigation Contract', () => {
   });
 });
 
-// Helper functions (these will need implementation once Clerk is set up)
+// Helper functions for Clerk authentication
 async function signInAsUser(page: any) {
   await page.goto('/sign-in');
+
+  // Wait for Clerk Sign In component to load
+  await page.waitForSelector('[data-testid=email-input]', { timeout: 10000 });
 
   // Use test user credentials
   await page.fill('[data-testid=email-input]', 'user@example.com');
@@ -146,11 +149,14 @@ async function signInAsUser(page: any) {
   await page.click('[data-testid=sign-in-button]');
 
   // Wait for redirect to complete
-  await page.waitForURL('/protected/dashboard');
+  await page.waitForURL('/protected/dashboard', { timeout: 15000 });
 }
 
 async function signInAsAdmin(page: any) {
   await page.goto('/sign-in');
+
+  // Wait for Clerk Sign In component to load
+  await page.waitForSelector('[data-testid=email-input]', { timeout: 10000 });
 
   // Use test admin credentials
   await page.fill('[data-testid=email-input]', 'admin@example.com');
@@ -158,7 +164,7 @@ async function signInAsAdmin(page: any) {
   await page.click('[data-testid=sign-in-button]');
 
   // Wait for redirect to complete
-  await page.waitForURL('/protected/dashboard');
+  await page.waitForURL('/protected/dashboard', { timeout: 15000 });
 }
 
 async function signInWithRole(page: any, role: string) {

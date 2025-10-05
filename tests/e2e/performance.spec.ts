@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Core Web Vitals Validation', () => {
   test('landing page should meet Core Web Vitals thresholds', async ({

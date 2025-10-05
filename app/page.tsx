@@ -1,18 +1,21 @@
-import { Metadata } from 'next';
+import { PublicNavigation } from '@/components/navigation/PublicNavigation';
 import {
-  Container,
-  Typography,
-  Box,
-  Button,
-  Grid,
-  Card,
-  CardContent,
-} from '@mui/material';
+  formatCourseDuration,
+  formatCoursePrice,
+  getFeaturedCourses,
+} from '@/lib/api/courses';
 import { generateLandingPageMetadata } from '@/lib/seo/metadata';
 import { SCHEMA_COMBINATIONS } from '@/lib/seo/schemas';
-import { getFeaturedCourses } from '@/lib/api/courses';
-import { formatCoursePrice, formatCourseDuration } from '@/lib/api/courses';
-import { PublicNavigation } from '@/components/navigation/PublicNavigation';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Container,
+  Grid,
+  Typography,
+} from '@mui/material';
+import { Metadata } from 'next';
 
 /**
  * Landing page with SSG and SEO optimization
