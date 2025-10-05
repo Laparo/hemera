@@ -5,21 +5,12 @@ const isProtectedRoute = createRouteMatcher([
   '/protected(.*)', // All routes under /protected/
   '/dashboard(.*)', // Legacy dashboard routes
   '/admin(.*)', // Admin-only routes
-  '/courses(.*)', // Course management routes
-]);
-
-// Define public routes that should be accessible without authentication
-const isPublicRoute = createRouteMatcher([
-  '/',
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/api/health',
-  '/api/auth/providers',
+  '/courses/manage(.*)', // Course management/admin routes only
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
   // Protect routes that require authentication
-  if (isProtectedRoute(req) && !isPublicRoute(req)) {
+  if (isProtectedRoute(req)) {
     await auth.protect();
   }
 });

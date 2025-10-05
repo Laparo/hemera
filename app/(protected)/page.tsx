@@ -16,7 +16,8 @@ export default async function ProtectedPage() {
       </Typography>
 
       <Typography variant='subtitle1' color='text.secondary' paragraph>
-        Willkommen zurück, {session.email || session.userId}!
+        Willkommen zurück,{' '}
+        {session.emailAddresses[0]?.emailAddress || session.id}!
       </Typography>
 
       <Grid container spacing={3}>

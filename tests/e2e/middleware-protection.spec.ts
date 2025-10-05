@@ -95,9 +95,9 @@ test.describe('Middleware Protection Contract', () => {
     expect(signInUrl).toContain('protected%2Fcourses');
 
     // Sign in
-    await page.fill('[data-testid=email-input]', 'user@example.com');
-    await page.fill('[data-testid=password-input]', 'userpassword123');
-    await page.click('[data-testid=sign-in-button]');
+    await page.fill('input[name="identifier"]', 'user@example.com');
+    await page.fill('input[name="password"]', 'userpassword123');
+    await page.click('button[type="submit"]');
 
     // Should redirect back to originally requested page
     await expect(page).toHaveURL('/protected/courses');

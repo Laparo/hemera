@@ -287,17 +287,17 @@ test.describe('Protected Navigation Component Contract', () => {
 // Helper functions
 async function signInAsUser(page: any) {
   await page.goto('/sign-in');
-  await page.fill('[data-testid=email-input]', 'user@example.com');
-  await page.fill('[data-testid=password-input]', 'userpassword123');
-  await page.click('[data-testid=sign-in-button]');
+  await page.fill('input[name="identifier"]', 'user@example.com');
+  await page.fill('input[name="password"]', 'userpassword123');
+  await page.click('button[type="submit"]');
   await page.waitForURL('/protected/dashboard');
 }
 
 async function signInAsAdmin(page: any) {
   await page.goto('/sign-in');
-  await page.fill('[data-testid=email-input]', 'admin@example.com');
-  await page.fill('[data-testid=password-input]', 'adminpassword123');
-  await page.click('[data-testid=sign-in-button]');
+  await page.fill('input[name="identifier"]', 'admin@example.com');
+  await page.fill('input[name="password"]', 'adminpassword123');
+  await page.click('button[type="submit"]');
   await page.waitForURL('/protected/dashboard');
 }
 

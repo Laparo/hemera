@@ -1,14 +1,14 @@
+import { UserButton } from '@clerk/nextjs';
 import { currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
 import {
-  Container,
-  Typography,
   Box,
-  Grid,
   Card,
   CardContent,
+  Container,
+  Grid,
+  Typography,
 } from '@mui/material';
-import { UserButton } from '@clerk/nextjs';
+import { redirect } from 'next/navigation';
 
 export default async function DashboardPage() {
   const user = await currentUser();

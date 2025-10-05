@@ -1,110 +1,45 @@
-import { auth } from '@clerk/nextjs/server';
+// Server-side auth utilities for Clerk
+import { currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { type User } from '@clerk/nextjs/server';
 
 /**
- * Clerk-based User Session Interface
+ * Require authentication on the server side
  */
-export interface UserSession {
-  userId: string;
-  email?: string;
-  role: 'admin' | 'user';
-}
+export async function requireAuth(): Promise<User> {
+  const user = await currentUser();
 
-/**
- * Get the current authenticated user session from Clerk
- */
-export async function getServerAuthSession(): Promise<UserSession | null> {
-  try {
-    const { userId, sessionClaims } = await auth();
-
-    if (!userId) {
-      return null;
-    }
-
-    // Extract role from Clerk metadata or default to 'user'
-    const role = (sessionClaims?.metadata as any)?.role || 'user';
-    const email = sessionClaims?.email as string;
-
-    return {
-      userId,
-      email,
-      role,
-    };
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('[AUTH] Error getting session:', error);
-    }
-    return null;
-  }
-}
-
-/**
- * Require authentication - redirect to sign-in if not authenticated
- */
-export async function requireAuth(): Promise<UserSession> {
-  const session = await getServerAuthSession();
-
-  if (!session) {
+  if (!user) {
     redirect('/sign-in');
   }
 
-  return session;
+  return user;
 }
 
 /**
- * Protected route wrapper for server components
- * Automatically handles auth check and redirect
- */
-export async function withAuth<T extends any[]>(
-  component: (
-    session: UserSession,
-    ...args: T
-  ) => Promise<React.ReactElement> | React.ReactElement,
-  ...args: T
-): Promise<React.ReactElement> {
-  const session = await requireAuth();
-  return component(session, ...args);
-}
-
-/**
- * Check if user has specific permissions
- */
-export async function hasPermission(permission: string): Promise<boolean> {
-  const session = await getServerAuthSession();
-
-  if (!session) {
-    return false;
-  }
-
-  // Simple role-based permissions
-  if (session.role === 'admin') {
-    return true; // Admin has all permissions
-  }
-
-  // Add specific permission logic here as needed
-  return false;
-}
-
-/**
- * Get user ID from session
- */
-export async function getCurrentUserId(): Promise<string | null> {
-  const session = await getServerAuthSession();
-  return session?.userId || null;
-}
-
-/**
- * Check if current user is authenticated
- */
-export async function isAuthenticated(): Promise<boolean> {
-  const session = await getServerAuthSession();
-  return !!session;
-}
-
-/**
- * Check if user is admin
+ * Check if user has admin role
  */
 export async function isAdmin(): Promise<boolean> {
-  const session = await getServerAuthSession();
-  return session?.role === 'admin';
+  const user = await currentUser();
+  return (user?.publicMetadata?.role as string) === 'admin';
+}
+
+/**
+ * Require admin role
+ */
+export async function requireAdmin(): Promise<User> {
+  const user = await requireAuth();
+
+  if ((user.publicMetadata?.role as string) !== 'admin') {
+    redirect('/sign-in');
+  }
+
+  return user;
+}
+
+/**
+ * Get current user
+ */
+export async function getCurrentUser(): Promise<User | null> {
+  return await currentUser();
 }

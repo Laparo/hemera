@@ -223,9 +223,9 @@ test.describe('Protected Layout Component Contract', () => {
 // Helper function for authentication
 async function signInAsUser(page: any) {
   await page.goto('/sign-in');
-  await page.fill('[data-testid=email-input]', 'user@example.com');
-  await page.fill('[data-testid=password-input]', 'userpassword123');
-  await page.click('[data-testid=sign-in-button]');
+  await page.fill('input[name="identifier"]', 'user@example.com');
+  await page.fill('input[name="password"]', 'userpassword123');
+  await page.click('button[type="submit"]');
   await page.waitForURL('/protected/dashboard');
 }
 

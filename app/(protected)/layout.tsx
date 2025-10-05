@@ -49,13 +49,15 @@ export default async function ProtectedLayout({
             sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
           >
             <Typography variant='body2' sx={{ color: 'inherit' }}>
-              {user.email}
+              {user.emailAddresses[0]?.emailAddress || 'Unknown'}
             </Typography>
             <Typography
               variant='caption'
               sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
             >
-              {user.role === 'admin' ? 'Admin' : 'User'}
+              {(user.publicMetadata?.role as string) === 'admin'
+                ? 'Admin'
+                : 'User'}
             </Typography>
             <SignOutButton>
               <Button

@@ -11,7 +11,7 @@
 // ✓ Should handle errors gracefully and return null
 
 // Test Cases for requireAuth:
-// ✓ Should redirect to /auth/signin when no session exists (current behavior)
+// ✓ Should redirect to /sign-in when no session exists (current behavior)
 // ✓ Should return session when authenticated (future implementation)
 // ✓ Should handle auth errors appropriately
 

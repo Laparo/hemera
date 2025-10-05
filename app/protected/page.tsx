@@ -1,7 +1,7 @@
-import { currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
-import { Container, Typography, Box, Button, Paper } from '@mui/material';
 import { UserButton } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs/server';
+import { Box, Button, Container, Paper, Typography } from '@mui/material';
+import { redirect } from 'next/navigation';
 
 export default async function ProtectedPage() {
   const user = await currentUser();

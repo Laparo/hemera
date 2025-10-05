@@ -43,20 +43,29 @@ export default async function DashboardPage() {
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography variant='body2'>
-                  <strong>Email:</strong> {user.email}
+                  <strong>Email:</strong>{' '}
+                  {user.emailAddresses[0]?.emailAddress || 'Unknown'}
                 </Typography>
                 <Typography variant='body2'>
                   <strong>Role:</strong>
                   <Chip
-                    label={user.role === 'admin' ? 'Administrator' : 'Student'}
+                    label={
+                      (user.publicMetadata?.role as string) === 'admin'
+                        ? 'Administrator'
+                        : 'Student'
+                    }
                     size='small'
-                    color={user.role === 'admin' ? 'primary' : 'default'}
+                    color={
+                      (user.publicMetadata?.role as string) === 'admin'
+                        ? 'primary'
+                        : 'default'
+                    }
                     sx={{ ml: 1 }}
                   />
                 </Typography>
                 <Typography variant='body2'>
                   <strong>Member since:</strong>{' '}
-                  {user.createdAt.toLocaleDateString()}
+                  {new Date(user.createdAt).toLocaleDateString()}
                 </Typography>
               </Box>
             </CardContent>

@@ -141,27 +141,35 @@ async function signInAsUser(page: any) {
   await page.goto('/sign-in');
 
   // Wait for Clerk Sign In component to load
-  await page.waitForSelector('[data-testid=email-input]', { timeout: 10000 });
+  await page.waitForSelector('[data-testid="sign-in-card"]', {
+    timeout: 10000,
+  });
 
-  // Use test user credentials
-  await page.fill('[data-testid=email-input]', 'user@example.com');
-  await page.fill('[data-testid=password-input]', 'userpassword123');
-  await page.click('[data-testid=sign-in-button]');
+  // Wait for Clerk form fields to be available
+  await page.waitForSelector('input[name="identifier"]', { timeout: 10000 });
 
-  // Wait for redirect to complete
-  await page.waitForURL('/protected/dashboard', { timeout: 15000 });
+  // Use test user credentials with Clerk's actual input names
+  await page.fill('input[name="identifier"]', 'user@example.com');
+  await page.fill('input[name="password"]', 'userpassword123');
+  await page.click('button[type="submit"]');
+  await page.waitForURL('/protected/dashboard');
 }
 
 async function signInAsAdmin(page: any) {
   await page.goto('/sign-in');
 
   // Wait for Clerk Sign In component to load
-  await page.waitForSelector('[data-testid=email-input]', { timeout: 10000 });
+  await page.waitForSelector('[data-testid="sign-in-card"]', {
+    timeout: 10000,
+  });
 
-  // Use test admin credentials
-  await page.fill('[data-testid=email-input]', 'admin@example.com');
-  await page.fill('[data-testid=password-input]', 'adminpassword123');
-  await page.click('[data-testid=sign-in-button]');
+  // Wait for Clerk form fields to be available
+  await page.waitForSelector('input[name="identifier"]', { timeout: 10000 });
+
+  // Use test admin credentials with Clerk's actual input names
+  await page.fill('input[name="identifier"]', 'admin@example.com');
+  await page.fill('input[name="password"]', 'adminpassword123');
+  await page.click('button[type="submit"]');
 
   // Wait for redirect to complete
   await page.waitForURL('/protected/dashboard', { timeout: 15000 });

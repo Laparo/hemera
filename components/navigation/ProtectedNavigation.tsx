@@ -1,12 +1,17 @@
 import { Box, Tab, Tabs } from '@mui/material';
 import Link from 'next/link';
-import { ClerkUser } from '@/lib/types/auth';
-import { filterNavigationByRole } from '@/lib/auth/permissions';
+import { User } from '@clerk/nextjs/server';
 
 interface ProtectedNavigationProps {
   'data-testid'?: string;
-  user: ClerkUser;
+  user: User;
 }
+
+const baseNavigation = [
+  { label: 'Dashboard', route: '/protected/dashboard' },
+  { label: 'My Courses', route: '/protected/my-courses' },
+  { label: 'Admin', route: '/protected/admin' }, // Will be filtered by role
+];
 
 /**
  * Main navigation for protected areas
@@ -18,7 +23,15 @@ export function ProtectedNavigation({
   'data-testid': testId,
   user,
 }: ProtectedNavigationProps) {
-  const availableNavigation = filterNavigationByRole(user);
+  const userRole = (user.publicMetadata?.role as string) || 'user';
+
+  // Filter navigation based on user role
+  const availableNavigation = baseNavigation.filter(navItem => {
+    if (navItem.route.includes('/admin') && userRole !== 'admin') {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <Box

@@ -31,12 +31,26 @@ to Dashboard, Courses, and Admin areas (based on role).
 2. Given I open a protected subpage, when the route loads, then server-side auth is checked and the
    page renders on Node runtime.
 3. Given I sign out, when I revisit protected routes, then I am redirected to sign-in.
-4. Given I am a regular user, when I access the protected area, then I see Dashboard and Courses
-   navigation but not Admin area.
-5. Given I am an admin user, when I access the protected area, then I see Dashboard, Courses, and
-   Admin area navigation.
+4. Given I am a regular user, when I access the protected area, then I see Dashboard and Course
+   management navigation but not Admin area.
+5. Given I am an admin user, when I access the protected area, then I see Dashboard, Course
+   management, and Admin area navigation.
+6. Given I am an unauthenticated user, when I visit the public course overview page, then I can
+   browse available courses without authentication.
 
 ### Edge Cases
+
+- Flash of unauthenticated content, hydration mismatches, runtime misconfigurations.
+
+## Course Accessibility Update (2025-10-05)
+
+### Public Course Overview
+
+- **Public Route**: `/courses` - Course overview is publicly accessible without authentication
+- **Protected Route**: `/courses/manage/*` - Course management/admin functions require
+  authentication
+- **Navigation**: Course overview link is available in public navigation for all users
+- **Purpose**: Allow potential students to browse course catalog before signing up
 
 - Flash of unauthenticated content, hydration mismatches, runtime misconfigurations.
 
@@ -44,14 +58,18 @@ to Dashboard, Courses, and Admin areas (based on role).
 
 ### Functional Requirements
 
-- FR-001: System MUST offer a protected layout and navigation with Dashboard, Courses, and Admin
-  areas.
+- FR-001: System MUST offer a protected layout and navigation with Dashboard, Course management, and
+  Admin areas.
 - FR-002: System MUST perform server-side authentication checks using Clerk's `auth()` helper.
 - FR-003: System MUST render protected routes with SSR on Node runtime.
 - FR-004: System MUST implement role-based navigation visibility (Admin area only for admin users).
 - FR-005: System MUST use Clerk middleware for route protection.
 - FR-006: System MUST handle auth errors with development details in dev mode, simple redirects in
   production.
+- FR-007: System MUST provide public access to course overview page (`/courses`) without
+  authentication.
+- FR-008: System MUST protect course management routes (`/courses/manage/*`) for authenticated users
+  only.
 
 ### Non-Functional Requirements
 
@@ -84,8 +102,13 @@ app/(protected)/layout.tsx (Server Component)
 
 components/navigation/ProtectedNavigation.tsx (Server Component)
 ├── Dashboard (all users)
-├── Courses (all users)
+├── Course Management (all users)
 └── Admin (admin only)
+
+components/navigation/PublicNavigation.tsx (Client Component)
+├── Course Overview (public access)
+├── Login/Signup (unauthenticated users)
+└── Dashboard/UserButton (authenticated users)
 ```
 
 ### Error Handling

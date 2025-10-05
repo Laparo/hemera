@@ -93,7 +93,8 @@ export default async function AdminPage() {
                 Admin Information
               </Typography>
               <Typography variant='body2' paragraph>
-                <strong>Admin:</strong> {adminUser.email}
+                <strong>Admin:</strong>{' '}
+                {adminUser.emailAddresses[0]?.emailAddress || 'Unknown'}
               </Typography>
               <Typography variant='body2' paragraph>
                 <strong>Role:</strong> Administrator
