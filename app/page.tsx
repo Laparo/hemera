@@ -1,9 +1,4 @@
 import { PublicNavigation } from '@/components/navigation/PublicNavigation';
-import {
-  formatCourseDuration,
-  formatCoursePrice,
-  getFeaturedCourses,
-} from '@/lib/api/courses';
 import { generateLandingPageMetadata } from '@/lib/seo/metadata';
 import { SCHEMA_COMBINATIONS } from '@/lib/seo/schemas';
 import {
@@ -30,8 +25,34 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = generateLandingPageMetadata();
 
-export default async function HomePage() {
-  const featuredCourses = await getFeaturedCourses(3);
+export default function HomePage() {
+  // Mock featured courses data for initial deployment
+  const featuredCourses = [
+    {
+      id: '1',
+      title: 'Introduction to Hemera',
+      description: 'Learn the fundamentals of our platform',
+      duration: 2,
+      price: null,
+      image: '/images/course-placeholder.jpg',
+    },
+    {
+      id: '2',
+      title: 'Advanced Features',
+      description: 'Explore advanced functionality',
+      duration: 4,
+      price: 49,
+      image: '/images/course-placeholder.jpg',
+    },
+    {
+      id: '3',
+      title: 'Best Practices',
+      description: 'Industry best practices and tips',
+      duration: 3,
+      price: 29,
+      image: '/images/course-placeholder.jpg',
+    },
+  ];
 
   const jsonLdSchemas = SCHEMA_COMBINATIONS.landingPage();
 
@@ -206,7 +227,7 @@ export default async function HomePage() {
                           }}
                         >
                           <Typography variant='body2' color='text.secondary'>
-                            {formatCourseDuration(course.duration)}
+                            {course.duration} hours
                           </Typography>
 
                           <Typography
@@ -214,7 +235,7 @@ export default async function HomePage() {
                             component='span'
                             sx={{ fontWeight: 'bold' }}
                           >
-                            {formatCoursePrice(course.price)}
+                            {course.price ? `$${course.price}` : 'Free'}
                           </Typography>
                         </Box>
                       </CardContent>
