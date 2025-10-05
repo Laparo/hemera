@@ -13,7 +13,8 @@ As an authenticated user, I can create a booking for a course and view my bookin
 
 ### Acceptance Scenarios
 
-1. Given I am signed in, when I submit a valid booking, then the system records it and confirms success.
+1. Given I am signed in, when I submit a valid booking, then the system records it and confirms
+   success.
 2. Given I am signed in, when I open my bookings, then I see an up-to-date list of my bookings.
 3. Given I am signed out, when I access booking pages or actions, then I am redirected to sign in.
 

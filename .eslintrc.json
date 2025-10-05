@@ -1,5 +1,6 @@
 {
   "root": true,
   "extends": ["next/core-web-vitals"],
-  "rules": {}
+  "rules": {},
+  "ignorePatterns": ["playwright-report/**/*", "test-results/**/*", ".next/**/*", "node_modules/**/*"]
 }

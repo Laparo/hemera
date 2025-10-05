@@ -1,0 +1,68 @@
+name: Code Formatting Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  prettier:
+    name: Prettier Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Check Prettier Formatting
+        run: npm run format:check
+
+      - name: Prettier Format Check Results
+        if: failure()
+        run: |
+          echo "❌ Code formatting check failed!"
+          echo "Please run 'npm run format' to fix formatting issues."
+          echo ""
+          echo "The following files need formatting:"
+          npm run format:check 2>&1 | grep -E "\.(ts|tsx|js|jsx|json|md|yaml|yml)$" || true
+
+  eslint:
+    name: ESLint Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint:ci
+
+  combined-check:
+    name: Combined Format & Lint Check
+    runs-on: ubuntu-latest
+    needs: [prettier, eslint]
+
+    steps:
+      - name: All Checks Passed
+        run: |
+          echo "✅ All code formatting and linting checks passed!"
+          echo "Code is properly formatted and follows project standards."

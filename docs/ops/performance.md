@@ -4,7 +4,8 @@ Diese Seite beschreibt, wie Performance validiert wird und welche Metriken wicht
 
 ## Lighthouse CI
 
-- Siehe Workflow `.github/workflows/lighthouse-ci.yml` und `.lighthouserc.json` (Budget/Schwellenwerte)
+- Siehe Workflow `.github/workflows/lighthouse-ci.yml` und `.lighthouserc.json`
+  (Budget/Schwellenwerte)
 - Standard: Desktop-Profil, 1 Run (CI-zeitoptimiert)
 
 ## Web Vitals (Empfehlung)
@@ -54,12 +55,16 @@ This section describes how we validate performance for Preview and Production de
 - Workflow: `.github/workflows/lighthouse-ci.yml`
 - Triggers:
   - Manual via `workflow_dispatch` with an URL input.
-  - Automatically on `deployment_status` events from GitHub (e.g., the Vercel GitHub App). The workflow extracts the preview URL from the event payload and runs Lighthouse only for successful, non-production deployments.
-- The job falls back to an environment variable `PREVIEW_URL` if set and will skip when no URL is provided.
+  - Automatically on `deployment_status` events from GitHub (e.g., the Vercel GitHub App). The
+    workflow extracts the preview URL from the event payload and runs Lighthouse only for
+    successful, non-production deployments.
+- The job falls back to an environment variable `PREVIEW_URL` if set and will skip when no URL is
+  provided.
 
 ### Local verification
 
-- You can run Lighthouse locally against `vercel dev` on <http://localhost:3000> for a quick smoke test.
+- You can run Lighthouse locally against `vercel dev` on <http://localhost:3000> for a quick smoke
+  test.
 - Keep in mind local scores can differ from CI due to environment variance.
 
 ### Budget evolution

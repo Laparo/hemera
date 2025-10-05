@@ -1,13 +1,15 @@
 # Implementation Plan: 002-public-seo-pages
 
-**Branch**: `002-public-seo-pages` | **Date**: 2025-10-01 | **Spec**: `./spec.md`
-**Input**: Feature specification from `/specs/002-public-seo-pages/spec.md`
+**Branch**: `002-public-seo-pages` | **Date**: 2025-10-01 | **Spec**: `./spec.md` **Input**: Feature
+specification from `/specs/002-public-seo-pages/spec.md`
 
 > Note – Documentation Quality Gates apply. See repo CI for Markdown, spelling, and link checks.
 
 ## Summary
 
-Deliver SEO-friendly public pages (landing, course list) using SSG/ISR with proper meta, Open Graph, structured data, and correctly configured sitemap/robots. Strict separation from non-public areas per Constitution Principle XI.
+Deliver SEO-friendly public pages (landing, course list) using SSG/ISR with proper meta, Open Graph,
+structured data, and correctly configured sitemap/robots. Strict separation from non-public areas
+per Constitution Principle XI.
 
 ## Technical Context
 
@@ -31,10 +33,10 @@ PASS (v1.7.0):
 
 ## Rendering Strategy Matrix
 
-| Route       | Strategy | Revalidate | Runtime | SEO Critical |
-|-------------|----------|-----------:|---------|--------------|
-| /           | SSG      |        300 | edge    | Yes          |
-| /courses    | ISR      |        300 | edge    | Yes          |
+| Route    | Strategy | Revalidate | Runtime | SEO Critical |
+| -------- | -------- | ---------: | ------- | ------------ |
+| /        | SSG      |        300 | edge    | Yes          |
+| /courses | ISR      |        300 | edge    | Yes          |
 
 Notes:
 
@@ -52,7 +54,8 @@ Notes:
 
 - No backend APIs planned. Define content shape (props) for landing and course list pages.
 - Specify `generateMetadata` strategy per route (title, description, OG tags, JSON-LD snippets).
-- Outline sitemap/robots generation (filenames, routes registry) and test cases (presence/absence of routes).
+- Outline sitemap/robots generation (filenames, routes registry) and test cases (presence/absence of
+  routes).
 
 ## Phase 2: Task Planning Approach
 

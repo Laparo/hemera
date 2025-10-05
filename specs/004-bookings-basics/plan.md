@@ -1,11 +1,13 @@
 # Implementation Plan: 004-bookings-basics
 
-**Branch**: `004-bookings-basics` | **Date**: 2025-10-01 | **Spec**: `./spec.md`
-**Input**: Feature specification from `/specs/004-bookings-basics/spec.md`
+**Branch**: `004-bookings-basics` | **Date**: 2025-10-01 | **Spec**: `./spec.md` **Input**: Feature
+specification from `/specs/004-bookings-basics/spec.md`
 
 ## Summary
 
-Introduce minimal bookings capability in the protected area: create a booking and list user’s bookings. Respect Node runtime (Prisma/NextAuth), SSR for non-public, and domain segmentation (noindex).
+Introduce minimal bookings capability in the protected area: create a booking and list user’s
+bookings. Respect Node runtime (Prisma/NextAuth), SSR for non-public, and domain segmentation
+(noindex).
 
 ## Technical Context
 
@@ -23,11 +25,11 @@ PASS (v1.7.0): Non-public routes use Node SSR, server-side auth, and noindex; Pr
 
 ## Rendering Strategy Matrix
 
-| Route                        | Strategy | Revalidate | Runtime | SEO Critical |
-|------------------------------|----------|-----------:|---------|--------------|
-| /protected/bookings          | SSR      |          - | node    | No           |
-| /protected/bookings/new      | SSR      |          - | node    | No           |
-| /api/bookings (actions)      | SSR      |          - | node    | No           |
+| Route                   | Strategy | Revalidate | Runtime | SEO Critical |
+| ----------------------- | -------- | ---------: | ------- | ------------ |
+| /protected/bookings     | SSR      |          - | node    | No           |
+| /protected/bookings/new | SSR      |          - | node    | No           |
+| /api/bookings (actions) | SSR      |          - | node    | No           |
 
 Notes:
 
@@ -52,7 +54,8 @@ Notes:
 
 ## Branching & CI Gates
 
-- Follow branch naming; ensure docs gates pass and migrations run via `prisma migrate deploy` on deploy.
+- Follow branch naming; ensure docs gates pass and migrations run via `prisma migrate deploy` on
+  deploy.
 
 ## Progress Tracking
 

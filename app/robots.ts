@@ -3,7 +3,7 @@ import { SITEMAP_CONFIG, ROBOTS_CONFIG } from '@/lib/seo/constants';
 
 /**
  * Robots.txt configuration
- * 
+ *
  * Provides SEO-friendly robots.txt with:
  * - Allow crawling of public pages
  * - Disallow crawling of sensitive paths

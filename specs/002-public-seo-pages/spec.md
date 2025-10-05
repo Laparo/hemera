@@ -30,13 +30,17 @@
 
 ### Primary User Story
 
-As a visitor, I can discover the site via search engines and view public pages (e.g., landing and course list) with fast loading and rich previews.
+As a visitor, I can discover the site via search engines and view public pages (e.g., landing and
+course list) with fast loading and rich previews.
 
 ### Acceptance Scenarios
 
-1. Given public pages are deployed, when a crawler indexes them, then meta/OG and structured data are present and valid.
-2. Given a user lands on a public page, when content is rendered, then it is served via SSG/ISR with a defined revalidate time.
-3. Given the site structure, when robots and sitemap are requested, then they are served correctly and reflect public routes.
+1. Given public pages are deployed, when a crawler indexes them, then meta/OG and structured data
+   are present and valid.
+2. Given a user lands on a public page, when content is rendered, then it is served via SSG/ISR with
+   a defined revalidate time.
+3. Given the site structure, when robots and sitemap are requested, then they are served correctly
+   and reflect public routes.
 
 ### Edge Cases
 
