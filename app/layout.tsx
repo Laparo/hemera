@@ -1,10 +1,13 @@
-import ThemeRegistry from '@/components/ThemeRegistry';
-import { ClerkProvider } from '@clerk/nextjs';
-import * as React from 'react';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
 
-export const metadata = {
-  title: 'Hemera',
-  description: 'Auth baseline with Next.js App Router',
+const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'Hemera Academy',
+  description:
+    'Transform your career with expert-led courses in technology, business, and creative skills.',
 };
 
 export default function RootLayout({
@@ -13,12 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang='de'>
-        <body>
-          <ThemeRegistry>{children}</ThemeRegistry>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang='en'>
+      <body className={inter.className}>{children}</body>
+    </html>
   );
 }
