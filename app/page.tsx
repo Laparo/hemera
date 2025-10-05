@@ -54,12 +54,12 @@ export default function HomePage() {
     },
   ];
 
-  const jsonLdSchemas = SCHEMA_COMBINATIONS.landingPage();
+  const jsonLdSchemas = SCHEMA_COMBINATIONS.homepage();
 
   return (
     <>
       {/* JSON-LD Structured Data */}
-      {jsonLdSchemas.map((schema, index) => (
+      {jsonLdSchemas.map((schema: any, index: number) => (
         <script
           key={index}
           type='application/ld+json'

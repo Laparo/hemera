@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import type { Course } from '@prisma/client';
 
 /**
  * SEO metadata utilities for public pages
@@ -131,72 +130,6 @@ export function generateCourseListMetadata(): Metadata {
       title,
       description,
       siteName: SITE_CONFIG.name,
-      images: [
-        {
-          url: SITE_CONFIG.ogImage,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      site: SITE_CONFIG.twitterHandle,
-      creator: SITE_CONFIG.twitterHandle,
-      images: [SITE_CONFIG.ogImage],
-    },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-  };
-}
-
-/**
- * Generate Next.js Metadata for individual course page
- */
-export function generateCourseMetadata(course: Course): Metadata {
-  const title = `${course.title} - Hemera Academy`;
-  const description =
-    course.description.length > 160
-      ? `${course.description.substring(0, 157)}...`
-      : course.description;
-
-  return {
-    title,
-    description,
-    keywords: [
-      course.title.toLowerCase(),
-      course.level.toLowerCase(),
-      'online course',
-      'professional development',
-    ],
-    authors: [{ name: 'Hemera Academy' }],
-    creator: 'Hemera Academy',
-    publisher: 'Hemera Academy',
-    metadataBase: new URL(SITE_CONFIG.url),
-    alternates: {
-      canonical: `/courses/${course.slug}`,
-    },
-    openGraph: {
-      type: 'article',
-      locale: 'en_US',
-      url: `/courses/${course.slug}`,
-      title,
-      description,
-      siteName: SITE_CONFIG.name,
-      publishedTime: course.createdAt.toISOString(),
-      modifiedTime: course.updatedAt.toISOString(),
       images: [
         {
           url: SITE_CONFIG.ogImage,
