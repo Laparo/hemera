@@ -1,12 +1,18 @@
-// Middleware temporarily disabled for simplified deployment
-// TODO: Re-enable when Clerk integration is restored
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-import { NextRequest, NextResponse } from 'next/server';
+const isProtectedRoute = createRouteMatcher([
+  '/(protected)(.*)',
+  '/bookings(.*)',
+  '/admin(.*)',
+  '/dashboard(.*)',
+  '/my-courses(.*)',
+]);
 
-export function middleware(request: NextRequest) {
-  // Allow all requests during simplified deployment phase
-  return NextResponse.next();
-}
+export default clerkMiddleware(async (auth, req) => {
+  if (isProtectedRoute(req)) {
+    await auth.protect();
+  }
+});
 
 export const config = {
   matcher: [
