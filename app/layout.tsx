@@ -1,5 +1,5 @@
 import ThemeRegistry from '@/components/ThemeRegistry';
-import { ClerkProvider } from '@clerk/nextjs';
+import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import * as React from 'react';
@@ -22,12 +22,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    <ClerkProviderWrapper>
       <html lang='de'>
         <body className={inter.className}>
           <ThemeRegistry>{children}</ThemeRegistry>
         </body>
       </html>
-    </ClerkProvider>
+    </ClerkProviderWrapper>
   );
 }
