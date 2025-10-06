@@ -17,6 +17,10 @@ import Link from 'next/link';
  * Shows user menu for authenticated users
  */
 export function PublicNavigation() {
+  // Check if Clerk is properly configured
+  const isClerkConfigured = Boolean(
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  );
   return (
     <AppBar position='static' color='default' elevation={1}>
       <Container maxWidth='lg'>
@@ -48,59 +52,93 @@ export function PublicNavigation() {
             </Button>
 
             {/* Authentication Buttons */}
-            <SignedOut>
-              <Button
-                variant='outlined'
-                color='primary'
-                component={Link}
-                href='/sign-in'
-                data-testid='nav-login-button'
-                sx={{
-                  textTransform: 'none',
-                  px: 3,
-                }}
-              >
-                Login
-              </Button>
-              <Button
-                variant='contained'
-                color='primary'
-                component={Link}
-                href='/sign-up'
-                data-testid='nav-signup-button'
-                sx={{
-                  textTransform: 'none',
-                  px: 3,
-                }}
-              >
-                Sign Up
-              </Button>
-            </SignedOut>
+            {isClerkConfigured ? (
+              <>
+                <SignedOut>
+                  <Button
+                    variant='outlined'
+                    color='primary'
+                    component={Link}
+                    href='/sign-in'
+                    data-testid='nav-login-button'
+                    sx={{
+                      textTransform: 'none',
+                      px: 3,
+                    }}
+                  >
+                    Login
+                  </Button>
+                  <Button
+                    variant='contained'
+                    color='primary'
+                    component={Link}
+                    href='/sign-up'
+                    data-testid='nav-signup-button'
+                    sx={{
+                      textTransform: 'none',
+                      px: 3,
+                    }}
+                  >
+                    Sign Up
+                  </Button>
+                </SignedOut>
 
-            {/* User Menu for Authenticated Users */}
-            <SignedIn>
-              <Button
-                variant='outlined'
-                color='primary'
-                component={Link}
-                href='/dashboard'
-                data-testid='nav-dashboard-button'
-                sx={{
-                  textTransform: 'none',
-                  px: 3,
-                }}
-              >
-                Dashboard
-              </Button>
-              <UserButton
-                afterSignOutUrl='/'
-                appearance={{
-                  elements: {
-                    avatarBox: 'w-8 h-8',
-                  },
-                }}
-              />
-            </SignedIn>
+                {/* User Menu for Authenticated Users */}
+                <SignedIn>
+                  <Button
+                    variant='outlined'
+                    color='primary'
+                    component={Link}
+                    href='/dashboard'
+                    data-testid='nav-dashboard-button'
+                    sx={{
+                      textTransform: 'none',
+                      px: 3,
+                    }}
+                  >
+                    Dashboard
+                  </Button>
+                  <UserButton
+                    afterSignOutUrl='/'
+                    appearance={{
+                      elements: {
+                        avatarBox: 'w-8 h-8',
+                      },
+                    }}
+                  />
+                </SignedIn>
+              </>
+            ) : (
+              /* Fallback buttons when Clerk is not configured */
+              <>
+                <Button
+                  variant='outlined'
+                  color='primary'
+                  component={Link}
+                  href='/sign-in'
+                  data-testid='nav-login-button'
+                  sx={{
+                    textTransform: 'none',
+                    px: 3,
+                  }}
+                >
+                  Login
+                </Button>
+                <Button
+                  variant='contained'
+                  color='primary'
+                  component={Link}
+                  href='/sign-up'
+                  data-testid='nav-signup-button'
+                  sx={{
+                    textTransform: 'none',
+                    px: 3,
+                  }}
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
           </Box>
         </Toolbar>
       </Container>
