@@ -36,7 +36,7 @@ const ORGANIZATION_CONFIG = {
 export function generateOrganizationSchema() {
   return {
     '@context': 'https://schema.org',
-    '@type': 'EducationalOrganization',
+    '@type': 'Organization',
     name: ORGANIZATION_CONFIG.name,
     description: ORGANIZATION_CONFIG.description,
     url: ORGANIZATION_CONFIG.url,
@@ -149,7 +149,42 @@ export function generateBreadcrumbSchema(
 }
 
 /**
- * Common schema combinations for different page types
+ * Generate Course schema for individual courses
+ */
+export function generateCourseSchema(course: {
+  id: string;
+  title: string;
+  description?: string | null;
+  price?: number | null;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Course',
+    name: course.title,
+    description: course.description || 'Professional course content',
+    provider: {
+      '@type': 'EducationalOrganization',
+      name: ORGANIZATION_CONFIG.name,
+      url: ORGANIZATION_CONFIG.url,
+    },
+    hasCourseInstance: {
+      '@type': 'CourseInstance',
+      courseMode: 'online',
+      duration: 'P8H', // 8 hours
+    },
+    offers: {
+      '@type': 'Offer',
+      price: course.price ? (course.price / 100).toString() : '0',
+      priceCurrency: 'EUR',
+      availability: 'https://schema.org/InStock',
+    },
+    url: `${ORGANIZATION_CONFIG.url}/courses/${course.id}`,
+    inLanguage: 'de-DE',
+  };
+}
+
+/**
+ * Predefined schema combinations for different page types
  */
 export const SCHEMA_COMBINATIONS = {
   homepage: () => [
@@ -161,6 +196,20 @@ export const SCHEMA_COMBINATIONS = {
       url: ORGANIZATION_CONFIG.url,
       type: 'CollectionPage',
     }),
+  ],
+  courseList: (courses: any[] = []) => [
+    generateOrganizationSchema(),
+    generateWebPageSchema({
+      title: `Courses - ${ORGANIZATION_CONFIG.name}`,
+      description: `Browse our complete catalog of expert-led courses at ${ORGANIZATION_CONFIG.name}.`,
+      url: `${ORGANIZATION_CONFIG.url}/courses`,
+      type: 'CollectionPage',
+    }),
+    generateBreadcrumbSchema([
+      { name: 'Home', url: ORGANIZATION_CONFIG.url },
+      { name: 'Courses', url: `${ORGANIZATION_CONFIG.url}/courses` },
+    ]),
+    ...courses.map(course => generateCourseSchema(course)),
   ],
   aboutPage: () => [
     generateOrganizationSchema(),

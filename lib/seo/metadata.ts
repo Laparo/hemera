@@ -33,7 +33,7 @@ export interface SEOMetadata {
  * Generate Next.js Metadata for landing page
  */
 export function generateLandingPageMetadata(): Metadata {
-  const title = 'Hemera Academy - Transform Your Career';
+  const title = 'Transform Your Career';
   const description =
     'Transform your career with expert-led courses in technology, business, and creative skills. Join thousands advancing their careers.';
 
@@ -58,7 +58,7 @@ export function generateLandingPageMetadata(): Metadata {
     },
     metadataBase: new URL(SITE_CONFIG.url),
     alternates: {
-      canonical: '/',
+      canonical: 'https://hemera.academy/',
     },
     openGraph: {
       type: 'website',
@@ -102,7 +102,7 @@ export function generateLandingPageMetadata(): Metadata {
  * Generate Next.js Metadata for course list page
  */
 export function generateCourseListMetadata(): Metadata {
-  const title = 'All Courses - Hemera Academy';
+  const title = 'Courses';
   const description =
     'Explore our complete catalog of expert-led courses. Find the perfect course to advance your career in technology, business, and creative skills.';
 
@@ -121,7 +121,7 @@ export function generateCourseListMetadata(): Metadata {
     publisher: 'Hemera Academy',
     metadataBase: new URL(SITE_CONFIG.url),
     alternates: {
-      canonical: '/courses',
+      canonical: 'https://hemera.academy/courses',
     },
     openGraph: {
       type: 'website',
