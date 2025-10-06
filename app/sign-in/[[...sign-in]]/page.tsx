@@ -2,22 +2,6 @@ import { SignIn } from '@clerk/nextjs';
 import { Box, Container, Paper, Typography } from '@mui/material';
 
 export default function SignInPage() {
-  // Check if Clerk is configured
-  if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) {
-    return (
-      <Container maxWidth='sm' sx={{ mt: 8, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant='h4' color='error' sx={{ mb: 2 }}>
-            Authentication Not Configured
-          </Typography>
-          <Typography variant='body1' color='text.secondary'>
-            Clerk authentication is not properly configured. Please check your
-            environment variables.
-          </Typography>
-        </Paper>
-      </Container>
-    );
-  }
   return (
     <Container maxWidth='sm' sx={{ mt: 8, mb: 4 }}>
       <Paper

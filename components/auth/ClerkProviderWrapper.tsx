@@ -1,6 +1,7 @@
 'use client';
 
 import { ClerkProvider } from '@clerk/nextjs';
+import { clerkConfig } from '@/lib/auth/clerk-config';
 import { ReactNode } from 'react';
 
 interface ClerkProviderWrapperProps {
@@ -10,16 +11,21 @@ interface ClerkProviderWrapperProps {
 export default function ClerkProviderWrapper({
   children,
 }: ClerkProviderWrapperProps) {
-  // Check if Clerk is properly configured
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   if (!publishableKey) {
-    console.error('Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY');
-
-    // Return children without ClerkProvider if not configured
-    // This prevents the entire app from breaking
-    return <>{children}</>;
+    console.warn('Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY - using fallback');
   }
 
-  return <ClerkProvider>{children}</ClerkProvider>;
+  return (
+    <ClerkProvider
+      publishableKey={publishableKey || 'pk_test_fallback'}
+      afterSignInUrl={clerkConfig.afterSignInUrl}
+      afterSignUpUrl={clerkConfig.afterSignUpUrl}
+      signInUrl={clerkConfig.signInUrl}
+      signUpUrl={clerkConfig.signUpUrl}
+    >
+      {children}
+    </ClerkProvider>
+  );
 }
