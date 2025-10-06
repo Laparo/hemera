@@ -48,51 +48,46 @@ export default function ProtectedLayout({
       data-testid='protected-layout'
       sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
     >
-      {/* Top Navigation Bar */}
-      <AppBar position='static' elevation={1}>
+      {/* Navigation Header */}
+      <AppBar
+        position='static'
+        sx={{
+          backgroundColor: 'background.paper',
+          color: 'text.primary',
+          boxShadow: 1,
+        }}
+      >
         <Toolbar>
-          <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
+          <Typography
+            variant='h6'
+            component='div'
+            sx={{ flexGrow: 1, fontWeight: 600 }}
+          >
             Hemera Academy
           </Typography>
-
-          {/* User Avatar - Only Avatar Icon */}
-          <UserButton
-            afterSignOutUrl='/'
-            appearance={{
-              elements: {
-                avatarBox: {
-                  width: '32px',
-                  height: '32px',
-                },
-                userButtonTrigger: {
-                  width: '32px',
-                  height: '32px',
-                  '&:focus': {
-                    boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.5)',
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant='body2' color='text.secondary'>
+              Welcome,{' '}
+              {user?.firstName || user?.emailAddresses[0]?.emailAddress}
+            </Typography>
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: {
+                    width: '32px',
+                    height: '32px',
                   },
                 },
-                userButtonPopoverCard: {
-                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
-                  borderRadius: '8px',
-                },
-              },
-              variables: {
-                colorPrimary: '#1976d2',
-                borderRadius: '4px',
-              },
-            }}
-            showName={false}
-            data-testid='user-profile-button'
-          />
+              }}
+            />
+          </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Main Navigation */}
-      {user && (
-        <ProtectedNavigation data-testid='main-navigation' user={user} />
-      )}
+      {/* Navigation Menu */}
+      <ProtectedNavigation />
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <Container
         component='main'
         maxWidth='lg'

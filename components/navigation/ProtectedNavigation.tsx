@@ -1,10 +1,10 @@
-import { User } from '@clerk/nextjs/server';
+import { UserResource } from '@clerk/types';
 import { Box, Tab, Tabs } from '@mui/material';
 import Link from 'next/link';
 
 interface ProtectedNavigationProps {
   'data-testid'?: string;
-  user: User;
+  user: UserResource;
 }
 
 const baseNavigation = [

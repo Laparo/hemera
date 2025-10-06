@@ -73,12 +73,12 @@ export default function ProtectedLayout({
                 },
                 userButtonPopoverCard: {
                   boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
-                  borderRadius: '8px',
+                  borderRadius: '8px', // Rechteckiges Fly-out mit abgerundeten Ecken
                 },
               },
               variables: {
-                colorPrimary: '#1976d2',
-                borderRadius: '4px',
+                colorPrimary: '#1976d2', // Material-UI primary color
+                borderRadius: '4px', // Rechteckiger Border-Radius für alle Elemente
               },
             }}
             showName={false}
@@ -88,40 +88,20 @@ export default function ProtectedLayout({
       </AppBar>
 
       {/* Main Navigation */}
-      {user && (
-        <ProtectedNavigation data-testid='main-navigation' user={user} />
-      )}
+      <ProtectedNavigation data-testid='main-navigation' user={user} />
 
-      {/* Main Content */}
-      <Container
+      {/* Main Content Area */}
+      <Box
         component='main'
-        maxWidth='lg'
+        data-testid='protected-content'
         sx={{
           flexGrow: 1,
-          py: 3,
-          display: 'flex',
-          flexDirection: 'column',
+          bgcolor: 'grey.50',
+          minHeight: 'calc(100vh - 64px - 48px)', // Subtract AppBar and nav height
         }}
       >
-        {children}
-      </Container>
-
-      {/* Footer */}
-      <Box
-        component='footer'
-        sx={{
-          mt: 'auto',
-          py: 2,
-          px: 3,
-          backgroundColor: 'background.paper',
-          borderTop: 1,
-          borderColor: 'divider',
-        }}
-      >
-        <Container maxWidth='lg'>
-          <Typography variant='body2' color='text.secondary' align='center'>
-            © 2024 Hemera Academy. All rights reserved.
-          </Typography>
+        <Container maxWidth='lg' sx={{ py: 4 }}>
+          {children}
         </Container>
       </Box>
     </Box>
