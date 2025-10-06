@@ -38,7 +38,7 @@ export default function DashboardPage() {
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography variant='body2'>
                   <strong>Email:</strong>{' '}
-                  {user.emailAddresses[0]?.emailAddress || 'Unknown'}
+                  {user?.emailAddresses[0]?.emailAddress || 'Unknown'}
                 </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Typography variant='body2'>
@@ -46,13 +46,13 @@ export default function DashboardPage() {
                   </Typography>
                   <Chip
                     label={
-                      (user.publicMetadata?.role as string) === 'admin'
+                      (user?.publicMetadata?.role as string) === 'admin'
                         ? 'Administrator'
                         : 'Student'
                     }
                     size='small'
                     color={
-                      (user.publicMetadata?.role as string) === 'admin'
+                      (user?.publicMetadata?.role as string) === 'admin'
                         ? 'primary'
                         : 'default'
                     }
@@ -60,7 +60,9 @@ export default function DashboardPage() {
                 </Box>
                 <Typography variant='body2'>
                   <strong>Member since:</strong>{' '}
-                  {new Date(user.createdAt).toLocaleDateString()}
+                  {user?.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString()
+                    : 'Unknown'}
                 </Typography>
               </Box>
             </CardContent>
