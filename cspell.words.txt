@@ -48,6 +48,16 @@ Contentful
 NEXTAUTH
 Initialmigration
 firefox
+Authentifizierungsbasierte
+Duplikatsschutz
+Eingabevalidierung
+Buchungsworkflow
+Validierungstests
+Datenvalidierung
+Benutzerworkflow
+Verfügbarkeitsmanagement
+Warteschlangen
+Warteschlisten
 wrongpassword
 userpassword
 adminpassword
