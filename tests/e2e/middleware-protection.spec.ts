@@ -9,15 +9,15 @@ import { expect, test } from '@playwright/test';
  */
 
 test.describe('Middleware Protection Contract', () => {
-  test('should protect all /protected routes', async ({ page }) => {
+  test('should protect all protected routes', async ({ page }) => {
     // This test will fail until Clerk middleware is implemented
 
     const protectedRoutes = [
-      '/protected/dashboard',
-      '/protected/courses',
-      '/protected/admin',
-      '/protected/settings', // Additional protected route
-      '/protected/profile', // Additional protected route
+      '/dashboard',
+      '/courses',
+      '/admin',
+      '/bookings', // Additional protected route
+      '/my-courses', // Additional protected route
     ];
 
     for (const route of protectedRoutes) {
@@ -66,7 +66,7 @@ test.describe('Middleware Protection Contract', () => {
     await page.route('**/clerk-frontend-api/**', route => route.abort());
     await page.route('**/clerk.*.js', route => route.abort());
 
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should handle middleware errors gracefully
     // This could manifest as:
@@ -86,7 +86,7 @@ test.describe('Middleware Protection Contract', () => {
     // Test that users are redirected back to intended page after sign-in
 
     // Attempt to access specific protected page
-    await page.goto('/protected/courses');
+    await page.goto('/courses');
 
     // Should redirect to sign-in with return URL
     await expect(page).toHaveURL(/\/sign-in/);
@@ -100,7 +100,7 @@ test.describe('Middleware Protection Contract', () => {
     await page.click('button[type="submit"]');
 
     // Should redirect back to originally requested page
-    await expect(page).toHaveURL('/protected/courses');
+    await expect(page).toHaveURL('/courses');
   });
 
   test('should handle concurrent middleware requests', async ({ page }) => {
@@ -115,7 +115,7 @@ test.describe('Middleware Protection Contract', () => {
 
     // Navigate all pages to protected routes simultaneously
     const navigationPromises = pages.map((p, index) =>
-      p.goto(`/protected/dashboard?tab=${index}`)
+      p.goto(`/dashboard?tab=${index}`)
     );
 
     await Promise.all(navigationPromises);
@@ -135,7 +135,7 @@ test.describe('Middleware Protection Contract', () => {
     // Test middleware protection for various HTTP methods
 
     // Test GET request (already covered by navigation)
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/sign-in/);
 
     // Test POST request to protected API endpoint
@@ -198,7 +198,7 @@ test.describe('Middleware Protection Contract', () => {
       },
     ]);
 
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should still redirect to sign-in (invalid session)
     await expect(page).toHaveURL(/\/sign-in/);
@@ -211,7 +211,7 @@ test.describe('Middleware Protection Contract', () => {
 
     const startTime = Date.now();
 
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     const endTime = Date.now();
     const redirectTime = endTime - startTime;
@@ -224,17 +224,17 @@ test.describe('Middleware Protection Contract', () => {
     // Test various edge cases in middleware behavior
 
     // Test with malformed URLs
-    await page.goto('/protected/../admin');
+    await page.goto('/dashboard/../admin');
     await expect(page).toHaveURL(/\/sign-in/);
 
     // Test with query parameters
-    await page.goto('/protected/dashboard?param=value&other=123');
+    await page.goto('/dashboard?param=value&other=123');
     const signInUrl = page.url();
     expect(signInUrl).toContain('redirect_url');
     expect(signInUrl).toContain('param%3Dvalue');
 
     // Test with hash fragments
-    await page.goto('/protected/dashboard#section');
+    await page.goto('/dashboard#section');
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
@@ -249,7 +249,7 @@ test.describe('Middleware Protection Contract', () => {
         'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15',
     });
 
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/sign-in/);
 
     // Test with bot user agent (should still protect)
@@ -258,14 +258,14 @@ test.describe('Middleware Protection Contract', () => {
         'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
     });
 
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
   test('should maintain middleware security headers', async ({ page }) => {
     // Test that middleware adds appropriate security headers
 
-    const response = await page.goto('/protected/dashboard');
+    const response = await page.goto('/dashboard');
 
     // Check for security headers (these might be added by middleware)
     const headers = response?.headers();

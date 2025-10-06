@@ -16,7 +16,7 @@ test.describe('Role-Based Navigation Contract', () => {
     await signInAsUser(page);
 
     // Should redirect to protected dashboard
-    await expect(page).toHaveURL('/protected/dashboard');
+    await expect(page).toHaveURL('/dashboard');
 
     // Verify user navigation is visible
     await expect(page.locator('[data-testid=nav-dashboard]')).toBeVisible();
@@ -33,7 +33,7 @@ test.describe('Role-Based Navigation Contract', () => {
     await signInAsAdmin(page);
 
     // Should redirect to protected dashboard
-    await expect(page).toHaveURL('/protected/dashboard');
+    await expect(page).toHaveURL('/dashboard');
 
     // Verify all navigation sections are visible for admin
     await expect(page.locator('[data-testid=nav-dashboard]')).toBeVisible();
@@ -50,14 +50,14 @@ test.describe('Role-Based Navigation Contract', () => {
     await signInAsUser(page);
 
     // Attempt to navigate directly to admin section
-    await page.goto('/protected/admin');
+    await page.goto('/admin');
 
     // Should be denied access or redirected
     // This could manifest as:
     // 1. Redirect to dashboard with error message
     // 2. 403 Forbidden page
     // 3. Admin section showing "Access Denied" message
-    const isOnDashboard = page.url().includes('/protected/dashboard');
+    const isOnDashboard = page.url().includes('/dashboard');
     const hasAccessDenied = await page
       .locator('[data-testid=access-denied]')
       .isVisible();
@@ -127,11 +127,11 @@ test.describe('Role-Based Navigation Contract', () => {
 
     // Navigate through all accessible sections
     await page.click('[data-testid=nav-courses]');
-    await expect(page).toHaveURL('/protected/courses');
+    await expect(page).toHaveURL('/courses');
     await expect(page.locator('[data-testid=nav-admin]')).not.toBeVisible();
 
     await page.click('[data-testid=nav-dashboard]');
-    await expect(page).toHaveURL('/protected/dashboard');
+    await expect(page).toHaveURL('/dashboard');
     await expect(page.locator('[data-testid=nav-admin]')).not.toBeVisible();
   });
 });
@@ -152,7 +152,7 @@ async function signInAsUser(page: any) {
   await page.fill('input[name="identifier"]', 'user@example.com');
   await page.fill('input[name="password"]', 'userpassword123');
   await page.click('button[type="submit"]');
-  await page.waitForURL('/protected/dashboard');
+  await page.waitForURL('/dashboard');
 }
 
 async function signInAsAdmin(page: any) {
@@ -172,7 +172,7 @@ async function signInAsAdmin(page: any) {
   await page.click('button[type="submit"]');
 
   // Wait for redirect to complete
-  await page.waitForURL('/protected/dashboard', { timeout: 15000 });
+  await page.waitForURL('/dashboard', { timeout: 15000 });
 }
 
 async function signInWithRole(page: any, role: string) {

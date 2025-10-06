@@ -42,14 +42,14 @@ export default async function ProtectedPage() {
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <Button
             variant='contained'
-            href='/protected/courses'
+            href='/my-courses'
             data-testid='courses-link'
           >
             My Courses
           </Button>
           <Button
             variant='outlined'
-            href='/protected/profile'
+            href='/my-courses'
             data-testid='profile-link'
           >
             Profile Settings

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage() {
-  // This will redirect non-admin users to /protected/dashboard
+  // This will redirect non-admin users to /dashboard
   const adminUser = await requireAdmin();
 
   return (

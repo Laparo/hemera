@@ -14,7 +14,7 @@ export default function SignUpPage() {
         }}
       >
         <Typography
-          component='h1'
+          component='h2'
           variant='h4'
           sx={{ mb: 3, fontWeight: 'bold' }}
         >

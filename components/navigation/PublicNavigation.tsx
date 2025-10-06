@@ -1,15 +1,14 @@
 'use client';
 
-import React from 'react';
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import {
   AppBar,
+  Box,
+  Button,
+  Container,
   Toolbar,
   Typography,
-  Button,
-  Box,
-  Container,
 } from '@mui/material';
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 
 /**
@@ -84,7 +83,7 @@ export function PublicNavigation() {
                 variant='outlined'
                 color='primary'
                 component={Link}
-                href='/protected/dashboard'
+                href='/dashboard'
                 data-testid='nav-dashboard-button'
                 sx={{
                   textTransform: 'none',

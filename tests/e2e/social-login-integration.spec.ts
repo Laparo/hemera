@@ -75,7 +75,7 @@ test.describe('Social Login Integration', () => {
     await page.route('**/oauth/google**', route => {
       route.fulfill({
         status: 200,
-        body: JSON.stringify({ redirectUrl: '/protected/dashboard' }),
+        body: JSON.stringify({ redirectUrl: '/dashboard' }),
       });
     });
 

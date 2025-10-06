@@ -4,7 +4,7 @@ test.describe('Protected Area - Layout & Navigation', () => {
   test.beforeEach(async ({ page }) => {
     // Note: For full testing, Clerk test environment would be configured here
     // This test validates redirect behavior without auth
-    await page.goto('/protected');
+    await page.goto('/dashboard');
   });
 
   test('should redirect to sign-in when not authenticated', async ({

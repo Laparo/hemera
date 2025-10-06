@@ -46,8 +46,10 @@ export default async function DashboardPage() {
                   <strong>Email:</strong>{' '}
                   {user.emailAddresses[0]?.emailAddress || 'Unknown'}
                 </Typography>
-                <Typography variant='body2'>
-                  <strong>Role:</strong>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant='body2'>
+                    <strong>Role:</strong>
+                  </Typography>
                   <Chip
                     label={
                       (user.publicMetadata?.role as string) === 'admin'
@@ -60,9 +62,8 @@ export default async function DashboardPage() {
                         ? 'primary'
                         : 'default'
                     }
-                    sx={{ ml: 1 }}
                   />
-                </Typography>
+                </Box>
                 <Typography variant='body2'>
                   <strong>Member since:</strong>{' '}
                   {new Date(user.createdAt).toLocaleDateString()}

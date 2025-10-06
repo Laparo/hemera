@@ -115,9 +115,11 @@ export const SITEMAP_CONFIG = {
   baseUrl: SITE_CONFIG.url,
   exclude: [
     '/auth/*',
-    '/protected/*',
-    '/api/*',
+    '/dashboard/*',
     '/admin/*',
+    '/my-courses/*',
+    '/bookings/*',
+    '/api/*',
     '/_next/*',
     '/404',
     '/500',

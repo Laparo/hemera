@@ -11,7 +11,7 @@ import { expect, test } from '@playwright/test';
 test.describe('Protected Area Authentication Contract', () => {
   test('should redirect unauthenticated users to sign-in', async ({ page }) => {
     // Attempt to access protected area without authentication
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should redirect to sign-in page
     await expect(page).toHaveURL(/\/sign-in/);
@@ -38,7 +38,7 @@ test.describe('Protected Area Authentication Contract', () => {
     await page.press('input[name="password"]', 'Enter');
 
     // Should redirect to protected dashboard after successful sign-in
-    await expect(page).toHaveURL('/protected/dashboard', { timeout: 15000 });
+    await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
 
     // Should show authenticated user interface
     await expect(page.locator('[data-testid=dashboard-title]')).toBeVisible();
@@ -79,7 +79,7 @@ test.describe('Protected Area Authentication Contract', () => {
     await page.press('input[name="password"]', 'Enter');
 
     // Wait for redirect to dashboard
-    await expect(page).toHaveURL('/protected/dashboard', { timeout: 15000 });
+    await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
 
     // Verify we're logged in by checking for dashboard content
     await expect(page.locator('[data-testid=dashboard-title]')).toBeVisible();
@@ -97,7 +97,7 @@ test.describe('Protected Area Authentication Contract', () => {
     });
 
     // Verify session is cleared - attempting to access protected area should redirect
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/sign-in/, { timeout: 10000 });
   });
 
@@ -111,13 +111,13 @@ test.describe('Protected Area Authentication Contract', () => {
     // Press Enter to submit
     await page.press('input[name="password"]', 'Enter');
 
-    await expect(page).toHaveURL('/protected/dashboard', { timeout: 15000 });
+    await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
 
     // Refresh the page
     await page.reload();
 
     // Should still be authenticated and on protected page
-    await expect(page).toHaveURL('/protected/dashboard');
+    await expect(page).toHaveURL('/dashboard');
     await expect(page.locator('[data-testid=dashboard-title]')).toBeVisible();
     await expect(page.locator('[data-testid=courses-card]')).toBeVisible();
   });
@@ -129,7 +129,7 @@ test.describe('Protected Area Authentication Contract', () => {
     await page.route('**/clerk-frontend-api/**', route => route.abort());
     await page.route('**/clerk.*.js', route => route.abort());
 
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should show appropriate error handling, not crash
     // This might redirect to error page or show fallback UI

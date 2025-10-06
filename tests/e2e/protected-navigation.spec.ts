@@ -13,7 +13,7 @@ test.describe('Protected Navigation Component Contract', () => {
     // This test will fail until ProtectedNavigation component is implemented
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should show navigation component
     await expect(
@@ -32,7 +32,7 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test active tab highlighting
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Dashboard tab should be active
     await expect(page.locator('[data-testid=nav-dashboard]')).toHaveAttribute(
@@ -46,7 +46,7 @@ test.describe('Protected Navigation Component Contract', () => {
 
     // Navigate to courses
     await page.click('[data-testid=nav-courses]');
-    await expect(page).toHaveURL('/protected/courses');
+    await expect(page).toHaveURL('/courses');
 
     // Courses tab should now be active
     await expect(page.locator('[data-testid=nav-courses]')).toHaveAttribute(
@@ -63,20 +63,20 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test navigation between sections
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Verify starting on dashboard
-    await expect(page).toHaveURL('/protected/dashboard');
+    await expect(page).toHaveURL('/dashboard');
     await expect(page.locator('[data-testid=dashboard-content]')).toBeVisible();
 
     // Click courses tab
     await page.click('[data-testid=nav-courses]');
-    await expect(page).toHaveURL('/protected/courses');
+    await expect(page).toHaveURL('/courses');
     await expect(page.locator('[data-testid=courses-content]')).toBeVisible();
 
     // Click back to dashboard
     await page.click('[data-testid=nav-dashboard]');
-    await expect(page).toHaveURL('/protected/dashboard');
+    await expect(page).toHaveURL('/dashboard');
     await expect(page.locator('[data-testid=dashboard-content]')).toBeVisible();
   });
 
@@ -84,7 +84,7 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test admin role navigation visibility
 
     await signInAsAdmin(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should show all navigation tabs for admin
     await expect(page.locator('[data-testid=nav-dashboard]')).toBeVisible();
@@ -93,7 +93,7 @@ test.describe('Protected Navigation Component Contract', () => {
 
     // Should be able to navigate to admin section
     await page.click('[data-testid=nav-admin]');
-    await expect(page).toHaveURL('/protected/admin');
+    await expect(page).toHaveURL('/admin');
     await expect(page.locator('[data-testid=admin-content]')).toBeVisible();
   });
 
@@ -103,7 +103,7 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test user profile display in navigation
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should show user email in navigation area
     await expect(page.locator('[data-testid=nav-user-email]')).toBeVisible();
@@ -122,7 +122,7 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test keyboard navigation support
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Focus on navigation
     await page.locator('[data-testid=nav-dashboard]').focus();
@@ -133,7 +133,7 @@ test.describe('Protected Navigation Component Contract', () => {
 
     // Enter key should activate navigation
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL('/protected/courses');
+    await expect(page).toHaveURL('/courses');
   });
 
   test('should maintain navigation state during page transitions', async ({
@@ -142,7 +142,7 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test that navigation component state is preserved
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Verify initial navigation state
     await expect(page.locator('[data-testid=nav-dashboard]')).toHaveAttribute(
@@ -171,7 +171,7 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test navigation responsiveness
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Desktop view - full navigation should be visible
     await page.setViewportSize({ width: 1200, height: 800 });
@@ -199,10 +199,10 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test loading indicators during navigation
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Slow down navigation to test loading state
-    await page.route('/protected/courses', route => {
+    await page.route('/courses', route => {
       setTimeout(() => route.continue(), 300);
     });
 
@@ -226,15 +226,15 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test error handling in navigation
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Simulate navigation error
-    await page.route('/protected/courses', route => route.abort());
+    await page.route('/courses', route => route.abort());
 
     await page.click('[data-testid=nav-courses]');
 
     // Should handle error gracefully (stay on current page or show error)
-    const stayedOnDashboard = page.url().includes('/protected/dashboard');
+    const stayedOnDashboard = page.url().includes('/dashboard');
     const hasErrorMessage = await page
       .locator('[data-testid=nav-error]')
       .isVisible();
@@ -248,7 +248,7 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test sign-out from navigation component
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should have sign-out button in navigation area
     await expect(page.locator('[data-testid=nav-sign-out]')).toBeVisible();
@@ -260,7 +260,7 @@ test.describe('Protected Navigation Component Contract', () => {
     await expect(page).toHaveURL('/');
 
     // Session should be cleared
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
@@ -270,7 +270,7 @@ test.describe('Protected Navigation Component Contract', () => {
     // Test notification badges or indicators on navigation items
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // If courses have updates, might show badge
     // This is optional functionality but tests the contract extensibility
@@ -280,7 +280,7 @@ test.describe('Protected Navigation Component Contract', () => {
 
     // Badge functionality is optional, so we just verify it doesn't break navigation
     await page.click('[data-testid=nav-courses]');
-    await expect(page).toHaveURL('/protected/courses');
+    await expect(page).toHaveURL('/courses');
   });
 });
 
@@ -290,7 +290,7 @@ async function signInAsUser(page: any) {
   await page.fill('input[name="identifier"]', 'user@example.com');
   await page.fill('input[name="password"]', 'userpassword123');
   await page.click('button[type="submit"]');
-  await page.waitForURL('/protected/dashboard');
+  await page.waitForURL('/dashboard');
 }
 
 async function signInAsAdmin(page: any) {
@@ -298,7 +298,7 @@ async function signInAsAdmin(page: any) {
   await page.fill('input[name="identifier"]', 'admin@example.com');
   await page.fill('input[name="password"]', 'adminpassword123');
   await page.click('button[type="submit"]');
-  await page.waitForURL('/protected/dashboard');
+  await page.waitForURL('/dashboard');
 }
 
 /**

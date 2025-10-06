@@ -10,7 +10,7 @@ test.describe('Clerk Authentication E2E Tests', () => {
     page,
   }) => {
     // Attempt to access protected area without authentication
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should redirect to Clerk sign-in page
     await expect(page).toHaveURL(/\/sign-in/);
@@ -85,21 +85,21 @@ test.describe('Clerk Authentication E2E Tests', () => {
 
   test('should handle protected route access correctly', async ({ page }) => {
     // Test dashboard access
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/sign-in/);
 
     // Test my-courses access
-    await page.goto('/protected/my-courses');
+    await page.goto('/my-courses');
     await expect(page).toHaveURL(/\/sign-in/);
 
     // Test admin access
-    await page.goto('/protected/admin');
+    await page.goto('/admin');
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
   test('should preserve redirect URL after sign-in', async ({ page }) => {
     // Try to access protected dashboard
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should redirect to sign-in with redirect_url parameter
     await expect(page).toHaveURL(/\/sign-in/);
@@ -138,7 +138,7 @@ test.describe('Clerk Authentication E2E Tests', () => {
     page,
   }) => {
     // Try to access non-existent protected route
-    const response = await page.goto('/protected/nonexistent');
+    const response = await page.goto('/nonexistent-protected-route');
 
     // Should either redirect to sign-in or show 404
     const isRedirect = page.url().includes('/sign-in');
@@ -149,11 +149,7 @@ test.describe('Clerk Authentication E2E Tests', () => {
 
   test('should handle middleware protection correctly', async ({ page }) => {
     // Test various protected routes to ensure middleware is working
-    const protectedRoutes = [
-      '/protected/dashboard',
-      '/protected/my-courses',
-      '/protected/admin',
-    ];
+    const protectedRoutes = ['/dashboard', '/my-courses', '/admin'];
 
     for (const route of protectedRoutes) {
       await page.goto(route);

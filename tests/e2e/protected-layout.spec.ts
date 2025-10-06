@@ -15,7 +15,7 @@ test.describe('Protected Layout Component Contract', () => {
     // This test will fail until ProtectedLayout component is implemented
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should render the protected layout structure
     await expect(page.locator('[data-testid=protected-layout]')).toBeVisible();
@@ -31,7 +31,7 @@ test.describe('Protected Layout Component Contract', () => {
     // Test user profile display in layout
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should show user email
     await expect(page.locator('[data-testid=user-email]')).toBeVisible();
@@ -51,7 +51,7 @@ test.describe('Protected Layout Component Contract', () => {
     // Test sign-out functionality integrated in layout
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Click sign-out button in layout
     await page.click('[data-testid=sign-out-button]');
@@ -60,7 +60,7 @@ test.describe('Protected Layout Component Contract', () => {
     await expect(page).toHaveURL('/');
 
     // Verify session is cleared
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/sign-in/);
   });
 
@@ -70,7 +70,7 @@ test.describe('Protected Layout Component Contract', () => {
     // Test server-side authentication check in layout
 
     // Attempt to access protected page without authentication
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should redirect to sign-in due to server-side auth check
     await expect(page).toHaveURL(/\/sign-in/);
@@ -84,12 +84,12 @@ test.describe('Protected Layout Component Contract', () => {
     await signInAsUser(page);
 
     // Test dashboard page
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
     await expect(page.locator('[data-testid=protected-layout]')).toBeVisible();
     await expect(page.locator('[data-testid=dashboard-content]')).toBeVisible();
 
     // Test courses page - layout should remain, content should change
-    await page.goto('/protected/courses');
+    await page.goto('/courses');
     await expect(page.locator('[data-testid=protected-layout]')).toBeVisible();
     await expect(page.locator('[data-testid=courses-content]')).toBeVisible();
     await expect(
@@ -106,7 +106,7 @@ test.describe('Protected Layout Component Contract', () => {
     // For example, network error or component error
     await page.route('**/api/user', route => route.abort());
 
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Should show error boundary or graceful fallback
     const hasErrorBoundary = await page
@@ -123,7 +123,7 @@ test.describe('Protected Layout Component Contract', () => {
     // Test layout responsiveness
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Test desktop view
     await page.setViewportSize({ width: 1200, height: 800 });
@@ -154,10 +154,10 @@ test.describe('Protected Layout Component Contract', () => {
     // Test loading states during page transitions
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Intercept navigation to add delay
-    await page.route('/protected/courses', route => {
+    await page.route('/courses', route => {
       setTimeout(() => route.continue(), 500);
     });
 
@@ -171,7 +171,7 @@ test.describe('Protected Layout Component Contract', () => {
 
     // Complete navigation
     await navigationPromise;
-    await expect(page).toHaveURL('/protected/courses');
+    await expect(page).toHaveURL('/courses');
 
     // Loading indicator should be gone
     await expect(
@@ -189,7 +189,7 @@ test.describe('Protected Layout Component Contract', () => {
       delete (window as any).navigator;
     });
 
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Content should be present even without JavaScript (SSR)
     await expect(page.locator('[data-testid=protected-layout]')).toBeVisible();
@@ -202,7 +202,7 @@ test.describe('Protected Layout Component Contract', () => {
     // Test that layout state is preserved on refresh
 
     await signInAsUser(page);
-    await page.goto('/protected/dashboard');
+    await page.goto('/dashboard');
 
     // Verify initial state
     await expect(page.locator('[data-testid=user-email]')).toHaveText(
@@ -226,7 +226,7 @@ async function signInAsUser(page: any) {
   await page.fill('input[name="identifier"]', 'user@example.com');
   await page.fill('input[name="password"]', 'userpassword123');
   await page.click('button[type="submit"]');
-  await page.waitForURL('/protected/dashboard');
+  await page.waitForURL('/dashboard');
 }
 
 /**

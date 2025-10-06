@@ -8,9 +8,9 @@ interface ProtectedNavigationProps {
 }
 
 const baseNavigation = [
-  { label: 'Dashboard', route: '/protected/dashboard' },
-  { label: 'My Courses', route: '/protected/my-courses' },
-  { label: 'Admin', route: '/protected/admin' }, // Will be filtered by role
+  { label: 'Dashboard', route: '/dashboard' },
+  { label: 'My Courses', route: '/my-courses' },
+  { label: 'Admin', route: '/admin' }, // Will be filtered by role
 ];
 
 /**

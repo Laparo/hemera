@@ -1,14 +1,7 @@
 import { ProtectedNavigation } from '@/components/navigation/ProtectedNavigation';
 import { requireAuthenticatedUser } from '@/lib/auth/helpers';
-import { SignOutButton } from '@clerk/nextjs';
-import {
-  AppBar,
-  Box,
-  Button,
-  Container,
-  Toolbar,
-  Typography,
-} from '@mui/material';
+import { UserButton } from '@clerk/nextjs';
+import { AppBar, Box, Container, Toolbar, Typography } from '@mui/material';
 import { Metadata } from 'next';
 
 // Force Node.js runtime for server-side authentication
@@ -43,34 +36,35 @@ export default async function ProtectedLayout({
             Hemera Academy
           </Typography>
 
-          {/* Session Indicator */}
-          <Box
-            data-testid='session-indicator'
-            sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
-          >
-            <Typography variant='body2' sx={{ color: 'inherit' }}>
-              {user.emailAddresses[0]?.emailAddress || 'Unknown'}
-            </Typography>
-            <Typography
-              variant='caption'
-              sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-            >
-              {(user.publicMetadata?.role as string) === 'admin'
-                ? 'Admin'
-                : 'User'}
-            </Typography>
-            <SignOutButton>
-              <Button
-                color='inherit'
-                size='small'
-                variant='outlined'
-                sx={{ borderColor: 'rgba(255, 255, 255, 0.23)' }}
-                data-testid='sign-out-button'
-              >
-                Sign Out
-              </Button>
-            </SignOutButton>
-          </Box>
+          {/* User Avatar - Only Avatar Icon */}
+          <UserButton
+            afterSignOutUrl='/'
+            appearance={{
+              elements: {
+                avatarBox: {
+                  width: '32px',
+                  height: '32px',
+                },
+                userButtonTrigger: {
+                  width: '32px',
+                  height: '32px',
+                  '&:focus': {
+                    boxShadow: '0 0 0 2px rgba(255, 255, 255, 0.5)',
+                  },
+                },
+                userButtonPopoverCard: {
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
+                  borderRadius: '8px', // Rechteckiges Fly-out mit abgerundeten Ecken
+                },
+              },
+              variables: {
+                colorPrimary: '#1976d2', // Material-UI primary color
+                borderRadius: '4px', // Rechteckiger Border-Radius für alle Elemente
+              },
+            }}
+            showName={false}
+            data-testid='user-profile-button'
+          />
         </Toolbar>
       </AppBar>
 

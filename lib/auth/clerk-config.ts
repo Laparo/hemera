@@ -195,12 +195,10 @@ export const socialProviderConfig = {
 export const clerkConfig = {
   signInUrl: env.NEXT_PUBLIC_CLERK_SIGN_IN_URL || '/sign-in',
   signUpUrl: env.NEXT_PUBLIC_CLERK_SIGN_UP_URL || '/sign-up',
-  afterSignInUrl:
-    env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || '/protected/dashboard',
-  afterSignUpUrl:
-    env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || '/protected/dashboard',
-  dashboardUrl: '/protected/dashboard',
-  profileUrl: '/protected/profile',
+  afterSignInUrl: env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || '/dashboard',
+  afterSignUpUrl: env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || '/dashboard',
+  dashboardUrl: '/dashboard',
+  profileUrl: '/my-courses', // Use existing route instead of /protected/profile
 };
 
 /**

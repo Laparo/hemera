@@ -66,12 +66,12 @@ export function UserProfileButton({
     {
       label: 'Dashboard',
       icon: <Dashboard fontSize='small' />,
-      path: '/protected/dashboard',
+      path: '/dashboard',
     },
     {
-      label: 'Profile Settings',
+      label: 'My Courses',
       icon: <Settings fontSize='small' />,
-      path: '/protected/profile',
+      path: '/my-courses',
     },
   ];
 

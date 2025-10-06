@@ -160,11 +160,7 @@ test.describe('Core Web Vitals Validation', () => {
 
 test.describe('Auth Performance Validation (T019)', () => {
   test('protected routes should have TTFB under 200ms', async ({ page }) => {
-    const routes = [
-      '/protected/dashboard',
-      '/protected/my-courses',
-      '/protected/admin',
-    ];
+    const routes = ['/dashboard', '/my-courses', '/admin'];
 
     for (const route of routes) {
       const startTime = Date.now();
@@ -183,12 +179,12 @@ test.describe('Auth Performance Validation (T019)', () => {
 
   test('auth helper performance should be under 100ms', async ({ page }) => {
     // Simulate auth helper operations by navigating authenticated routes
-    await page.goto('http://localhost:3000/protected/dashboard');
+    await page.goto('http://localhost:3000/dashboard');
 
     const startTime = Date.now();
 
     // Test navigation between protected routes (uses auth helpers)
-    await page.goto('http://localhost:3000/protected/my-courses');
+    await page.goto('http://localhost:3000/my-courses');
     const endTime = Date.now();
 
     const authCheckTime = endTime - startTime;

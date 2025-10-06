@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test.describe('Protected Area - Auth Redirects', () => {
   test('should redirect unauthenticated users to sign-in', async ({ page }) => {
     // Try to access protected route without auth
-    await page.goto('/protected');
+    await page.goto('/dashboard');
 
     // Should be redirected to Clerk sign-in page
     await expect(page).toHaveURL(/.*sign-in.*/);
@@ -18,7 +18,7 @@ test.describe('Protected Area - Auth Redirects', () => {
     // Note: This test requires Clerk test environment setup
     // For now, we'll test the redirect behavior only
 
-    await page.goto('/protected');
+    await page.goto('/dashboard');
     await expect(page).toHaveURL(/.*sign-in.*/);
   });
 

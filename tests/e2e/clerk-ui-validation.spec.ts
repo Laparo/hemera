@@ -36,7 +36,7 @@ test.describe('Clerk Authentication UI Tests', () => {
   test('should redirect to sign-in when accessing protected route without auth', async ({
     page,
   }) => {
-    await page.goto('/protected');
+    await page.goto('/dashboard');
 
     // Should be redirected to sign-in page
     await page.waitForURL(/.*sign-in.*/);
