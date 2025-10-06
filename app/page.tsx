@@ -1,4 +1,3 @@
-import { PublicNavigation } from '@/components/navigation/PublicNavigation';
 import { getFeaturedCourses } from '@/lib/api/courses';
 import { generateLandingPageMetadata } from '@/lib/seo/metadata';
 import { SCHEMA_COMBINATIONS } from '@/lib/seo/schemas';
@@ -44,9 +43,6 @@ export default async function HomePage() {
           }}
         />
       ))}
-
-      {/* Public Navigation */}
-      <PublicNavigation />
 
       <main>
         {/* Hero Section */}

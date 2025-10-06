@@ -1,5 +1,6 @@
 import ThemeRegistry from '@/components/ThemeRegistry';
 import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
+import { PublicNavigation } from '@/components/navigation/PublicNavigation';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import * as React from 'react';
@@ -25,7 +26,10 @@ export default function RootLayout({
     <ClerkProviderWrapper>
       <html lang='de'>
         <body className={inter.className}>
-          <ThemeRegistry>{children}</ThemeRegistry>
+          <ThemeRegistry>
+            <PublicNavigation />
+            {children}
+          </ThemeRegistry>
         </body>
       </html>
     </ClerkProviderWrapper>
