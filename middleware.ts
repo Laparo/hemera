@@ -7,15 +7,10 @@ const isProtectedRoute = createRouteMatcher([
   '/my-courses(.*)',
 ]);
 
-// Routes that need auth but handle their own redirect
-const isClientProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
-
 export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
     await auth.protect();
   }
-  // For client-protected routes, let them handle auth themselves
-  // Just ensure Clerk context is available
 });
 
 export const config = {
