@@ -10,9 +10,9 @@ const isProtectedRoute = createRouteMatcher([
 // Routes that need auth but handle their own redirect
 const isClientProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
 
-export default clerkMiddleware((auth, req) => {
+export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
-    auth().protect();
+    await auth.protect();
   }
   // For client-protected routes, let them handle auth themselves
   // Just ensure Clerk context is available
