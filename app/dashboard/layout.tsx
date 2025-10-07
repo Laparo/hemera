@@ -1,7 +1,6 @@
 'use client';
 
-import { useAuth, useUser } from '@clerk/nextjs';
-import { UserButton } from '@clerk/nextjs';
+import { useAuth, UserButton, useUser } from '@clerk/nextjs';
 import { AppBar, Box, Container, Toolbar, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
