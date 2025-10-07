@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
 const isProtectedRoute = createRouteMatcher([
-  '/(protected)(.*)',
+  '/protected(.*)',
   '/bookings(.*)',
   '/admin(.*)',
   '/my-courses(.*)',
@@ -10,9 +10,9 @@ const isProtectedRoute = createRouteMatcher([
 // Routes that need auth but handle their own redirect
 const isClientProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
 
-export default clerkMiddleware(async (auth, req) => {
+export default clerkMiddleware((auth, req) => {
   if (isProtectedRoute(req)) {
-    await auth.protect();
+    auth().protect();
   }
   // For client-protected routes, let them handle auth themselves
   // Just ensure Clerk context is available
