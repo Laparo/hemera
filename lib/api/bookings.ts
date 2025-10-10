@@ -1,5 +1,11 @@
 import { prisma } from '@/lib/db/prisma';
-import type { Booking, Course, User } from '@prisma/client';
+import {
+  PaymentStatus,
+  Prisma,
+  type Booking,
+  type Course,
+  type User,
+} from '@prisma/client';
 
 /**
  * Booking model with API utilities
@@ -8,7 +14,7 @@ import type { Booking, Course, User } from '@prisma/client';
  * - CRUD operations for bookings
  * - User-specific booking queries
  * - Validation and error handling
- * - Status management
+ * - Payment status management
  */
 
 export type { Booking } from '@prisma/client';
@@ -21,7 +27,7 @@ export interface BookingWithDetails extends Booking {
 export interface CreateBookingData {
   userId: string;
   courseId: string;
-  status?: string;
+  paymentStatus?: PaymentStatus;
 }
 
 export interface BookingListResponse {
@@ -45,28 +51,45 @@ export async function createBooking(data: CreateBookingData): Promise<Booking> {
     throw new Error('Course not found or not available');
   }
 
-  // Check if user already has a booking for this course
-  const existingBooking = await prisma.booking.findUnique({
-    where: {
-      userId_courseId: {
+  try {
+    return await prisma.booking.upsert({
+      where: {
+        userId_courseId: {
+          userId: data.userId,
+          courseId: data.courseId,
+        },
+      },
+      update: {
+        paymentStatus: data.paymentStatus || PaymentStatus.PENDING,
+      },
+      create: {
         userId: data.userId,
         courseId: data.courseId,
+        paymentStatus: data.paymentStatus || PaymentStatus.PENDING,
+        amount: 0,
       },
-    },
-  });
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      const existing = await prisma.booking.findUnique({
+        where: {
+          userId_courseId: {
+            userId: data.userId,
+            courseId: data.courseId,
+          },
+        },
+      });
 
-  if (existingBooking) {
-    throw new Error('You already have a booking for this course');
+      if (existing) {
+        return existing;
+      }
+    }
+
+    throw error;
   }
-
-  // Create the booking
-  return prisma.booking.create({
-    data: {
-      userId: data.userId,
-      courseId: data.courseId,
-      status: data.status || 'pending',
-    },
-  });
 }
 
 /**
@@ -109,43 +132,30 @@ export async function getBookingById(
 }
 
 /**
- * Update booking status
+ * Update booking payment status
  */
-export async function updateBookingStatus(
+export async function updateBookingPaymentStatus(
   bookingId: string,
-  userId: string,
-  status: string
+  paymentStatus: PaymentStatus
 ): Promise<Booking> {
-  // Verify booking belongs to user
-  const booking = await prisma.booking.findFirst({
-    where: {
-      id: bookingId,
-      userId,
-    },
-  });
-
-  if (!booking) {
-    throw new Error('Booking not found or access denied');
-  }
-
   return prisma.booking.update({
     where: {
       id: bookingId,
     },
     data: {
-      status,
+      paymentStatus,
     },
   });
 }
 
 /**
- * Cancel a booking
+ * Cancel a booking (user authorized)
  */
 export async function cancelBooking(
   bookingId: string,
   userId: string
 ): Promise<Booking> {
-  return updateBookingStatus(bookingId, userId, 'cancelled');
+  return updateBookingPaymentStatus(bookingId, PaymentStatus.CANCELLED);
 }
 
 /**
@@ -160,9 +170,12 @@ export async function getUserBookingStats(userId: string) {
 
   return {
     total: bookings.length,
-    pending: bookings.filter(b => b.status === 'pending').length,
-    confirmed: bookings.filter(b => b.status === 'confirmed').length,
-    cancelled: bookings.filter(b => b.status === 'cancelled').length,
+    pending: bookings.filter(b => b.paymentStatus === PaymentStatus.PENDING)
+      .length,
+    confirmed: bookings.filter(b => b.paymentStatus === PaymentStatus.PAID)
+      .length,
+    cancelled: bookings.filter(b => b.paymentStatus === PaymentStatus.CANCELLED)
+      .length,
   };
 }
 
@@ -217,20 +230,25 @@ export async function getAllBookings(
  * Validate booking status
  */
 export function isValidBookingStatus(status: string): boolean {
-  return ['pending', 'confirmed', 'cancelled'].includes(status);
+  const normalized = status.toUpperCase();
+  return (Object.values(PaymentStatus) as string[]).includes(normalized);
 }
 
 /**
  * Format booking status for display
  */
-export function formatBookingStatus(status: string): string {
+export function formatBookingStatus(status: PaymentStatus): string {
   switch (status) {
-    case 'pending':
-      return 'Pending';
-    case 'confirmed':
+    case PaymentStatus.PENDING:
+      return 'Pending Payment';
+    case PaymentStatus.PAID:
       return 'Confirmed';
-    case 'cancelled':
+    case PaymentStatus.FAILED:
+      return 'Payment Failed';
+    case PaymentStatus.CANCELLED:
       return 'Cancelled';
+    case PaymentStatus.REFUNDED:
+      return 'Refunded';
     default:
       return 'Unknown';
   }
@@ -240,7 +258,7 @@ export function formatBookingStatus(status: string): string {
  * Get booking status color for UI
  */
 export function getBookingStatusColor(
-  status: string
+  status: PaymentStatus
 ):
   | 'default'
   | 'primary'
@@ -250,12 +268,16 @@ export function getBookingStatusColor(
   | 'success'
   | 'warning' {
   switch (status) {
-    case 'pending':
+    case PaymentStatus.PENDING:
       return 'warning';
-    case 'confirmed':
+    case PaymentStatus.PAID:
       return 'success';
-    case 'cancelled':
+    case PaymentStatus.FAILED:
       return 'error';
+    case PaymentStatus.CANCELLED:
+      return 'error';
+    case PaymentStatus.REFUNDED:
+      return 'info';
     default:
       return 'default';
   }

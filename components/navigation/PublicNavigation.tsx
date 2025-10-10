@@ -24,7 +24,7 @@ export function PublicNavigation() {
   return (
     <AppBar position='static' color='default' elevation={1}>
       <Container maxWidth='lg'>
-        <Toolbar sx={{ justifyContent: 'space-between', py: 1 }}>
+        <Toolbar sx={{ py: 1 }}>
           {/* Logo/Brand */}
           <Link href='/' style={{ textDecoration: 'none' }}>
             <Typography
@@ -40,17 +40,11 @@ export function PublicNavigation() {
             </Typography>
           </Link>
 
+          {/* Spacer */}
+          <Box sx={{ flexGrow: 1 }} />
+
           {/* Navigation Links */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Button
-              color='inherit'
-              component={Link}
-              href='/courses'
-              sx={{ textTransform: 'none' }}
-            >
-              Courses
-            </Button>
-
             {/* Authentication Buttons */}
             {isClerkConfigured ? (
               <>
@@ -86,25 +80,29 @@ export function PublicNavigation() {
                 {/* User Menu for Authenticated Users */}
                 <SignedIn>
                   <Button
-                    variant='outlined'
-                    color='primary'
+                    variant='text'
+                    color='inherit'
                     component={Link}
                     href='/dashboard'
-                    data-testid='nav-dashboard-button'
                     sx={{
                       textTransform: 'none',
-                      px: 3,
+                      mr: 1,
                     }}
                   >
-                    Dashboard
+                    Meine Kurse
                   </Button>
                   <UserButton
                     afterSignOutUrl='/'
                     appearance={{
                       elements: {
-                        avatarBox: 'w-8 h-8',
+                        avatarBox: {
+                          width: '32px',
+                          height: '32px',
+                        },
                       },
                     }}
+                    showName={false}
+                    data-testid='user-profile-button'
                   />
                 </SignedIn>
               </>

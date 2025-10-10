@@ -62,3 +62,5 @@ See `.github/workflows/deploy.yml` for complete pipeline configuration.
 - Constitution is in `/.specify/memory/constitution.md`.
 - Keep documentation in English.
 - Use Material Design (MUI) when UI work begins.
+- Stripe integration for secure payment processing and course enrollment.
+- All payment flows must use Stripe test mode during development.

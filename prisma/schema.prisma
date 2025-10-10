@@ -1,6 +1,3 @@
-// Prisma schema for Hemera
-// Database: PostgreSQL (Neon/Vercel Postgres)
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,7 +10,7 @@ datasource db {
 model User {
   id            String    @id @default(cuid())
   name          String?
-  email         String?   @unique(map: "users_email_unique") // enforced via partial unique index in SQL
+  email         String?   @unique(map: "users_email_unique")
   emailVerified DateTime?
   image         String?
   accounts      Account[]
@@ -47,23 +44,40 @@ model Course {
   title       String
   description String?
   slug        String    @unique
-  price       Int?      // Price in cents
+  price       Int
+  currency    String    @default("USD")
+  capacity    Int?
+  date        DateTime?
   isPublished Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   bookings    Booking[]
+
+  @@map("courses")
 }
 
 model Booking {
-  id        String   @id @default(cuid())
-  userId    String
-  courseId  String
-  status    String   @default("pending") // pending, confirmed, cancelled
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String        @id @default(cuid())
+  userId                String
+  courseId              String
+  paymentStatus         PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?
+  stripeSessionId       String?
+  amount                Int
+  currency              String        @default("USD")
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  course                Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  @@unique([userId, courseId])
+  @@map("bookings")
+}
 
-  @@unique([userId, courseId]) // Prevent duplicate bookings
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
 }

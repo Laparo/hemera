@@ -40,19 +40,33 @@ export default async function CoursesPage() {
           sx={{
             bgcolor: 'primary.main',
             color: 'primary.contrastText',
-            py: { xs: 6, md: 8 },
+            py: { xs: 10, md: 14 },
             textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background:
+                'linear-gradient(135deg, rgba(0,86,210,0.9) 0%, rgba(0,65,163,0.9) 100%)',
+              zIndex: 1,
+            },
           }}
         >
-          <Container maxWidth='md'>
+          <Container maxWidth='lg' sx={{ position: 'relative', zIndex: 2 }}>
             <Typography
               variant='h1'
               component='h1'
               gutterBottom
               sx={{
-                fontSize: { xs: '2.5rem', md: '3rem' },
-                fontWeight: 'bold',
-                mb: 2,
+                fontSize: { xs: '3rem', md: '4rem' },
+                fontWeight: 700,
+                mb: 3,
+                lineHeight: 1.1,
               }}
             >
               All Courses
@@ -61,9 +75,11 @@ export default async function CoursesPage() {
               variant='h2'
               component='h2'
               sx={{
-                fontSize: { xs: '1.1rem', md: '1.25rem' },
-                fontWeight: 'normal',
-                opacity: 0.9,
+                fontSize: { xs: '1.25rem', md: '1.5rem' },
+                fontWeight: 400,
+                opacity: 0.95,
+                maxWidth: '600px',
+                mx: 'auto',
               }}
             >
               Explore our complete catalog of expert-led courses
@@ -87,33 +103,78 @@ export default async function CoursesPage() {
                         height: '100%',
                         display: 'flex',
                         flexDirection: 'column',
-                        transition: 'transform 0.2s',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        transition: 'all 0.3s ease',
                         '&:hover': {
-                          transform: 'translateY(-4px)',
+                          transform: 'translateY(-8px)',
+                          boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
                         },
                       }}
                     >
-                      <CardContent sx={{ flexGrow: 1 }}>
+                      {/* Course Image Placeholder */}
+                      <Box
+                        sx={{
+                          height: 160,
+                          bgcolor: 'primary.light',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
                         <Typography
-                          variant='h5'
+                          variant='h4'
+                          sx={{ color: 'primary.contrastText' }}
+                        >
+                          {course.title.charAt(0)}
+                        </Typography>
+                      </Box>
+
+                      <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                        <Typography
+                          variant='h6'
                           component='h3'
                           gutterBottom
                           data-testid='course-title'
-                          sx={{ fontWeight: 'bold' }}
+                          sx={{ fontWeight: 600, mb: 1 }}
                         >
                           {course.title}
                         </Typography>
+
+                        <Typography
+                          variant='body2'
+                          color='text.secondary'
+                          sx={{ mb: 2, fontSize: '0.875rem' }}
+                        >
+                          Instructor: Expert Teacher
+                        </Typography>
+
+                        {/* Rating */}
+                        <Box
+                          sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
+                        >
+                          <Typography variant='body2' sx={{ mr: 1 }}>
+                            ⭐⭐⭐⭐⭐
+                          </Typography>
+                          <Typography variant='body2' color='text.secondary'>
+                            (4.8)
+                          </Typography>
+                        </Box>
+
                         <Typography
                           variant='body2'
                           color='text.secondary'
                           paragraph
                           data-testid='course-description'
+                          sx={{ fontSize: '0.875rem', lineHeight: 1.4 }}
                         >
-                          {course.description && course.description.length > 120
-                            ? course.description.substring(0, 120) + '...'
+                          {course.description && course.description.length > 100
+                            ? course.description.substring(0, 100) + '...'
                             : course.description ||
                               'Keine Beschreibung verfügbar'}
                         </Typography>
+
                         <Typography
                           variant='body2'
                           color='primary'
@@ -150,7 +211,7 @@ export default async function CoursesPage() {
                         </Box>
                         <Button
                           component={Link}
-                          href={'/bookings/new?courseId=' + course.id}
+                          href={'/checkout?courseId=' + course.id}
                           variant='contained'
                           fullWidth
                           startIcon={<BookOnlineOutlined />}
@@ -160,7 +221,7 @@ export default async function CoursesPage() {
                             textTransform: 'none',
                           }}
                         >
-                          Book Course
+                          Book course
                         </Button>
                       </CardContent>
                     </Card>

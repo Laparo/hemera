@@ -10,7 +10,14 @@
     "lint": "next lint",
     "lint:ci": "eslint --cache --max-warnings=0 --ext .ts,.tsx,.js,.jsx .",
     "prepare": "husky install",
-    "test": "echo 'No unit tests yet'",
+    "test": "jest",
+    "test:unit": "jest tests/unit",
+    "test:contracts": "jest tests/contracts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:all": "npm run test:unit && npm run test:contracts && npm run test:e2e",
+    "test:watch": "jest --watch",
     "test:prettier": "node tests/prettier-test-simple.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -23,7 +30,8 @@
     "e2e:dev": "PW_WEB_SERVER_COMMAND='npm run dev' playwright test",
     "e2e:install": "playwright install chromium",
     "spellcheck": "cspell --config ./cspell.config.yaml --locale de,de-DE,en,en-US --no-progress --no-summary --exclude 'cspell.config.*' lint 'app/**/*.{ts,tsx,js,jsx,md,mdx}' 'src/**/*.{ts,tsx,js,jsx,md,mdx}' 'docs/**/*.{md,mdx}'",
-    "spellcheck:fix": "cspell --config ./cspell.config.yaml --locale de,de-DE,en,en-US --no-progress --no-summary --wordsOnly --unique --exclude 'cspell.config.*' lint 'app/**/*.{ts,tsx,js,jsx,md,mdx}' 'src/**/*.{ts,tsx,js,jsx,md,mdx}' 'docs/**/*.{md,mdx}'"
+    "spellcheck:fix": "cspell --config ./cspell.config.yaml --locale de,de-DE,en,en-US --no-progress --no-summary --wordsOnly --unique --exclude 'cspell.config.*' lint 'app/**/*.{ts,tsx,js,jsx,md,mdx}' 'src/**/*.{ts,tsx,js,jsx,md,mdx}' 'docs/**/*.{md,mdx}'",
+    "stripe:key:check": "sh -c 'if [ -f .env.development.local ]; then dotenv -e .env.development.local -- node scripts/check-stripe-key.mjs; elif [ -f .env.local ]; then dotenv -e .env.local -- node scripts/check-stripe-key.mjs; else node scripts/check-stripe-key.mjs; fi'"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
@@ -46,15 +54,19 @@
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
     "@prisma/client": "^6.16.3",
+    "date-fns": "^4.1.0",
     "next": "14.2.33",
     "pg": "^8.16.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "stripe": "^19.1.0",
     "zod": "^4.1.11"
   },
   "devDependencies": {
     "@cspell/dict-de-de": "^4.1.2",
+    "@jest/globals": "^30.2.0",
     "@playwright/test": "^1.48.2",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.14.10",
     "@types/react": "^18.2.74",
     "@types/react-dom": "^18.2.24",
@@ -63,9 +75,11 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.33",
     "husky": "^8.0.0",
+    "jest": "^30.2.0",
     "lint-staged": "^16.2.3",
     "prettier": "^3.6.2",
     "prisma": "^6.16.3",
+    "ts-jest": "^29.4.4",
     "typescript": "^5.5.4"
   }
 }

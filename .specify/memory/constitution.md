@@ -2,6 +2,36 @@
 
 <!--
 SYNC IMPACT REPORT - Constitution Amendment
+Version Change: 1.1.0 → 1.2.0
+Amendment Date: 2025-10-09
+Amendment Type: MINOR (Stripe payment integration standards added)
+
+Modified Sections:
+- Enhanced: Core Technologies (added Stripe payment processing)
+- Enhanced: Authentication & Security (added payment security standards)
+- Enhanced: Test-First Development (added payment testing requirements)
+- Enhanced: Feature Development Workflow (added payment integration requirements)
+- Enhanced: Testing Requirements (added payment integration testing)
+- Enhanced: Code Organization (added payment processing standards)
+- Enhanced: Deployment Standards (added payment configuration management)
+- Enhanced: GitHub Actions Workflow Requirements (added payment security)
+- Enhanced: Testing Compliance (added payment flow testing)
+
+Key Changes:
+- Stripe integration mandatory for all payment processing
+- PCI DSS compliance requirements for payment flows
+- Test/live mode separation for development and production
+- Webhook security validation requirements
+- Payment flow testing standards
+- Secure payment configuration management
+
+Rationale: Adding Stripe payment integration standards ensures secure, compliant
+payment processing while maintaining constitutional quality standards for all
+payment-related functionality.
+-->
+
+<!--
+SYNC IMPACT REPORT - Constitution Amendment
 Version Change: 1.0.0 → 1.1.0
 Amendment Date: 2025-10-05
 Amendment Type: MINOR (new deployment standards and GitHub Actions workflow requirements added)
@@ -45,6 +75,8 @@ Test-Driven Development is mandatory for all features and components:
 - **TDD Cycle**: Red (failing tests) → Green (minimal implementation) → Refactor → Repeat
 - **Test Coverage**: Minimum 80% code coverage for critical paths, 90% for authentication and
   payment flows
+- **Payment Testing**: All Stripe integration must use test mode for development with mock payment
+  scenarios
 - **Prettier Tests**: Code formatting tests ensure consistent style across the entire codebase
 
 ### II. Code Quality & Formatting
@@ -63,18 +95,25 @@ Every feature follows a structured development process:
 
 - **Specification First**: Features start with detailed specifications in `specs/` directory
 - **Contract Definition**: API contracts and component interfaces defined before implementation
+- **Payment Integration**: All payment flows integrate with Stripe using secure webhook handling
 - **Authentication Integration**: All protected features integrate with Clerk authentication system
 - **Database Migration**: Schema changes require proper Prisma migrations with rollback strategy
-- **Performance Testing**: Load testing for user-facing features, especially authentication flows
+- **Performance Testing**: Load testing for user-facing features, especially authentication and
+  payment flows
+- **Payment Security Testing**: Stripe webhook validation and secure checkout flow testing
 
 ### IV. Authentication & Security
 
-Security-first approach to user authentication and data protection:
+Security-first approach to user authentication, payment processing, and data protection:
 
 - **Clerk Integration**: All authentication flows use Clerk APIs and middleware
+- **Stripe Security**: Payment processing through Stripe with PCI DSS compliance and webhook
+  verification
 - **Role-Based Access**: User roles (student, instructor, admin) enforce proper access control
 - **Protected Routes**: Middleware validation for all `/protected` routes
 - **Session Management**: Secure session handling with proper token validation
+- **Payment Security**: Stripe secret keys managed through environment variables with test/live mode
+  separation
 - **CVE Monitoring**: Regular dependency vulnerability scanning and updates
 
 ### V. Component Architecture
@@ -96,6 +135,7 @@ Modular, reusable component design principles:
 - **Contract Tests**: API and component contract validation before implementation
 - **Prettier Tests**: Automated formatting validation with `npm run test:prettier`
 - **Performance Tests**: Load testing for authentication and course enrollment flows
+- **Payment Integration Tests**: Stripe webhook testing and checkout flow validation
 - **Security Tests**: Vulnerability scanning and penetration testing for auth flows
 
 ### Code Organization
@@ -104,6 +144,7 @@ Modular, reusable component design principles:
 - **Shared Libraries**: Common utilities in `lib/` directory with proper TypeScript exports
 - **Database Layer**: Prisma ORM with type-safe database operations
 - **API Routes**: Next.js API routes with proper error handling and validation
+- **Payment Processing**: Stripe integration with secure webhook endpoints and proper error handling
 - **Component Structure**: Separate presentational and container components
 
 ### Quality Gates
@@ -137,6 +178,7 @@ All deployments follow the GitHub Actions workflow (`.github/workflows/deploy.ym
 
 - **Frontend**: Next.js 14+ with App Router, React 18+, TypeScript 5+
 - **Authentication**: Clerk for user management and session handling
+- **Payments**: Stripe for secure payment processing and subscription management
 - **Database**: PostgreSQL with Prisma ORM for type-safe operations
 - **Styling**: Material-UI (MUI) with custom theme support
 - **Testing**: Playwright for E2E, Jest/Vitest for unit tests
@@ -165,6 +207,8 @@ All deployments follow a structured CI/CD pipeline with mandatory quality gates:
   documentation
 - **Environment Secrets**: All sensitive configuration managed through Vercel environment variables
   and GitHub secrets
+- **Payment Configuration**: Stripe keys (test/live) managed securely with environment-based mode
+  switching
 
 ### GitHub Actions Workflow Requirements
 
@@ -177,6 +221,8 @@ The deployment workflow (`.github/workflows/deploy.yml`) enforces constitutional
 - **Artifact Management**: Playwright reports uploaded for debugging failed E2E tests
 - **Security**: VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID managed as GitHub repository
   secrets
+- **Payment Security**: Stripe webhook secrets and API keys secured in repository secrets with
+  proper test/live separation
 
 ## Governance
 
@@ -201,7 +247,10 @@ This constitution supersedes all other development practices and must be followe
 - **Unit Test Mandate**: No feature implementation without corresponding unit tests
 - **Prettier Compliance**: All code must pass `npm run test:prettier` validation
 - **Contract Validation**: API and component contracts must be tested before implementation
+- **Payment Flow Testing**: Stripe checkout and webhook flows must be validated in test mode
 - **Performance Benchmarks**: Authentication flows must meet sub-100ms response requirements
 - **Security Validation**: All auth-related code requires security review and testing
+- **Payment Security Compliance**: All Stripe integrations must follow PCI DSS guidelines and use
+  secure webhook handling
 
-**Version**: 1.1.0 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-05
+**Version**: 1.2.0 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-09
