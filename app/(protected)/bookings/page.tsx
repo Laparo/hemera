@@ -170,8 +170,8 @@ export default async function BookingsPage() {
                           {booking.course.title}
                         </Typography>
                         <Chip
-                          label={formatBookingStatus(booking.status)}
-                          color={getBookingStatusColor(booking.status)}
+                          label={formatBookingStatus(booking.paymentStatus)}
+                          color={getBookingStatusColor(booking.paymentStatus)}
                           size='small'
                         />
                       </Stack>

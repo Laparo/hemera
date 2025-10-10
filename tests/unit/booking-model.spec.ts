@@ -1,0 +1,364 @@
+import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
+import { PaymentStatus, PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+describe('Booking Model Validations', () => {
+  let testCourse: any;
+  const testUserId = 'test-user-123';
+
+  beforeEach(async () => {
+    // Clean up test data
+    await prisma.booking.deleteMany();
+    await prisma.course.deleteMany();
+
+    // Create a test course for booking tests
+    testCourse = await prisma.course.create({
+      data: {
+        title: 'Test Course for Bookings',
+        slug: 'test-course-bookings',
+        price: 9900,
+        currency: 'USD',
+        isPublished: true,
+      },
+    });
+  });
+
+  afterEach(async () => {
+    // Clean up test data
+    await prisma.booking.deleteMany();
+    await prisma.course.deleteMany();
+  });
+
+  describe('Required Fields', () => {
+    it('should create booking with valid required fields', async () => {
+      const bookingData = {
+        userId: testUserId,
+        courseId: testCourse.id,
+        amount: testCourse.price,
+        currency: 'USD',
+      };
+
+      const booking = await prisma.booking.create({
+        data: bookingData,
+        include: {
+          course: true,
+        },
+      });
+
+      expect(booking.id).toBeDefined();
+      expect(booking.userId).toBe(testUserId);
+      expect(booking.courseId).toBe(testCourse.id);
+      expect(booking.amount).toBe(testCourse.price);
+      expect(booking.currency).toBe('USD');
+      expect(booking.paymentStatus).toBe(PaymentStatus.PENDING); // default
+      expect(booking.stripePaymentIntentId).toBeNull();
+      expect(booking.stripeSessionId).toBeNull();
+      expect(booking.createdAt).toBeInstanceOf(Date);
+      expect(booking.updatedAt).toBeInstanceOf(Date);
+      expect(booking.course.title).toBe(testCourse.title);
+    });
+
+    it('should require userId field', async () => {
+      const bookingData = {
+        courseId: testCourse.id,
+        amount: 9900,
+      };
+
+      await expect(
+        prisma.booking.create({
+          // @ts-expect-error - intentionally missing userId
+          data: bookingData,
+        })
+      ).rejects.toThrow();
+    });
+
+    it('should require courseId field', async () => {
+      const bookingData = {
+        userId: testUserId,
+        amount: 9900,
+      };
+
+      await expect(
+        prisma.booking.create({
+          // @ts-expect-error - intentionally missing courseId
+          data: bookingData,
+        })
+      ).rejects.toThrow();
+    });
+
+    it('should require amount field', async () => {
+      const bookingData = {
+        userId: testUserId,
+        courseId: testCourse.id,
+      };
+
+      await expect(
+        prisma.booking.create({
+          // @ts-expect-error - intentionally missing amount
+          data: bookingData,
+        })
+      ).rejects.toThrow();
+    });
+
+    it('should require valid courseId reference', async () => {
+      const bookingData = {
+        userId: testUserId,
+        courseId: 'non-existent-course-id',
+        amount: 9900,
+      };
+
+      await expect(
+        prisma.booking.create({
+          data: bookingData,
+        })
+      ).rejects.toThrow(); // Foreign key constraint violation
+    });
+  });
+
+  describe('Unique Constraint Validation', () => {
+    it('should prevent duplicate bookings for same user and course', async () => {
+      const bookingData = {
+        userId: testUserId,
+        courseId: testCourse.id,
+        amount: testCourse.price,
+      };
+
+      // Create first booking
+      await prisma.booking.create({
+        data: bookingData,
+      });
+
+      // Attempt to create duplicate booking
+      await expect(
+        prisma.booking.create({
+          data: bookingData,
+        })
+      ).rejects.toThrow(); // Unique constraint violation
+    });
+
+    it('should allow same user to book different courses', async () => {
+      const secondCourse = await prisma.course.create({
+        data: {
+          title: 'Second Test Course',
+          slug: 'second-test-course',
+          price: 5000,
+          isPublished: true,
+        },
+      });
+
+      const firstBooking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: testCourse.id,
+          amount: testCourse.price,
+        },
+      });
+
+      const secondBooking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: secondCourse.id,
+          amount: secondCourse.price,
+        },
+      });
+
+      expect(firstBooking.id).toBeDefined();
+      expect(secondBooking.id).toBeDefined();
+      expect(firstBooking.id).not.toBe(secondBooking.id);
+    });
+
+    it('should allow different users to book same course', async () => {
+      const firstBooking = await prisma.booking.create({
+        data: {
+          userId: 'user-1',
+          courseId: testCourse.id,
+          amount: testCourse.price,
+        },
+      });
+
+      const secondBooking = await prisma.booking.create({
+        data: {
+          userId: 'user-2',
+          courseId: testCourse.id,
+          amount: testCourse.price,
+        },
+      });
+
+      expect(firstBooking.id).toBeDefined();
+      expect(secondBooking.id).toBeDefined();
+      expect(firstBooking.id).not.toBe(secondBooking.id);
+    });
+  });
+
+  describe('Payment Status Validation', () => {
+    it('should accept all valid PaymentStatus values', async () => {
+      const statuses: PaymentStatus[] = [
+        PaymentStatus.PENDING,
+        PaymentStatus.PAID,
+        PaymentStatus.FAILED,
+        PaymentStatus.CANCELLED,
+        PaymentStatus.REFUNDED,
+      ];
+
+      for (let i = 0; i < statuses.length; i++) {
+        const status = statuses[i];
+        const booking = await prisma.booking.create({
+          data: {
+            userId: `user-${i}`,
+            courseId: testCourse.id,
+            amount: testCourse.price,
+            paymentStatus: status,
+          },
+        });
+
+        expect(booking.paymentStatus).toBe(status);
+      }
+    });
+
+    it('should default to PENDING status', async () => {
+      const booking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: testCourse.id,
+          amount: testCourse.price,
+          // No paymentStatus specified
+        },
+      });
+
+      expect(booking.paymentStatus).toBe(PaymentStatus.PENDING);
+    });
+  });
+
+  describe('Optional Stripe Fields', () => {
+    it('should accept null Stripe payment intent ID', async () => {
+      const booking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: testCourse.id,
+          amount: testCourse.price,
+          stripePaymentIntentId: null,
+        },
+      });
+
+      expect(booking.stripePaymentIntentId).toBeNull();
+    });
+
+    it('should accept valid Stripe payment intent ID', async () => {
+      const paymentIntentId = 'pi_test_1234567890';
+      const booking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: testCourse.id,
+          amount: testCourse.price,
+          stripePaymentIntentId: paymentIntentId,
+        },
+      });
+
+      expect(booking.stripePaymentIntentId).toBe(paymentIntentId);
+    });
+
+    it('should accept null Stripe session ID', async () => {
+      const booking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: testCourse.id,
+          amount: testCourse.price,
+          stripeSessionId: null,
+        },
+      });
+
+      expect(booking.stripeSessionId).toBeNull();
+    });
+
+    it('should accept valid Stripe session ID', async () => {
+      const sessionId = 'cs_test_session_1234567890';
+      const booking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: testCourse.id,
+          amount: testCourse.price,
+          stripeSessionId: sessionId,
+        },
+      });
+
+      expect(booking.stripeSessionId).toBe(sessionId);
+    });
+  });
+
+  describe('Currency and Amount Validation', () => {
+    it('should handle different currencies', async () => {
+      const booking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: testCourse.id,
+          amount: 8500, // €85.00 in cents
+          currency: 'EUR',
+        },
+      });
+
+      expect(booking.currency).toBe('EUR');
+      expect(booking.amount).toBe(8500);
+    });
+
+    it('should default to USD currency', async () => {
+      const booking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: testCourse.id,
+          amount: testCourse.price,
+          // No currency specified
+        },
+      });
+
+      expect(booking.currency).toBe('USD');
+    });
+
+    it('should accept zero amount for free courses', async () => {
+      const freeCourse = await prisma.course.create({
+        data: {
+          title: 'Free Course',
+          slug: 'free-course',
+          price: 0,
+          isPublished: true,
+        },
+      });
+
+      const booking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: freeCourse.id,
+          amount: 0,
+        },
+      });
+
+      expect(booking.amount).toBe(0);
+    });
+  });
+
+  describe('Relationship Constraints', () => {
+    it('should maintain referential integrity on course deletion', async () => {
+      const booking = await prisma.booking.create({
+        data: {
+          userId: testUserId,
+          courseId: testCourse.id,
+          amount: testCourse.price,
+        },
+      });
+
+      expect(booking.courseId).toBe(testCourse.id);
+
+      // Delete the course (should cascade delete the booking)
+      await prisma.course.delete({
+        where: { id: testCourse.id },
+      });
+
+      // Booking should be deleted due to CASCADE
+      const deletedBooking = await prisma.booking.findUnique({
+        where: { id: booking.id },
+      });
+
+      expect(deletedBooking).toBeNull();
+    });
+  });
+});

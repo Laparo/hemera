@@ -1,115 +1,224 @@
-import { createBooking, getUserBookings } from '@/lib/api/bookings';
-import { auth } from '@clerk/nextjs/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db/prisma';
+import { currentUser } from '@clerk/nextjs/server';
+import { PaymentStatus } from '@prisma/client';
+import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// Request validation schema
-const createBookingSchema = z.object({
+const BookingQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  status: z.nativeEnum(PaymentStatus).optional(),
+});
+
+const CreateBookingSchema = z.object({
   courseId: z.string().min(1, 'Course ID is required'),
 });
 
-/**
- * POST /api/bookings
- * Create a new booking for the authenticated user
- */
-export async function POST(request: NextRequest) {
+export async function GET(request: Request) {
+  const requestId = crypto.randomUUID();
+
   try {
-    // Check authentication
-    const { userId } = await auth();
-    if (!userId) {
+    const { searchParams } = new URL(request.url);
+    const queryParams = Object.fromEntries(searchParams.entries());
+    const validatedParams = BookingQuerySchema.parse(queryParams);
+
+    const user = await currentUser();
+    if (!user?.id) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { success: false, error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Parse and validate request body
-    const body = await request.json();
-    const validatedData = createBookingSchema.parse(body);
-
-    // Create booking
-    const booking = await createBooking({
-      userId,
-      courseId: validatedData.courseId,
-      status: 'pending',
-    });
-
-    return NextResponse.json({
-      success: true,
-      booking: {
-        id: booking.id,
-        courseId: booking.courseId,
-        status: booking.status,
-        createdAt: booking.createdAt,
+    // Ensure the user exists in our database (upsert from Clerk)
+    await prisma.user.upsert({
+      where: { id: user.id },
+      update: {
+        name: user.fullName || user.firstName || null,
+        email: user.primaryEmailAddress?.emailAddress || null,
+        image: user.imageUrl || null,
+      },
+      create: {
+        id: user.id,
+        name: user.fullName || user.firstName || null,
+        email: user.primaryEmailAddress?.emailAddress || null,
+        image: user.imageUrl || null,
       },
     });
-  } catch (error) {
-    console.error('Booking creation error:', error);
 
-    // Handle validation errors
+    // Get user's bookings with pagination
+    const where = {
+      userId: user.id,
+      ...(validatedParams.status && { paymentStatus: validatedParams.status }),
+    };
+
+    const [bookings, total] = await Promise.all([
+      prisma.booking.findMany({
+        where,
+        include: {
+          course: {
+            select: {
+              title: true,
+              price: true,
+              currency: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: (validatedParams.page - 1) * validatedParams.limit,
+        take: validatedParams.limit,
+      }),
+      prisma.booking.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / validatedParams.limit);
+
+    const responseData = {
+      success: true,
+      data: {
+        bookings: bookings.map(booking => ({
+          id: booking.id,
+          courseId: booking.courseId,
+          courseTitle: booking.course.title,
+          coursePrice: booking.course.price,
+          currency: booking.course.currency,
+          paymentStatus: booking.paymentStatus,
+          createdAt: booking.createdAt,
+        })),
+        pagination: {
+          page: validatedParams.page,
+          limit: validatedParams.limit,
+          total,
+          pages: totalPages,
+        },
+      },
+    };
+
+    return NextResponse.json(responseData);
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        {
-          error: 'Invalid request data',
-          details: error.issues.map(issue => issue.message).join(', '),
-        },
+        { success: false, error: 'Invalid parameters' },
         { status: 400 }
       );
     }
 
-    // Handle application errors
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    // Handle unexpected errors
+    console.error('Bookings fetch error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Internal error' },
       { status: 500 }
     );
   }
 }
 
-/**
- * GET /api/bookings
- * Get all bookings for the authenticated user
- */
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    // Check authentication
-    const { userId } = await auth();
-    if (!userId) {
+    const user = await currentUser();
+    if (!user?.id) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { success: false, error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Get user bookings
-    const bookings = await getUserBookings(userId);
+    const body = await request.json();
+    const validatedData = CreateBookingSchema.parse(body);
+
+    // Check if course exists and is published
+    const course = await prisma.course.findUnique({
+      where: {
+        id: validatedData.courseId,
+        isPublished: true,
+      },
+    });
+
+    if (!course) {
+      return NextResponse.json(
+        { success: false, error: 'Course not found or not available' },
+        { status: 404 }
+      );
+    }
+
+    // Ensure the user exists in our database (upsert from Clerk)
+    await prisma.user.upsert({
+      where: { id: user.id },
+      update: {
+        name: user.fullName || user.firstName || null,
+        email: user.primaryEmailAddress?.emailAddress || null,
+        image: user.imageUrl || null,
+      },
+      create: {
+        id: user.id,
+        name: user.fullName || user.firstName || null,
+        email: user.primaryEmailAddress?.emailAddress || null,
+        image: user.imageUrl || null,
+      },
+    });
+
+    // Check if user already has a booking for this course
+    const existingBooking = await prisma.booking.findFirst({
+      where: {
+        userId: user.id,
+        courseId: validatedData.courseId,
+      },
+    });
+
+    if (existingBooking) {
+      return NextResponse.json(
+        { success: false, error: 'You have already booked this course' },
+        { status: 409 }
+      );
+    }
+
+    // Create the booking
+    const booking = await prisma.booking.create({
+      data: {
+        userId: user.id,
+        courseId: validatedData.courseId,
+        paymentStatus: PaymentStatus.PENDING,
+        amount: course.price,
+        currency: course.currency,
+      },
+      include: {
+        course: {
+          select: {
+            title: true,
+            price: true,
+          },
+        },
+      },
+    });
 
     return NextResponse.json({
       success: true,
-      bookings: bookings.map(booking => ({
-        id: booking.id,
-        courseId: booking.courseId,
-        status: booking.status,
-        createdAt: booking.createdAt,
-        updatedAt: booking.updatedAt,
-        course: {
-          id: booking.course.id,
-          title: booking.course.title,
-          description: booking.course.description,
-          slug: booking.course.slug,
+      data: {
+        booking: {
+          id: booking.id,
+          courseId: booking.courseId,
+          courseTitle: booking.course.title,
           price: booking.course.price,
+          paymentStatus: booking.paymentStatus,
+          createdAt: booking.createdAt,
         },
-      })),
+      },
     });
   } catch (error) {
-    console.error('Bookings fetch error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid request data',
+          details: error.issues,
+        },
+        { status: 400 }
+      );
+    }
 
+    console.error('Booking creation error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Failed to create booking' },
       { status: 500 }
     );
   }

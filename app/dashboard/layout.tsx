@@ -1,7 +1,7 @@
 'use client';
 
-import { useAuth, UserButton, useUser } from '@clerk/nextjs';
-import { AppBar, Box, Container, Toolbar, Typography } from '@mui/material';
+import { useAuth, useUser } from '@clerk/nextjs';
+import { Box, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -46,42 +46,15 @@ export default function DashboardLayout({
       data-testid='dashboard-layout'
       sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
     >
-      {/* Top Navigation Bar */}
-      <AppBar position='static' elevation={1}>
-        <Toolbar>
-          <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
-            Hemera Academy - Dashboard
-          </Typography>
-
-          <UserButton
-            afterSignOutUrl='/'
-            appearance={{
-              elements: {
-                avatarBox: {
-                  width: '32px',
-                  height: '32px',
-                },
-              },
-            }}
-            showName={false}
-            data-testid='user-profile-button'
-          />
-        </Toolbar>
-      </AppBar>
-
-      {/* Main Content */}
-      <Container
+      <Box
         component='main'
-        maxWidth='lg'
         sx={{
           flexGrow: 1,
-          py: 3,
-          display: 'flex',
-          flexDirection: 'column',
+          p: 3,
         }}
       >
         {children}
-      </Container>
+      </Box>
     </Box>
   );
 }
