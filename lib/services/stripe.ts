@@ -51,14 +51,6 @@ export class StripeService {
         bookingId,
       } = params;
 
-      // For free courses, return a mock session
-      if (coursePrice === 0) {
-        return {
-          sessionId: `cs_free_${courseId}_${userId}_${Date.now()}`,
-          url: successUrl,
-        };
-      }
-
       const session = await this.stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
