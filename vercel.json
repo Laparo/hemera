@@ -6,6 +6,5 @@
   "devCommand": "npm run dev",
   "regions": ["fra1"],
   "cleanUrls": true,
-  "trailingSlash": false,
-  "nodeVersion": "24.7.0"
+  "trailingSlash": false
 }
