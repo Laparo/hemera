@@ -7,5 +7,5 @@
   "regions": ["fra1"],
   "cleanUrls": true,
   "trailingSlash": false,
-  "nodeVersion": "20"
+  "nodeVersion": "24.7.0"
 }
