@@ -58,8 +58,8 @@ test.describe('Complete Payment Flow E2E', () => {
 
     // Step 2: Authenticate user
     await test.step('Sign in with Clerk authentication', async () => {
-      // Click sign in button
-      await page.click('[data-testid="sign-in-button"]');
+      // Click sign in button (should be on homepage or global nav)
+      await page.click('[data-testid="hero-login-button"]');
 
       // Wait for Clerk sign-in form
       await page.waitForSelector('[data-clerk-element="sign-in"]', {
@@ -241,7 +241,7 @@ test.describe('Complete Payment Flow E2E', () => {
   test('should handle payment flow for free course', async () => {
     // Step 1: Authenticate user first
     await test.step('Sign in user', async () => {
-      await page.click('[data-testid="sign-in-button"]');
+      await page.click('[data-testid="hero-login-button"]');
       await page.waitForSelector('[data-clerk-element="sign-in"]', {
         timeout: 15000,
       });
@@ -324,7 +324,7 @@ test.describe('Complete Payment Flow E2E', () => {
     // Step 1: Complete initial booking
     await test.step('Complete first booking', async () => {
       // Sign in
-      await page.click('[data-testid="sign-in-button"]');
+      await page.click('[data-testid="hero-login-button"]');
       await page.waitForSelector('[data-clerk-element="sign-in"]', {
         timeout: 15000,
       });

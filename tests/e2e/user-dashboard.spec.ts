@@ -28,7 +28,7 @@ test.describe('User Dashboard E2E', () => {
     await page.goto('/');
 
     // Sign in with user that has existing bookings
-    await page.click('[data-testid="sign-in-button"]');
+    await page.click('[data-testid="hero-login-button"]');
     await page.waitForSelector('[data-clerk-element="sign-in"]', {
       timeout: 15000,
     });

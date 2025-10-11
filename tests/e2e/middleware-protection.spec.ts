@@ -97,7 +97,12 @@ test.describe('Middleware Protection Contract', () => {
     // Sign in
     await page.fill('input[name="identifier"]', 'user@example.com');
     await page.fill('input[name="password"]', 'userpassword123');
-    await page.click('button[type="submit"]');
+    // Use a more specific selector for Clerk submit button that's not hidden
+    const submitButton = page.locator(
+      'button[data-localization-key="formButtonPrimary"]:not([aria-hidden="true"])'
+    );
+    await submitButton.waitFor({ state: 'visible', timeout: 10000 });
+    await submitButton.click();
 
     // Should redirect back to originally requested page
     await expect(page).toHaveURL('/courses');

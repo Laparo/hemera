@@ -92,7 +92,9 @@ test.describe('Clerk Authentication UI Tests', () => {
     await expect(page.locator('input[name="identifier"]')).toBeVisible();
 
     // Check for submit button - Clerk may hide/disable it until form is valid
-    const submitButtons = page.locator('button[type="submit"]');
+    const submitButtons = page.locator(
+      'button[data-localization-key="formButtonPrimary"]:not([aria-hidden="true"])'
+    );
     const submitButton = submitButtons
       .filter({ hasText: /sign in|Sign in|continue|Continue/i })
       .first();

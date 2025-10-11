@@ -289,7 +289,14 @@ async function signInAsUser(page: any) {
   await page.goto('/sign-in');
   await page.fill('input[name="identifier"]', 'user@example.com');
   await page.fill('input[name="password"]', 'userpassword123');
-  await page.click('button[type="submit"]');
+
+  // Use a more specific selector for Clerk submit button that's not hidden
+  const submitButton = page.locator(
+    'button[data-localization-key="formButtonPrimary"]:not([aria-hidden="true"])'
+  );
+  await submitButton.waitFor({ state: 'visible', timeout: 10000 });
+  await submitButton.click();
+
   await page.waitForURL('/dashboard');
 }
 
@@ -297,7 +304,14 @@ async function signInAsAdmin(page: any) {
   await page.goto('/sign-in');
   await page.fill('input[name="identifier"]', 'admin@example.com');
   await page.fill('input[name="password"]', 'adminpassword123');
-  await page.click('button[type="submit"]');
+
+  // Use a more specific selector for Clerk submit button that's not hidden
+  const submitButton = page.locator(
+    'button[data-localization-key="formButtonPrimary"]:not([aria-hidden="true"])'
+  );
+  await submitButton.waitFor({ state: 'visible', timeout: 10000 });
+  await submitButton.click();
+
   await page.waitForURL('/dashboard');
 }
 
