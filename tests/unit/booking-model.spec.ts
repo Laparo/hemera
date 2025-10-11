@@ -9,64 +9,50 @@ describe('Booking Model Validations', () => {
   let testUser2: any;
 
   beforeEach(async () => {
-    // Clean up test data in correct order with explicit waiting
+    // Clean up any existing test data
     await prisma.booking.deleteMany();
     await prisma.course.deleteMany();
-    await prisma.account.deleteMany();
-    await prisma.user.deleteMany();
 
-    // Wait a bit to ensure cleanup is complete
-    await new Promise(resolve => setTimeout(resolve, 200));
+    // Create test course with enhanced unique naming
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 8);
+    const uniqueId = `test-course-${timestamp}-${randomSuffix}`;
 
-    // Create test users for booking tests with unique IDs per test run
-    const timestamp = Date.now() + Math.random();
-    const uniqueId = Math.floor(timestamp).toString();
+    // Use explicit transaction to ensure proper isolation
+    testCourse = await prisma.$transaction(async tx => {
+      const course = await tx.course.create({
+        data: {
+          id: uniqueId,
+          title: `Test Course ${timestamp}`,
+          description: 'Test Description',
+          price: 99.99,
+          duration: 60,
+          maxParticipants: 10,
+          startDate: new Date('2025-01-01'),
+          endDate: new Date('2025-02-01'),
+          currency: 'USD',
+          isPublished: true,
+        },
+      });
 
-    testUser = await prisma.user.create({
-      data: {
-        id: `test-user-123-${uniqueId}`,
-        email: `test1-${uniqueId}@example.com`,
-        name: 'Test User 1',
-      },
+      // Verify within same transaction
+      const courseVerify = await tx.course.findUnique({
+        where: { id: course.id },
+      });
+      if (!courseVerify) {
+        throw new Error(`Failed to create test course: ${course.id}`);
+      }
+
+      return course;
     });
 
-    // Verify user was created
-    const userVerify = await prisma.user.findUnique({
-      where: { id: testUser.id },
-    });
-    if (!userVerify) {
-      throw new Error(`Failed to create test user: ${testUser.id}`);
-    }
-
-    testUser2 = await prisma.user.create({
-      data: {
-        id: `test-user-456-${uniqueId}`,
-        email: `test2-${uniqueId}@example.com`,
-        name: 'Test User 2',
-      },
-    });
-
-    // Create a test course for booking tests with unique ID
-    testCourse = await prisma.course.create({
-      data: {
-        title: 'Test Course for Bookings',
-        slug: `test-course-bookings-${uniqueId}`,
-        price: 9900,
-        currency: 'USD',
-        isPublished: true,
-      },
-    });
-
-    // Verify course was created with all data
-    const courseVerify = await prisma.course.findUnique({
+    // Additional verification after transaction commit
+    const finalVerify = await prisma.course.findUnique({
       where: { id: testCourse.id },
     });
-    if (!courseVerify) {
-      throw new Error(`Failed to create test course: ${testCourse.id}`);
+    if (!finalVerify) {
+      throw new Error(`Course not found after transaction: ${testCourse.id}`);
     }
-
-    // Wait longer to ensure creation is complete
-    await new Promise(resolve => setTimeout(resolve, 300));
   });
 
   afterEach(async () => {
