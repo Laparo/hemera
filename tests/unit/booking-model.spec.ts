@@ -16,22 +16,32 @@ describe('Booking Model Validations', () => {
     await prisma.user.deleteMany();
 
     // Wait a bit to ensure cleanup is complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
     // Create test users for booking tests with unique IDs per test run
-    const timestamp = Date.now();
+    const timestamp = Date.now() + Math.random();
+    const uniqueId = Math.floor(timestamp).toString();
+
     testUser = await prisma.user.create({
       data: {
-        id: `test-user-123-${timestamp}`,
-        email: `test1-${timestamp}@example.com`,
+        id: `test-user-123-${uniqueId}`,
+        email: `test1-${uniqueId}@example.com`,
         name: 'Test User 1',
       },
     });
 
+    // Verify user was created
+    const userVerify = await prisma.user.findUnique({
+      where: { id: testUser.id },
+    });
+    if (!userVerify) {
+      throw new Error(`Failed to create test user: ${testUser.id}`);
+    }
+
     testUser2 = await prisma.user.create({
       data: {
-        id: `test-user-456-${timestamp}`,
-        email: `test2-${timestamp}@example.com`,
+        id: `test-user-456-${uniqueId}`,
+        email: `test2-${uniqueId}@example.com`,
         name: 'Test User 2',
       },
     });
@@ -40,15 +50,23 @@ describe('Booking Model Validations', () => {
     testCourse = await prisma.course.create({
       data: {
         title: 'Test Course for Bookings',
-        slug: `test-course-bookings-${timestamp}`,
+        slug: `test-course-bookings-${uniqueId}`,
         price: 9900,
         currency: 'USD',
         isPublished: true,
       },
     });
 
-    // Wait a bit to ensure creation is complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Verify course was created with all data
+    const courseVerify = await prisma.course.findUnique({
+      where: { id: testCourse.id },
+    });
+    if (!courseVerify) {
+      throw new Error(`Failed to create test course: ${testCourse.id}`);
+    }
+
+    // Wait longer to ensure creation is complete
+    await new Promise(resolve => setTimeout(resolve, 300));
   });
 
   afterEach(async () => {
@@ -65,6 +83,16 @@ describe('Booking Model Validations', () => {
 
   describe('Required Fields', () => {
     it('should create booking with valid required fields', async () => {
+      // Verify test course exists before creating booking
+      const courseExists = await prisma.course.findUnique({
+        where: { id: testCourse.id },
+      });
+
+      if (!courseExists) {
+        console.error('Test course not found. ID:', testCourse.id);
+        throw new Error(`Test course with ID ${testCourse.id} does not exist`);
+      }
+
       const bookingData = {
         userId: testUser.id,
         courseId: testCourse.id,
