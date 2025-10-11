@@ -2,6 +2,24 @@
 
 <!--
 SYNC IMPACT REPORT - Constitution Amendment
+Version Change: 1.4.0 → 1.5.0
+Amendment Date: 2025-10-11
+Amendment Type: MINOR (Perplexity MCP server integration added)
+
+Modified Sections:
+- Enhanced: Core Technologies (added Perplexity MCP for AI research assistance)
+
+Key Changes:
+- Perplexity MCP server integration for enhanced research and documentation
+- AI-powered research capabilities for spec development and technical decisions
+- Integration with existing research workflows in specs/*/research.md
+
+Rationale: Adding Perplexity MCP integration enhances research quality and technical decision-making
+while maintaining constitutional standards for documentation and research processes.
+-->
+
+<!--
+SYNC IMPACT REPORT - Constitution Amendment
 Version Change: 1.3.0 → 1.4.0
 Amendment Date: 2025-10-11
 Amendment Type: MINOR (Rollbar error monitoring integration standards added)
@@ -261,6 +279,7 @@ All deployments follow the GitHub Actions workflow (`.github/workflows/deploy.ym
 - **Styling**: Material-UI (MUI) with custom theme support
 - **Testing**: Playwright for E2E, Jest/Vitest for unit tests
 - **Error Monitoring**: Rollbar for comprehensive error tracking and performance monitoring
+- **AI Research Assistant**: Perplexity MCP server for enhanced research and documentation
 - **Code Quality**: Prettier, ESLint, Husky for pre-commit hooks
 
 ### Development Tools
@@ -359,4 +378,4 @@ Team wellness and code culture health checks ensure sustainable development prac
 - Repeated "quick fixes" without tests trigger technical debt discussion
 - Team member expressing frustration triggers one-on-one check-in
 
-**Version**: 1.4.0 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-11
+**Version**: 1.5.0 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-11
