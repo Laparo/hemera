@@ -38,3 +38,6 @@ pnpm-debug.log*
 # Testing artifacts
 playwright-report/
 test-results/
+
+# MCP configuration
+mcp.json
