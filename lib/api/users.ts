@@ -4,15 +4,15 @@
  */
 
 import { prisma } from '@/lib/db/prisma';
-import { currentUser, User as ClerkUser } from '@clerk/nextjs/server';
-import { User } from '@prisma/client';
 import {
-  UserNotFoundError,
-  UserEmailAlreadyExistsError,
-  UserValidationError,
   DatabaseConnectionError,
+  UserEmailAlreadyExistsError,
+  UserNotFoundError,
+  UserValidationError,
 } from '@/lib/errors';
 import { safePrismaOperation } from '@/lib/errors/prisma-mapping';
+import { User as ClerkUser, currentUser } from '@clerk/nextjs/server';
+import { User } from '@prisma/client';
 
 export type { User } from '@prisma/client';
 

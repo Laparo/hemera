@@ -5,7 +5,7 @@
  * Once a proper test framework is configured, implement these tests.
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 
 describe('Auth Guard Specification', () => {
   it('should have placeholder test', () => {

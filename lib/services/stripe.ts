@@ -1,11 +1,11 @@
+import {
+  PaymentProcessingError,
+  StripeConfigurationError,
+  logError,
+} from '@/lib/errors';
 import Stripe from 'stripe';
 import { STRIPE_API_VERSION } from '../stripe/config';
 import { PaymentStatus } from './course';
-import {
-  StripeConfigurationError,
-  PaymentProcessingError,
-  logError,
-} from '@/lib/errors';
 
 /**
  * Stripe Service

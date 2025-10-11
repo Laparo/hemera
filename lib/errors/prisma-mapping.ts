@@ -3,17 +3,17 @@
  * Converts Prisma errors to domain-specific error types
  */
 
-import { Prisma } from '@prisma/client';
 import { prisma as basePrisma } from '@/lib/db/prisma';
 import {
+  BookingAlreadyExistsError,
+  CourseSlugAlreadyExistsError,
   DatabaseConnectionError,
   DatabaseConstraintError,
   DatabaseValidationError,
   FieldValidationError,
   UserEmailAlreadyExistsError,
-  CourseSlugAlreadyExistsError,
-  BookingAlreadyExistsError,
 } from '@/lib/errors';
+import { Prisma } from '@prisma/client';
 
 /**
  * Convert Prisma errors to domain errors

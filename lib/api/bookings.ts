@@ -1,21 +1,20 @@
 import { prisma } from '@/lib/db/prisma';
 import {
+  BookingAlreadyExistsError,
+  BookingNotFoundError,
+  CourseNotFoundError,
+  CourseNotPublishedError,
+  DatabaseConnectionError,
+  InvalidBookingStatusError,
+  logError,
+  UserNotFoundError,
+} from '@/lib/errors';
+import {
   PaymentStatus,
-  Prisma,
   type Booking,
   type Course,
   type User,
 } from '@prisma/client';
-import {
-  BookingNotFoundError,
-  BookingAlreadyExistsError,
-  InvalidBookingStatusError,
-  CourseNotFoundError,
-  CourseNotPublishedError,
-  UserNotFoundError,
-  DatabaseConnectionError,
-  logError,
-} from '@/lib/errors';
 
 /**
  * Booking model with API utilities

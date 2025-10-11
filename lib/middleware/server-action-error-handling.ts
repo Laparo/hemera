@@ -3,15 +3,10 @@
  * Provides server action-specific error handling and result management
  */
 
-import { withErrorHandling } from '@/lib/errors/http';
-import { getRequestContext } from '@/lib/utils/request-context';
 import { mapPrismaError } from '@/lib/errors/prisma-mapping';
-import {
-  reportError,
-  createErrorContext,
-  recordUserAction,
-} from '../monitoring/rollbar';
+import { getRequestContext } from '@/lib/utils/request-context';
 import { BaseError } from '../errors/base';
+import { createErrorContext, reportError } from '../monitoring/rollbar';
 
 export interface ServerActionResult<T = any> {
   success: boolean;

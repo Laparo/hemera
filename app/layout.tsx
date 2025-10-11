@@ -1,7 +1,7 @@
+import ErrorBoundary from '@/components/ErrorBoundary';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
 import { PublicNavigation } from '@/components/navigation/PublicNavigation';
-import ErrorBoundary from '@/components/ErrorBoundary';
 import { RollbarProviderWrapper } from '@/lib/monitoring/rollbar-react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';

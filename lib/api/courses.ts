@@ -5,9 +5,9 @@
 
 import { prisma } from '@/lib/db/prisma';
 import {
-  DatabaseConnectionError,
   CourseNotFoundError,
   CourseNotPublishedError,
+  DatabaseConnectionError,
   logError,
 } from '@/lib/errors';
 

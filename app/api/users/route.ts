@@ -4,18 +4,15 @@
  * POST /api/users - Create new user (admin only)
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import {
-  withApiErrorHandling,
-  withAdminProtection,
-} from '@/lib/middleware/api-error-handling';
-import {
-  getAllUsers,
   createUser,
+  getAllUsers,
   searchUsers,
   type CreateUserData,
 } from '@/lib/api/users';
 import { UserValidationError } from '@/lib/errors';
+import { withAdminProtection } from '@/lib/middleware/api-error-handling';
+import { NextResponse } from 'next/server';
 
 // GET /api/users - Get all users (admin only)
 export const GET = withAdminProtection(async context => {

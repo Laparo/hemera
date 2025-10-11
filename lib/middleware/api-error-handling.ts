@@ -3,18 +3,16 @@
  * Provides route-specific error handling and request context management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { withErrorHandling, toHttpError } from '@/lib/errors/http';
+import { toHttpError } from '@/lib/errors/http';
 import { getRequestContext } from '@/lib/utils/request-context';
+import { NextRequest, NextResponse } from 'next/server';
 import { BaseError } from '../errors/base';
 import { mapPrismaError } from '../errors/prisma-mapping';
 import {
-  reportError,
   createErrorContext,
   recordUserAction,
-  type ErrorContext,
+  reportError,
 } from '../monitoring/rollbar';
-import type { User } from '@clerk/nextjs/server';
 
 export interface ApiRouteContext {
   request: NextRequest;

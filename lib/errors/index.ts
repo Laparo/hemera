@@ -5,38 +5,38 @@
 
 // Base error classes
 export {
+  AuthError,
   BaseError,
   BusinessError,
   InfrastructureError,
   ValidationError,
-  AuthError,
 } from './base';
 
 // Domain-specific errors
 export {
+  BookingAlreadyExistsError,
+  BookingNotFoundError,
   CourseNotFoundError,
   CourseNotPublishedError,
   CourseSlugAlreadyExistsError,
-  BookingNotFoundError,
-  BookingAlreadyExistsError,
-  InvalidBookingStatusError,
-  UserNotFoundError,
-  UserEmailAlreadyExistsError,
-  PaymentProcessingError,
-  StripeConfigurationError,
-  UnauthorizedError,
-  SessionExpiredError,
   DatabaseConnectionError,
   DatabaseConstraintError,
   DatabaseValidationError,
   FieldValidationError,
+  InvalidBookingStatusError,
+  PaymentProcessingError,
+  SessionExpiredError,
+  StripeConfigurationError,
+  UnauthorizedError,
+  UserEmailAlreadyExistsError,
+  UserNotFoundError,
   UserValidationError,
 } from './domain';
 
 // HTTP utilities
 export {
-  toHttpError,
   logError,
+  toHttpError,
   withErrorHandling,
   type ApiErrorResponse,
 } from './http';

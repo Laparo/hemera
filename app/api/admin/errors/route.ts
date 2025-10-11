@@ -3,9 +3,9 @@
  * Provides error metrics and logs for monitoring dashboard
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import { withErrorHandling } from '@/lib/errors';
 import { errorAnalytics } from '@/lib/services/error-analytics';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);

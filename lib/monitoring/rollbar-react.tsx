@@ -5,14 +5,12 @@
 
 'use client';
 
+import {
+  ErrorBoundary as RollbarErrorBoundary,
+  Provider as RollbarProvider,
+} from '@rollbar/react';
 import React from 'react';
 import Rollbar from 'rollbar';
-import {
-  Provider as RollbarProvider,
-  ErrorBoundary as RollbarErrorBoundary,
-  useRollbarPerson,
-  useRollbarContext,
-} from '@rollbar/react';
 
 // Environment-specific configuration
 const isProduction = process.env.NODE_ENV === 'production';

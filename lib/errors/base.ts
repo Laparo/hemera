@@ -4,9 +4,9 @@
  */
 
 import {
-  reportError,
   createErrorContext,
   ErrorSeverity,
+  reportError,
   type ErrorSeverityType,
 } from '../monitoring/rollbar';
 

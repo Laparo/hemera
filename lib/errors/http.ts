@@ -3,25 +3,14 @@
  * Converts domain errors to standardized HTTP responses
  */
 
-import { NextResponse } from 'next/server';
-import { BaseError } from './base';
-import {
-  getRequestId,
-  logErrorWithContext,
-  getRequestContext,
-} from '@/lib/utils/request-context';
 import { errorAnalytics } from '@/lib/services/error-analytics';
 import {
-  CourseNotFoundError,
-  CourseNotPublishedError,
-  BookingNotFoundError,
-  UserNotFoundError,
-  UnauthorizedError,
-  SessionExpiredError,
-  PaymentProcessingError,
-  StripeConfigurationError,
-  DatabaseConnectionError,
-} from './domain';
+  getRequestContext,
+  getRequestId,
+  logErrorWithContext,
+} from '@/lib/utils/request-context';
+import { NextResponse } from 'next/server';
+import { BaseError } from './base';
 
 export interface ApiErrorResponse {
   error: {

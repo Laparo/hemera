@@ -7,17 +7,16 @@
 
 import {
   getCurrentUserWithSync,
-  updateUser,
-  getUserProfile,
   getUserStats,
+  updateUser,
   type UpdateUserData,
 } from '@/lib/api/users';
+import { UserValidationError } from '@/lib/errors';
 import {
   withServerActionErrorHandling,
   type ServerActionContext,
   type ServerActionResult,
 } from '@/lib/middleware/server-action-error-handling';
-import { UserValidationError } from '@/lib/errors';
 import { revalidatePath } from 'next/cache';
 
 /**

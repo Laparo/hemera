@@ -5,19 +5,16 @@
  * DELETE /api/users/[id] - Delete specific user (admin only)
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import {
-  withApiErrorHandling,
-  withAdminProtection,
-} from '@/lib/middleware/api-error-handling';
-import {
-  getUserProfile,
-  updateUser,
   deleteUser,
+  getUserProfile,
   getUserStats,
+  updateUser,
   type UpdateUserData,
 } from '@/lib/api/users';
 import { UserValidationError } from '@/lib/errors';
+import { withAdminProtection } from '@/lib/middleware/api-error-handling';
+import { NextResponse } from 'next/server';
 
 // GET /api/users/[id] - Get specific user (admin only)
 export const GET = withAdminProtection(async context => {

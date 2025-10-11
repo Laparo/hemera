@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
-import { Box, Typography, Button, Container } from '@mui/material';
 import { ErrorOutline, Refresh } from '@mui/icons-material';
+import { Box, Button, Container, Typography } from '@mui/material';
+import React from 'react';
 
 interface ErrorPageProps {
   error: Error & { digest?: string };

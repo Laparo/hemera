@@ -3,15 +3,15 @@
  * Allows testing different error types in development
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { withErrorHandling } from '@/lib/errors';
 import {
   CourseNotFoundError,
-  PaymentProcessingError,
   DatabaseConnectionError,
-  UnauthorizedError,
+  PaymentProcessingError,
   StripeConfigurationError,
+  UnauthorizedError,
+  withErrorHandling,
 } from '@/lib/errors';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const GET = withErrorHandling(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);

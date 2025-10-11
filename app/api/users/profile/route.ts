@@ -4,18 +4,14 @@
  * PUT /api/users/profile - Update current user profile
  */
 
-import { NextRequest, NextResponse } from 'next/server';
 import {
-  withApiErrorHandling,
-  withAuthProtection,
-} from '@/lib/middleware/api-error-handling';
-import {
-  getCurrentUserWithSync,
-  updateUser,
   getUserProfile,
+  updateUser,
   type UpdateUserData,
 } from '@/lib/api/users';
 import { UserValidationError } from '@/lib/errors';
+import { withAuthProtection } from '@/lib/middleware/api-error-handling';
+import { NextResponse } from 'next/server';
 
 // GET /api/users/profile - Get current user profile
 export const GET = withAuthProtection(async context => {

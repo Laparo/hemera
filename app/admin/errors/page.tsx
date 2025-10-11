@@ -1,35 +1,34 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
 import {
+  Error as ErrorIcon,
+  Info as InfoIcon,
+  Refresh as RefreshIcon,
+  CheckCircle as ResolveIcon,
+  Warning as WarningIcon,
+} from '@mui/icons-material';
+import {
+  Alert,
   Box,
-  Container,
-  Typography,
-  Grid,
+  Button,
   Card,
   CardContent,
+  Chip,
+  CircularProgress,
+  Container,
+  Grid,
+  IconButton,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Chip,
-  IconButton,
-  Alert,
-  CircularProgress,
   Tabs,
-  Tab,
-  Button,
+  Typography,
 } from '@mui/material';
-import {
-  Refresh as RefreshIcon,
-  CheckCircle as ResolveIcon,
-  Error as ErrorIcon,
-  Warning as WarningIcon,
-  Info as InfoIcon,
-} from '@mui/icons-material';
+import { useCallback, useEffect, useState } from 'react';
 
 interface ErrorMetrics {
   errorCount: number;

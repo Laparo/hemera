@@ -4,10 +4,10 @@
  */
 
 import {
-  BusinessError,
-  ValidationError,
-  InfrastructureError,
   AuthError,
+  BusinessError,
+  InfrastructureError,
+  ValidationError,
 } from './base';
 
 // ===== COURSE ERRORS =====

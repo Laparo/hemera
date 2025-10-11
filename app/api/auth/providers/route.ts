@@ -3,8 +3,8 @@
  * Returns available authentication providers for the application
  */
 
+import { withErrorHandling } from '@/lib/errors';
 import { NextResponse } from 'next/server';
-import { withErrorHandling, logError } from '@/lib/errors';
 
 export const GET = withErrorHandling(async () => {
   // Define the available auth providers as expected by the contract
