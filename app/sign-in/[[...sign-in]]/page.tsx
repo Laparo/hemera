@@ -2,8 +2,12 @@
 
 import { SignIn } from '@clerk/nextjs';
 import { Box, Container, Paper, Typography } from '@mui/material';
+import { useSearchParams } from 'next/navigation';
 
 export default function SignInPage() {
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams?.get('redirect_url') || '/dashboard';
+
   return (
     <Box
       sx={{
@@ -75,6 +79,7 @@ export default function SignInPage() {
             }}
           >
             <SignIn
+              redirectUrl={redirectUrl}
               appearance={{
                 elements: {
                   rootBox: {

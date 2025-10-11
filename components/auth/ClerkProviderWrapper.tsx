@@ -40,6 +40,8 @@ export default function ClerkProviderWrapper({
       afterSignUpUrl={clerkConfig.afterSignUpUrl}
       signInUrl={clerkConfig.signInUrl}
       signUpUrl={clerkConfig.signUpUrl}
+      signInFallbackRedirectUrl={clerkConfig.afterSignInUrl}
+      signUpFallbackRedirectUrl={clerkConfig.afterSignUpUrl}
     >
       {children}
     </ClerkProvider>

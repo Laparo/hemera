@@ -134,7 +134,12 @@ const UserDashboard: React.FC = () => {
   return (
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
       <Box sx={{ mb: 4 }}>
-        <Typography variant='h4' component='h1' gutterBottom>
+        <Typography
+          variant='h4'
+          component='h1'
+          gutterBottom
+          data-testid='dashboard-title'
+        >
           Willkommen zurück, {user?.firstName || 'User'}!
         </Typography>
         <Typography variant='body1' color='text.secondary'>
@@ -224,7 +229,7 @@ const UserDashboard: React.FC = () => {
       </Grid>
 
       {/* Bookings List */}
-      <Card>
+      <Card data-testid='courses-card'>
         <CardContent>
           <Typography variant='h6' gutterBottom>
             Meine Buchungen
