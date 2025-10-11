@@ -2,21 +2,43 @@ import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-// Safety check for localhost development
-const isLocalhost = process.env.NEXT_PUBLIC_APP_URL?.includes('localhost');
-const stripeKey = process.env.STRIPE_SECRET_KEY!;
+// Skip Stripe initialization during build process
+const isBuildTime =
+  process.env.NODE_ENV === 'production' && !process.env.STRIPE_SECRET_KEY;
 
-if (isLocalhost && !stripeKey.startsWith('sk_test_')) {
-  console.warn(
-    '⚠️  WARNING: Using live Stripe key on localhost! This should be a test key.'
-  );
-}
+// Create stripe instance only at runtime
+const createStripeInstance = () => {
+  if (isBuildTime) {
+    console.log(
+      '⚠️ Build time detected - skipping Stripe webhook initialization'
+    );
+    return null;
+  }
 
-const stripe = new Stripe(stripeKey, {
-  apiVersion: '2025-09-30.clover',
-});
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) {
+    throw new Error(
+      'STRIPE_SECRET_KEY is not configured for webhook processing'
+    );
+  }
 
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+  // Safety check for localhost development
+  const isLocalhost = process.env.NEXT_PUBLIC_APP_URL?.includes('localhost');
+  if (isLocalhost && !stripeKey.startsWith('sk_test_')) {
+    console.warn(
+      '⚠️  WARNING: Using live Stripe key on localhost! This should be a test key.'
+    );
+  }
+
+  return new Stripe(stripeKey, {
+    apiVersion: '2025-09-30.clover',
+  });
+};
+
+const getEndpointSecret = () => {
+  if (isBuildTime) return '';
+  return process.env.STRIPE_WEBHOOK_SECRET || '';
+};
 
 /**
  * POST /api/webhooks/stripe
@@ -24,6 +46,34 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
  */
 export async function POST(request: NextRequest) {
   try {
+    // Handle build time gracefully
+    if (isBuildTime) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Webhook service temporarily unavailable during deployment',
+        },
+        { status: 503 }
+      );
+    }
+
+    const stripe = createStripeInstance();
+    const endpointSecret = getEndpointSecret();
+
+    if (!stripe) {
+      return NextResponse.json(
+        { success: false, error: 'Stripe service unavailable' },
+        { status: 503 }
+      );
+    }
+
+    if (!endpointSecret) {
+      return NextResponse.json(
+        { success: false, error: 'Webhook secret not configured' },
+        { status: 500 }
+      );
+    }
+
     const body = await request.text();
     const signature = headers().get('stripe-signature');
 

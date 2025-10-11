@@ -5,6 +5,36 @@ import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
+// Skip Stripe initialization during build process
+const isBuildTime =
+  process.env.NODE_ENV === 'production' && !process.env.STRIPE_SECRET_KEY;
+
+// Create stripe instance only at runtime
+const createStripeInstance = () => {
+  if (isBuildTime) {
+    console.log(
+      '⚠️ Build time detected - skipping Stripe webhook initialization'
+    );
+    return null;
+  }
+
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) {
+    throw new Error(
+      'STRIPE_SECRET_KEY is not configured for webhook processing'
+    );
+  }
+
+  return new Stripe(stripeKey, {
+    apiVersion: STRIPE_API_VERSION,
+  });
+};
+
+const getWebhookSecret = () => {
+  if (isBuildTime) return '';
+  return process.env.STRIPE_WEBHOOK_SECRET || '';
+};
+
 /**
  * Idempotency store to prevent duplicate webhook processing
  * In production, use Redis or a database
@@ -46,6 +76,32 @@ export async function POST(request: NextRequest) {
   console.log(`[${requestId}] Webhook received`);
 
   try {
+    // Handle build time gracefully
+    if (isBuildTime) {
+      console.log(`[${requestId}] Build time detected - webhook unavailable`);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Webhook service temporarily unavailable during deployment',
+        },
+        { status: 503 }
+      );
+    }
+
+    const stripe = createStripeInstance();
+    const webhookSecret = getWebhookSecret();
+
+    if (!stripe) {
+      return NextResponse.json(
+        { success: false, error: 'Stripe service unavailable' },
+        { status: 503 }
+      );
+    }
+
+    if (!webhookSecret) {
+      throw new Error('STRIPE_WEBHOOK_SECRET is required');
+    }
+
     // Get Stripe signature from headers
     const headersList = headers();
     const signature = headersList.get('stripe-signature');
@@ -81,19 +137,10 @@ export async function POST(request: NextRequest) {
       `[${requestId}] Processing webhook with signature verification`
     );
 
-    // Verify webhook signature and get Stripe event
-    if (!process.env.STRIPE_WEBHOOK_SECRET) {
-      throw new Error('STRIPE_WEBHOOK_SECRET is required');
-    }
-
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: STRIPE_API_VERSION,
-    });
-
     const event = stripe.webhooks.constructEvent(
       rawBody,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET
+      webhookSecret
     );
 
     console.log(`[${requestId}] Webhook event verified`, {

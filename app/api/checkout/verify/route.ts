@@ -8,12 +8,53 @@ import Stripe from 'stripe';
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: STRIPE_API_VERSION,
-});
+// Skip Stripe initialization during build process
+const isBuildTime =
+  process.env.NODE_ENV === 'production' && !process.env.STRIPE_SECRET_KEY;
+
+// Create stripe instance only at runtime
+const createStripeInstance = () => {
+  if (isBuildTime) {
+    console.log(
+      '⚠️ Build time detected - skipping Stripe verify initialization'
+    );
+    return null;
+  }
+
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!stripeKey) {
+    throw new Error(
+      'STRIPE_SECRET_KEY is not configured for checkout verification'
+    );
+  }
+
+  return new Stripe(stripeKey, {
+    apiVersion: STRIPE_API_VERSION,
+  });
+};
 
 export async function GET(request: NextRequest) {
   try {
+    // Handle build time gracefully
+    if (isBuildTime) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'Verification service temporarily unavailable during deployment',
+        },
+        { status: 503 }
+      );
+    }
+
+    const stripe = createStripeInstance();
+    if (!stripe) {
+      return NextResponse.json(
+        { success: false, error: 'Payment verification service unavailable' },
+        { status: 503 }
+      );
+    }
+
     const user = await currentUser();
     if (!user?.id) {
       return NextResponse.json(
