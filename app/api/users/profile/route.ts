@@ -1,71 +1,93 @@
-/**
- * User Profile API Route
- * GET /api/users/profile - Get current user profile
- * PUT /api/users/profile - Update current user profile
- */
-
 import {
   getUserProfile,
   updateUser,
   type UpdateUserData,
 } from '@/lib/api/users';
-import { UserValidationError } from '@/lib/errors';
-import { withAuthProtection } from '@/lib/middleware/api-error-handling';
-import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-// GET /api/users/profile - Get current user profile
-export const GET = withAuthProtection(async context => {
-  const { userId } = context;
-
-  const profile = await getUserProfile(userId);
-
-  return NextResponse.json({
-    success: true,
-    data: profile,
-  });
-});
-
-// PUT /api/users/profile - Update current user profile
-export const PUT = withAuthProtection(async context => {
-  const { userId, request } = context;
-
-  let body;
+export async function GET() {
   try {
-    body = await request.json();
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const profile = await getUserProfile(userId);
+
+    return NextResponse.json({
+      success: true,
+      data: profile,
+    });
   } catch (error) {
-    throw new UserValidationError('Invalid JSON in request body');
+    console.error('Error in GET /api/users/profile:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
+}
 
-  // Validate update data
-  const updateData: UpdateUserData = {};
-
-  if (body.name !== undefined) {
-    if (typeof body.name !== 'string' && body.name !== null) {
-      throw new UserValidationError('Name must be a string or null');
+export async function PUT(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    updateData.name = body.name;
-  }
 
-  if (body.email !== undefined) {
-    if (typeof body.email !== 'string' || !body.email.trim()) {
-      throw new UserValidationError('Email must be a non-empty string');
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      );
     }
-    updateData.email = body.email.trim();
-  }
 
-  if (body.image !== undefined) {
-    if (typeof body.image !== 'string' && body.image !== null) {
-      throw new UserValidationError('Image must be a string URL or null');
+    const updateData: UpdateUserData = {};
+
+    if (body.name !== undefined) {
+      if (typeof body.name !== 'string' && body.name !== null) {
+        return NextResponse.json(
+          { error: 'Name must be a string or null' },
+          { status: 400 }
+        );
+      }
+      updateData.name = body.name;
     }
-    updateData.image = body.image;
+
+    if (body.email !== undefined) {
+      if (typeof body.email !== 'string' || !body.email.trim()) {
+        return NextResponse.json(
+          { error: 'Email must be a non-empty string' },
+          { status: 400 }
+        );
+      }
+      updateData.email = body.email.trim();
+    }
+
+    if (body.image !== undefined) {
+      if (typeof body.image !== 'string' && body.image !== null) {
+        return NextResponse.json(
+          { error: 'Image must be a string URL or null' },
+          { status: 400 }
+        );
+      }
+      updateData.image = body.image;
+    }
+
+    const updatedUser = await updateUser(userId, updateData);
+
+    return NextResponse.json({
+      success: true,
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error in PUT /api/users/profile:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
-
-  // Update user
-  const updatedUser = await updateUser(userId, updateData);
-
-  return NextResponse.json({
-    success: true,
-    data: updatedUser,
-    message: 'Profile updated successfully',
-  });
-});
+}

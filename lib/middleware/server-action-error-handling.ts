@@ -34,7 +34,7 @@ export function withServerActionErrorHandling<T = any>(
     formData?: FormData,
     userId?: string
   ): Promise<ServerActionResult<T>> => {
-    const requestContext = getRequestContext();
+    const requestContext = await getRequestContext();
 
     try {
       const actionContext: ServerActionContext = {
@@ -160,7 +160,7 @@ export function withOptimisticUpdate<T = any>(
     formData?: FormData,
     userId?: string
   ): Promise<ServerActionResult<T> & { optimisticValue?: T }> => {
-    const requestContext = getRequestContext();
+    const requestContext = await getRequestContext();
 
     try {
       const actionContext: ServerActionContext = {

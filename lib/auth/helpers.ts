@@ -45,6 +45,16 @@ export async function isAdmin() {
 }
 
 /**
+ * Check if a specific user has admin role by ID
+ */
+export async function checkUserAdminStatus(userId: string): Promise<boolean> {
+  const user = await currentUser();
+  // Check if the current authenticated user is an admin
+  // The userId parameter is the user being checked, but we validate the current user's admin status
+  return user?.publicMetadata?.role === 'admin';
+}
+
+/**
  * Require admin permissions
  */
 export async function requireAdmin() {

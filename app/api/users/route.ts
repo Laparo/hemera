@@ -1,96 +1,110 @@
-/**
- * User Management API Route (Admin only)
- * GET /api/users - Get all users (admin only)
- * POST /api/users - Create new user (admin only)
- */
-
 import {
   createUser,
   getAllUsers,
   searchUsers,
   type CreateUserData,
 } from '@/lib/api/users';
-import { UserValidationError } from '@/lib/errors';
-import { withAdminProtection } from '@/lib/middleware/api-error-handling';
-import { NextResponse } from 'next/server';
+import { checkUserAdminStatus } from '@/lib/auth/helpers';
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-// GET /api/users - Get all users (admin only)
-export const GET = withAdminProtection(async context => {
-  const { searchParams } = context;
-
-  const limit = parseInt(searchParams?.get('limit') || '50');
-  const offset = parseInt(searchParams?.get('offset') || '0');
-  const search = searchParams?.get('search');
-
-  // Validate pagination parameters
-  if (limit < 1 || limit > 100) {
-    throw new UserValidationError('Limit must be between 1 and 100');
-  }
-
-  if (offset < 0) {
-    throw new UserValidationError('Offset must be non-negative');
-  }
-
-  let result;
-
-  if (search && search.trim()) {
-    // Search users
-    const users = await searchUsers(search.trim(), limit);
-    result = { users, total: users.length };
-  } else {
-    // Get all users with pagination
-    result = await getAllUsers(limit, offset);
-  }
-
-  return NextResponse.json({
-    success: true,
-    data: result.users,
-    pagination: {
-      total: result.total,
-      limit,
-      offset,
-      hasMore: offset + limit < result.total,
-    },
-  });
-});
-
-// POST /api/users - Create new user (admin only)
-export const POST = withAdminProtection(async context => {
-  const { request } = context;
-
-  let body;
+export async function GET(request: NextRequest) {
   try {
-    body = await request.json();
-  } catch (error) {
-    throw new UserValidationError('Invalid JSON in request body');
-  }
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  // Validate required fields
-  if (!body.id || typeof body.id !== 'string') {
-    throw new UserValidationError('User ID is required and must be a string');
-  }
+    const isAdmin = await checkUserAdminStatus(userId);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: 'Admin privileges required' },
+        { status: 403 }
+      );
+    }
 
-  if (!body.email || typeof body.email !== 'string') {
-    throw new UserValidationError('Email is required and must be a string');
-  }
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const offset = parseInt(searchParams.get('offset') || '0');
+    const search = searchParams.get('search');
 
-  // Prepare user data
-  const userData: CreateUserData = {
-    id: body.id.trim(),
-    email: body.email.trim(),
-    name: body.name ? body.name.trim() : null,
-    image: body.image ? body.image.trim() : null,
-  };
+    let users;
+    if (search) {
+      users = await searchUsers(search, limit);
+    } else {
+      users = await getAllUsers(limit, offset);
+    }
 
-  // Create user
-  const user = await createUser(userData);
-
-  return NextResponse.json(
-    {
+    return NextResponse.json({
       success: true,
-      data: user,
-      message: 'User created successfully',
-    },
-    { status: 201 }
-  );
-});
+      data: users,
+    });
+  } catch (error) {
+    console.error('Error in GET /api/users:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const isAdmin = await checkUserAdminStatus(userId);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: 'Admin privileges required' },
+        { status: 403 }
+      );
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.email || typeof body.email !== 'string') {
+      return NextResponse.json(
+        { error: 'Email is required and must be a string' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.id || typeof body.id !== 'string') {
+      return NextResponse.json(
+        { error: 'User ID is required and must be a string' },
+        { status: 400 }
+      );
+    }
+
+    const createData: CreateUserData = {
+      id: body.id.trim(),
+      email: body.email.trim(),
+      name: body.name || null,
+      image: body.image || null,
+    };
+
+    const newUser = await createUser(createData);
+
+    return NextResponse.json({
+      success: true,
+      data: newUser,
+    });
+  } catch (error) {
+    console.error('Error in POST /api/users:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

@@ -17,8 +17,8 @@ export interface RequestContext {
 /**
  * Generate or retrieve request ID for tracing
  */
-export function getRequestId(): string {
-  const headersList = headers();
+export async function getRequestId(): Promise<string> {
+  const headersList = await headers();
 
   // Check if request ID already exists in headers
   const existingId =
@@ -35,11 +35,11 @@ export function getRequestId(): string {
 /**
  * Get comprehensive request context
  */
-export function getRequestContext(): RequestContext {
-  const headersList = headers();
+export async function getRequestContext(): Promise<RequestContext> {
+  const headersList = await headers();
 
   return {
-    id: getRequestId(),
+    id: await getRequestId(),
     userAgent: headersList.get('user-agent') || undefined,
     ip:
       headersList.get('x-forwarded-for') ||
@@ -53,11 +53,11 @@ export function getRequestContext(): RequestContext {
 /**
  * Enhanced error logging with request context
  */
-export function logErrorWithContext(
+export async function logErrorWithContext(
   error: unknown,
   additionalContext?: Record<string, any>
 ) {
-  const requestContext = getRequestContext();
+  const requestContext = await getRequestContext();
 
   const logData = {
     requestId: requestContext.id,
@@ -96,7 +96,7 @@ export function withRequestContext<T extends any[], R>(
   handler: (requestContext: RequestContext, ...args: T) => Promise<R>
 ) {
   return async (...args: T): Promise<R> => {
-    const requestContext = getRequestContext();
+    const requestContext = await getRequestContext();
     return handler(requestContext, ...args);
   };
 }

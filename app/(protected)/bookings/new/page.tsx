@@ -22,9 +22,9 @@ export const metadata: Metadata = {
 };
 
 interface BookingNewPageProps {
-  searchParams: {
+  searchParams: Promise<{
     courseId?: string;
-  };
+  }>;
 }
 
 export default async function BookingNewPage({
@@ -32,15 +32,14 @@ export default async function BookingNewPage({
 }: BookingNewPageProps) {
   const user = await requireAuthenticatedUser();
   const courses = await getPublishedCourses();
+  const params = await searchParams;
 
   // If a specific course is selected, check if already booked
   let selectedCourse = null;
   let alreadyBooked = false;
 
-  if (searchParams.courseId) {
-    selectedCourse = courses.find(
-      course => course.id === searchParams.courseId
-    );
+  if (params.courseId) {
+    selectedCourse = courses.find(course => course.id === params.courseId);
     if (selectedCourse) {
       alreadyBooked = await hasUserBookedCourse(user.id, selectedCourse.id);
     }
@@ -85,7 +84,7 @@ export default async function BookingNewPage({
                 <BookingForm
                   courses={courses}
                   userId={user.id}
-                  selectedCourseId={searchParams.courseId}
+                  selectedCourseId={params.courseId}
                 />
               )}
             </CardContent>

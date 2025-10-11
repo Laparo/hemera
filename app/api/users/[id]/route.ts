@@ -1,10 +1,3 @@
-/**
- * User Detail API Route
- * GET /api/users/[id] - Get specific user (admin only)
- * PUT /api/users/[id] - Update specific user (admin only)
- * DELETE /api/users/[id] - Delete specific user (admin only)
- */
-
 import {
   deleteUser,
   getUserProfile,
@@ -12,98 +5,187 @@ import {
   updateUser,
   type UpdateUserData,
 } from '@/lib/api/users';
-import { UserValidationError } from '@/lib/errors';
-import { withAdminProtection } from '@/lib/middleware/api-error-handling';
-import { NextResponse } from 'next/server';
+import { checkUserAdminStatus } from '@/lib/auth/helpers';
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-// GET /api/users/[id] - Get specific user (admin only)
-export const GET = withAdminProtection(async context => {
-  const userId = context.params?.id;
-
-  if (!userId) {
-    throw new UserValidationError('User ID is required');
-  }
-
-  const includeStats = context.searchParams?.get('includeStats') === 'true';
-
-  const [profile, stats] = await Promise.all([
-    getUserProfile(userId),
-    includeStats ? getUserStats(userId) : null,
-  ]);
-
-  return NextResponse.json({
-    success: true,
-    data: {
-      ...profile,
-      ...(stats && { stats }),
-    },
-  });
-});
-
-// PUT /api/users/[id] - Update specific user (admin only)
-export const PUT = withAdminProtection(async context => {
-  const userId = context.params?.id;
-  const { request } = context;
-
-  if (!userId) {
-    throw new UserValidationError('User ID is required');
-  }
-
-  let body;
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    body = await request.json();
+    const { userId: currentUserId } = await auth();
+    if (!currentUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const isAdmin = await checkUserAdminStatus(currentUserId);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: 'Admin privileges required' },
+        { status: 403 }
+      );
+    }
+
+    const { id: userId } = await params;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const includeStats = searchParams.get('includeStats') === 'true';
+
+    const [profile, stats] = await Promise.all([
+      getUserProfile(userId),
+      includeStats ? getUserStats(userId) : null,
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...profile,
+        ...(stats && { stats }),
+      },
+    });
   } catch (error) {
-    throw new UserValidationError('Invalid JSON in request body');
+    console.error('Error in GET /api/users/[id]:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
+}
 
-  // Validate update data
-  const updateData: UpdateUserData = {};
-
-  if (body.name !== undefined) {
-    if (typeof body.name !== 'string' && body.name !== null) {
-      throw new UserValidationError('Name must be a string or null');
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId: currentUserId } = await auth();
+    if (!currentUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    updateData.name = body.name;
-  }
 
-  if (body.email !== undefined) {
-    if (typeof body.email !== 'string' || !body.email.trim()) {
-      throw new UserValidationError('Email must be a non-empty string');
+    const isAdmin = await checkUserAdminStatus(currentUserId);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: 'Admin privileges required' },
+        { status: 403 }
+      );
     }
-    updateData.email = body.email.trim();
-  }
 
-  if (body.image !== undefined) {
-    if (typeof body.image !== 'string' && body.image !== null) {
-      throw new UserValidationError('Image must be a string URL or null');
+    const { id: userId } = await params;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 400 }
+      );
     }
-    updateData.image = body.image;
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      );
+    }
+
+    const updateData: UpdateUserData = {};
+
+    if (body.name !== undefined) {
+      if (typeof body.name !== 'string' && body.name !== null) {
+        return NextResponse.json(
+          { error: 'Name must be a string or null' },
+          { status: 400 }
+        );
+      }
+      updateData.name = body.name;
+    }
+
+    if (body.email !== undefined) {
+      if (typeof body.email !== 'string' || !body.email.trim()) {
+        return NextResponse.json(
+          { error: 'Email must be a non-empty string' },
+          { status: 400 }
+        );
+      }
+      updateData.email = body.email.trim();
+    }
+
+    if (body.image !== undefined) {
+      if (typeof body.image !== 'string' && body.image !== null) {
+        return NextResponse.json(
+          { error: 'Image must be a string URL or null' },
+          { status: 400 }
+        );
+      }
+      updateData.image = body.image;
+    }
+
+    const updatedUser = await updateUser(userId, updateData);
+
+    return NextResponse.json({
+      success: true,
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error in PUT /api/users/[id]:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
+}
 
-  // Update user
-  const updatedUser = await updateUser(userId, updateData);
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId: currentUserId } = await auth();
+    if (!currentUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  return NextResponse.json({
-    success: true,
-    data: updatedUser,
-    message: 'User updated successfully',
-  });
-});
+    const isAdmin = await checkUserAdminStatus(currentUserId);
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: 'Admin privileges required' },
+        { status: 403 }
+      );
+    }
 
-// DELETE /api/users/[id] - Delete specific user (admin only)
-export const DELETE = withAdminProtection(async context => {
-  const userId = context.params?.id;
+    const { id: userId } = await params;
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 400 }
+      );
+    }
 
-  if (!userId) {
-    throw new UserValidationError('User ID is required');
+    if (userId === currentUserId) {
+      return NextResponse.json(
+        { error: 'Cannot delete your own account' },
+        { status: 400 }
+      );
+    }
+
+    await deleteUser(userId);
+
+    return NextResponse.json({
+      success: true,
+      message: 'User deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error in DELETE /api/users/[id]:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
-
-  // Soft delete user
-  const deletedUser = await deleteUser(userId);
-
-  return NextResponse.json({
-    success: true,
-    data: deletedUser,
-    message: 'User deleted successfully',
-  });
-});
+}

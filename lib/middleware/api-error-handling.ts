@@ -29,17 +29,26 @@ export function withApiErrorHandling(
 ) {
   return async (
     request: NextRequest,
-    context?: { params?: Record<string, string> }
+    context?: {
+      params?: Record<string, string> | Promise<Record<string, string>>;
+    }
   ): Promise<NextResponse> => {
     const startTime = Date.now();
 
     try {
-      const requestContext = getRequestContext();
+      const requestContext = await getRequestContext();
       const { searchParams } = new URL(request.url);
+
+      // Await params if they are a Promise (Next.js 15+)
+      const resolvedParams = context?.params
+        ? context.params instanceof Promise
+          ? await context.params
+          : context.params
+        : undefined;
 
       const apiContext: ApiRouteContext = {
         request,
-        params: context?.params,
+        params: resolvedParams,
         searchParams,
         requestId: requestContext.id,
       };
@@ -87,15 +96,16 @@ export function withApiErrorHandling(
 
       // Report unmapped errors to Rollbar
       if (!(mappedError instanceof BaseError)) {
+        const requestCtx = await getRequestContext();
         const errorContext = createErrorContext(
           request,
           request.headers.get('x-user-id') || undefined,
-          getRequestContext().id
+          requestCtx.id
         );
         reportError(mappedError, errorContext, 'error');
       }
 
-      return toHttpError(mappedError);
+      return await toHttpError(mappedError);
     }
   };
 }

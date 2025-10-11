@@ -7,12 +7,13 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const course = await prisma.course.findFirst({
       where: {
-        id: params.id,
+        id: id,
         isPublished: true,
       },
     });

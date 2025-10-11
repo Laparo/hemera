@@ -16,7 +16,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = generateCourseListMetadata();
-export const revalidate = PERFORMANCE_CONFIG.isr.revalidate;
+export const revalidate = 86400; // 24 hours in seconds
 
 export default async function CoursesPage() {
   const courses = await getPublishedCourses();

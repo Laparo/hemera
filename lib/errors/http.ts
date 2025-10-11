@@ -27,12 +27,12 @@ export interface ApiErrorResponse {
 /**
  * Convert any error to a standardized HTTP response
  */
-export function toHttpError(
+export async function toHttpError(
   error: unknown,
   requestId?: string
-): NextResponse<ApiErrorResponse> {
-  const reqId = requestId || getRequestId();
-  const requestContext = getRequestContext();
+): Promise<NextResponse<ApiErrorResponse>> {
+  const reqId = requestId || (await getRequestId());
+  const requestContext = await getRequestContext();
 
   // Record error in analytics
   if (error instanceof BaseError || error instanceof Error) {
@@ -45,7 +45,7 @@ export function toHttpError(
 
   // Handle our custom errors
   if (error instanceof BaseError) {
-    logErrorWithContext(error, {
+    await logErrorWithContext(error, {
       errorCategory: error.category,
       errorCode: error.errorCode,
     });
@@ -69,7 +69,7 @@ export function toHttpError(
   // Handle specific known errors
   if (error instanceof Error) {
     const statusCode = getStatusCodeForError(error);
-    logErrorWithContext(error, { errorType: 'standard', statusCode });
+    await logErrorWithContext(error, { errorType: 'standard', statusCode });
 
     return NextResponse.json(
       {
@@ -87,7 +87,7 @@ export function toHttpError(
   }
 
   // Handle unknown errors
-  logErrorWithContext(error, { errorType: 'unknown' });
+  await logErrorWithContext(error, { errorType: 'unknown' });
 
   return NextResponse.json(
     {
@@ -148,7 +148,7 @@ export function withErrorHandling<T extends any[], R>(
       return await handler(...args);
     } catch (error) {
       logError(error, { handler: handler.name });
-      return toHttpError(error);
+      return await toHttpError(error);
     }
   };
 }
