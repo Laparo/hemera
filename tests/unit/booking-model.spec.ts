@@ -50,6 +50,23 @@ describe('Booking Model Validations', () => {
     if (!finalVerify) {
       throw new Error(`Course not found after transaction: ${testCourse.id}`);
     }
+
+    // Create test users
+    testUser = await prisma.user.create({
+      data: {
+        id: `test-user-${timestamp}-${randomSuffix}`,
+        email: `test${timestamp}@example.com`,
+        name: 'Test User',
+      },
+    });
+
+    testUser2 = await prisma.user.create({
+      data: {
+        id: `test-user2-${timestamp}-${randomSuffix}`,
+        email: `test2${timestamp}@example.com`,
+        name: 'Test User 2',
+      },
+    });
   });
 
   afterEach(async () => {
