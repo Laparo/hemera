@@ -230,6 +230,115 @@ async function main() {
       date: new Date('2026-02-06T16:30:00Z'),
       isPublished: true,
     },
+    {
+      title: 'Digitale Detox Strategien',
+      description:
+        'Lernen Sie, bewusst Pausen von digitalen Medien zu nehmen und wieder analog zu leben.',
+      slug: 'digitale-detox-strategien',
+      price: 120,
+      currency: 'EUR',
+      capacity: 15,
+      date: new Date('2026-02-10T10:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Finanzielle Intelligenz für Einsteiger',
+      description:
+        'Grundlagen des persönlichen Finanzmanagements – von Budgetplanung bis Sparen.',
+      slug: 'finanzielle-intelligenz-einsteiger',
+      price: 150,
+      currency: 'EUR',
+      capacity: 25,
+      date: new Date('2026-02-14T14:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Energiemanagement statt Zeitmanagement',
+      description:
+        'Entdecken Sie, wie Sie Ihre Energie optimal nutzen für maximale Produktivität.',
+      slug: 'energiemanagement-produktivitaet',
+      price: 110,
+      currency: 'EUR',
+      capacity: 20,
+      date: new Date('2026-02-18T09:30:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Storytelling für den Beruf',
+      description:
+        'Lernen Sie, überzeugende Geschichten zu erzählen und Ihr Publikum zu fesseln.',
+      slug: 'storytelling-beruf',
+      price: 130,
+      currency: 'EUR',
+      capacity: 18,
+      date: new Date('2026-02-22T15:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Mindfulness im Führungsalltag',
+      description:
+        'Achtsamkeitsbasierte Führung für bewusstere Entscheidungen und bessere Teamdynamik.',
+      slug: 'mindfulness-fuehrungsalltag',
+      price: 140,
+      currency: 'EUR',
+      capacity: 16,
+      date: new Date('2026-02-26T11:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Nachhaltigkeit im Business',
+      description:
+        'Wie Sie nachhaltige Praktiken in Ihr Berufsleben integrieren und Veränderungen bewirken.',
+      slug: 'nachhaltigkeit-business',
+      price: 125,
+      currency: 'EUR',
+      capacity: 22,
+      date: new Date('2026-03-02T13:30:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Generationenmanagement am Arbeitsplatz',
+      description:
+        'Erfolgreich mit verschiedenen Generationen zusammenarbeiten – von Boomer bis Gen Z.',
+      slug: 'generationenmanagement-arbeitsplatz',
+      price: 115,
+      currency: 'EUR',
+      capacity: 24,
+      date: new Date('2026-03-06T16:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'KI-Tools für Produktivität',
+      description:
+        'Praktischer Umgang mit ChatGPT, Notion AI und anderen Tools für den Arbeitsalltag.',
+      slug: 'ki-tools-produktivitaet',
+      price: 160,
+      currency: 'EUR',
+      capacity: 30,
+      date: new Date('2026-03-10T10:30:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Selbstmarketing ohne Selbstvermarktung',
+      description: 'Authentisch sichtbar werden – ohne aufdringlich zu wirken.',
+      slug: 'selbstmarketing-authentisch',
+      price: 135,
+      currency: 'EUR',
+      capacity: 20,
+      date: new Date('2026-03-14T14:30:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Remote Leadership Excellence',
+      description:
+        'Führung auf Distanz meistern – Techniken für verteilte Teams und hybride Arbeitsmodelle.',
+      slug: 'remote-leadership-excellence',
+      price: 145,
+      currency: 'EUR',
+      capacity: 18,
+      date: new Date('2026-03-18T09:00:00Z'),
+      isPublished: true,
+    },
   ];
 
   const courses = await Promise.all(

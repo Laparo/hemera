@@ -1,6 +1,8 @@
 import ThemeRegistry from '@/components/ThemeRegistry';
 import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
 import { PublicNavigation } from '@/components/navigation/PublicNavigation';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { RollbarProviderWrapper } from '@/lib/monitoring/rollbar-react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import * as React from 'react';
@@ -26,10 +28,14 @@ export default function RootLayout({
     <ClerkProviderWrapper>
       <html lang='de'>
         <body className={inter.className}>
-          <ThemeRegistry>
-            <PublicNavigation />
-            {children}
-          </ThemeRegistry>
+          <RollbarProviderWrapper>
+            <ThemeRegistry>
+              <ErrorBoundary>
+                <PublicNavigation />
+                {children}
+              </ErrorBoundary>
+            </ThemeRegistry>
+          </RollbarProviderWrapper>
         </body>
       </html>
     </ClerkProviderWrapper>

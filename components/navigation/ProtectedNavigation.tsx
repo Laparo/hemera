@@ -37,6 +37,11 @@ export function ProtectedNavigation({
     <Box
       data-testid={testId || 'protected-navigation'}
       sx={{
+        position: 'fixed',
+        top: 64, // Below the AppBar
+        left: 0,
+        right: 0,
+        zIndex: 1100,
         borderBottom: 1,
         borderColor: 'divider',
         bgcolor: 'background.paper',

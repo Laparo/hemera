@@ -5,12 +5,32 @@ const prisma = new PrismaClient();
 
 describe('Booking Model Validations', () => {
   let testCourse: any;
-  const testUserId = 'test-user-123';
+  let testUser: any;
+  let testUser2: any;
 
   beforeEach(async () => {
-    // Clean up test data
+    // Clean up test data in correct order
     await prisma.booking.deleteMany();
     await prisma.course.deleteMany();
+    await prisma.account.deleteMany();
+    await prisma.user.deleteMany();
+
+    // Create test users for booking tests
+    testUser = await prisma.user.create({
+      data: {
+        id: 'test-user-123',
+        email: 'test1@example.com',
+        name: 'Test User 1',
+      },
+    });
+
+    testUser2 = await prisma.user.create({
+      data: {
+        id: 'test-user-456',
+        email: 'test2@example.com',
+        name: 'Test User 2',
+      },
+    });
 
     // Create a test course for booking tests
     testCourse = await prisma.course.create({
@@ -25,15 +45,17 @@ describe('Booking Model Validations', () => {
   });
 
   afterEach(async () => {
-    // Clean up test data
+    // Clean up test data in correct order
     await prisma.booking.deleteMany();
     await prisma.course.deleteMany();
+    await prisma.account.deleteMany();
+    await prisma.user.deleteMany();
   });
 
   describe('Required Fields', () => {
     it('should create booking with valid required fields', async () => {
       const bookingData = {
-        userId: testUserId,
+        userId: testUser.id,
         courseId: testCourse.id,
         amount: testCourse.price,
         currency: 'USD',
@@ -47,7 +69,7 @@ describe('Booking Model Validations', () => {
       });
 
       expect(booking.id).toBeDefined();
-      expect(booking.userId).toBe(testUserId);
+      expect(booking.userId).toBe(testUser.id);
       expect(booking.courseId).toBe(testCourse.id);
       expect(booking.amount).toBe(testCourse.price);
       expect(booking.currency).toBe('USD');
@@ -75,7 +97,7 @@ describe('Booking Model Validations', () => {
 
     it('should require courseId field', async () => {
       const bookingData = {
-        userId: testUserId,
+        userId: testUser.id,
         amount: 9900,
       };
 
@@ -89,7 +111,7 @@ describe('Booking Model Validations', () => {
 
     it('should require amount field', async () => {
       const bookingData = {
-        userId: testUserId,
+        userId: testUser.id,
         courseId: testCourse.id,
       };
 
@@ -103,7 +125,7 @@ describe('Booking Model Validations', () => {
 
     it('should require valid courseId reference', async () => {
       const bookingData = {
-        userId: testUserId,
+        userId: testUser.id,
         courseId: 'non-existent-course-id',
         amount: 9900,
       };
@@ -119,7 +141,7 @@ describe('Booking Model Validations', () => {
   describe('Unique Constraint Validation', () => {
     it('should prevent duplicate bookings for same user and course', async () => {
       const bookingData = {
-        userId: testUserId,
+        userId: testUser.id,
         courseId: testCourse.id,
         amount: testCourse.price,
       };
@@ -149,7 +171,7 @@ describe('Booking Model Validations', () => {
 
       const firstBooking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: testCourse.id,
           amount: testCourse.price,
         },
@@ -157,7 +179,7 @@ describe('Booking Model Validations', () => {
 
       const secondBooking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: secondCourse.id,
           amount: secondCourse.price,
         },
@@ -171,7 +193,7 @@ describe('Booking Model Validations', () => {
     it('should allow different users to book same course', async () => {
       const firstBooking = await prisma.booking.create({
         data: {
-          userId: 'user-1',
+          userId: testUser.id,
           courseId: testCourse.id,
           amount: testCourse.price,
         },
@@ -179,7 +201,7 @@ describe('Booking Model Validations', () => {
 
       const secondBooking = await prisma.booking.create({
         data: {
-          userId: 'user-2',
+          userId: testUser2.id,
           courseId: testCourse.id,
           amount: testCourse.price,
         },
@@ -201,11 +223,24 @@ describe('Booking Model Validations', () => {
         PaymentStatus.REFUNDED,
       ];
 
+      // Create additional users for this test
+      const testUsers = [];
+      for (let i = 0; i < statuses.length; i++) {
+        const user = await prisma.user.create({
+          data: {
+            id: `status-test-user-${i}`,
+            email: `statustest${i}@example.com`,
+            name: `Status Test User ${i}`,
+          },
+        });
+        testUsers.push(user);
+      }
+
       for (let i = 0; i < statuses.length; i++) {
         const status = statuses[i];
         const booking = await prisma.booking.create({
           data: {
-            userId: `user-${i}`,
+            userId: testUsers[i].id,
             courseId: testCourse.id,
             amount: testCourse.price,
             paymentStatus: status,
@@ -219,7 +254,7 @@ describe('Booking Model Validations', () => {
     it('should default to PENDING status', async () => {
       const booking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: testCourse.id,
           amount: testCourse.price,
           // No paymentStatus specified
@@ -234,7 +269,7 @@ describe('Booking Model Validations', () => {
     it('should accept null Stripe payment intent ID', async () => {
       const booking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: testCourse.id,
           amount: testCourse.price,
           stripePaymentIntentId: null,
@@ -248,7 +283,7 @@ describe('Booking Model Validations', () => {
       const paymentIntentId = 'pi_test_1234567890';
       const booking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: testCourse.id,
           amount: testCourse.price,
           stripePaymentIntentId: paymentIntentId,
@@ -261,7 +296,7 @@ describe('Booking Model Validations', () => {
     it('should accept null Stripe session ID', async () => {
       const booking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: testCourse.id,
           amount: testCourse.price,
           stripeSessionId: null,
@@ -275,7 +310,7 @@ describe('Booking Model Validations', () => {
       const sessionId = 'cs_test_session_1234567890';
       const booking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: testCourse.id,
           amount: testCourse.price,
           stripeSessionId: sessionId,
@@ -290,7 +325,7 @@ describe('Booking Model Validations', () => {
     it('should handle different currencies', async () => {
       const booking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: testCourse.id,
           amount: 8500, // €85.00 in cents
           currency: 'EUR',
@@ -304,7 +339,7 @@ describe('Booking Model Validations', () => {
     it('should default to USD currency', async () => {
       const booking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: testCourse.id,
           amount: testCourse.price,
           // No currency specified
@@ -326,7 +361,7 @@ describe('Booking Model Validations', () => {
 
       const booking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: freeCourse.id,
           amount: 0,
         },
@@ -340,7 +375,7 @@ describe('Booking Model Validations', () => {
     it('should maintain referential integrity on course deletion', async () => {
       const booking = await prisma.booking.create({
         data: {
-          userId: testUserId,
+          userId: testUser.id,
           courseId: testCourse.id,
           amount: testCourse.price,
         },

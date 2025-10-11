@@ -2,6 +2,60 @@
 
 <!--
 SYNC IMPACT REPORT - Constitution Amendment
+Version Change: 1.3.0 → 1.4.0
+Amendment Date: 2025-10-11
+Amendment Type: MINOR (Rollbar error monitoring integration standards added)
+
+Modified Sections:
+- Enhanced: Core Technologies (added Rollbar for error monitoring)
+- Enhanced: Authentication & Security (added Rollbar monitoring and error reporting security)
+- Enhanced: Feature Development Workflow (added error monitoring integration)
+- Enhanced: Testing Requirements (added error monitoring tests)
+- Enhanced: Code Organization (added Rollbar integration standards)
+- Enhanced: Testing Compliance (added error monitoring validation)
+- Added: Error Monitoring & Observability (new section VI for comprehensive error tracking)
+
+Key Changes:
+- Rollbar integration mandatory for all production applications
+- Client-side React Error Boundaries for component error capture
+- Server-side error tracking for all API routes and functions
+- Performance monitoring for critical user flows
+- Security incident tracking and authentication failure monitoring
+- Environment-specific Rollbar project separation
+- Real-time alerting for critical errors and performance issues
+- Data privacy protection in error reports (PII filtering)
+- CI/CD integration testing for error monitoring functionality
+
+Rationale: Adding Rollbar error monitoring standards ensures comprehensive observability
+and production reliability while maintaining constitutional quality standards for all
+error tracking and performance monitoring functionality.
+-->
+
+<!--
+SYNC IMPACT REPORT - Constitution Amendment
+Version Change: 1.2.0 → 1.3.0
+Amendment Date: 2025-10-11
+Amendment Type: MINOR (Vibe-Check Protocol added)
+
+Modified Sections:
+- Added: Vibe-Check Protocol (new section in Governance for team wellness and culture health)
+- Enhanced: Testing Compliance (extended governance framework)
+
+Key Changes:
+- Vibe-Check Protocol for sustainable development practices
+- Team wellness and culture health monitoring
+- Burnout prevention measures
+- Collaboration spirit guidelines
+- Work-life balance enforcement
+- Innovation encouragement framework
+
+Rationale: Adding Vibe-Check Protocol ensures sustainable team health and positive
+development culture while maintaining constitutional quality standards. Recognizes
+that code quality depends on team wellness and sustainable practices.
+-->
+
+<!--
+SYNC IMPACT REPORT - Constitution Amendment
 Version Change: 1.1.0 → 1.2.0
 Amendment Date: 2025-10-09
 Amendment Type: MINOR (Stripe payment integration standards added)
@@ -101,19 +155,40 @@ Every feature follows a structured development process:
 - **Performance Testing**: Load testing for user-facing features, especially authentication and
   payment flows
 - **Payment Security Testing**: Stripe webhook validation and secure checkout flow testing
+- **Error Monitoring Integration**: Rollbar error tracking configured for development and production
+  environments
+
+### VI. Error Monitoring & Observability
+
+Comprehensive error tracking and performance monitoring for production reliability:
+
+- **Rollbar Integration**: Mandatory error tracking for all production applications
+- **Client-Side Monitoring**: React Error Boundaries capture unhandled component errors
+- **Server-Side Tracking**: All API routes and server functions report errors to Rollbar
+- **Performance Monitoring**: Track critical user flows and performance bottlenecks
+- **Error Classification**: Proper error categorization and severity levels
+- **Security Incident Tracking**: Monitor for authentication failures and security breaches
+- **Environment Separation**: Separate Rollbar projects for development, staging, and production
+- **Alert Configuration**: Real-time notifications for critical errors and performance degradation
+- **Data Privacy**: Sensitive information filtered from error reports (PII, tokens, passwords)
+- **Integration Testing**: Error monitoring functionality validated in CI/CD pipeline
 
 ### IV. Authentication & Security
 
-Security-first approach to user authentication, payment processing, and data protection:
+Security-first approach to user authentication, payment processing, data protection, and error
+monitoring:
 
 - **Clerk Integration**: All authentication flows use Clerk APIs and middleware
 - **Stripe Security**: Payment processing through Stripe with PCI DSS compliance and webhook
   verification
+- **Rollbar Monitoring**: Comprehensive error tracking with client-side and server-side monitoring
 - **Role-Based Access**: User roles (student, instructor, admin) enforce proper access control
 - **Protected Routes**: Middleware validation for all `/protected` routes
 - **Session Management**: Secure session handling with proper token validation
 - **Payment Security**: Stripe secret keys managed through environment variables with test/live mode
   separation
+- **Error Reporting Security**: Rollbar integration with proper data filtering and access token
+  management
 - **CVE Monitoring**: Regular dependency vulnerability scanning and updates
 
 ### V. Component Architecture
@@ -136,6 +211,7 @@ Modular, reusable component design principles:
 - **Prettier Tests**: Automated formatting validation with `npm run test:prettier`
 - **Performance Tests**: Load testing for authentication and course enrollment flows
 - **Payment Integration Tests**: Stripe webhook testing and checkout flow validation
+- **Error Monitoring Tests**: Rollbar integration testing for error capture and reporting
 - **Security Tests**: Vulnerability scanning and penetration testing for auth flows
 
 ### Code Organization
@@ -145,6 +221,8 @@ Modular, reusable component design principles:
 - **Database Layer**: Prisma ORM with type-safe database operations
 - **API Routes**: Next.js API routes with proper error handling and validation
 - **Payment Processing**: Stripe integration with secure webhook endpoints and proper error handling
+- **Error Monitoring**: Rollbar integration with React Error Boundaries and server-side error
+  tracking
 - **Component Structure**: Separate presentational and container components
 
 ### Quality Gates
@@ -182,6 +260,7 @@ All deployments follow the GitHub Actions workflow (`.github/workflows/deploy.ym
 - **Database**: PostgreSQL with Prisma ORM for type-safe operations
 - **Styling**: Material-UI (MUI) with custom theme support
 - **Testing**: Playwright for E2E, Jest/Vitest for unit tests
+- **Error Monitoring**: Rollbar for comprehensive error tracking and performance monitoring
 - **Code Quality**: Prettier, ESLint, Husky for pre-commit hooks
 
 ### Development Tools
@@ -248,9 +327,36 @@ This constitution supersedes all other development practices and must be followe
 - **Prettier Compliance**: All code must pass `npm run test:prettier` validation
 - **Contract Validation**: API and component contracts must be tested before implementation
 - **Payment Flow Testing**: Stripe checkout and webhook flows must be validated in test mode
+- **Error Monitoring Validation**: Rollbar error tracking must be tested for both client and server
+  scenarios
 - **Performance Benchmarks**: Authentication flows must meet sub-100ms response requirements
 - **Security Validation**: All auth-related code requires security review and testing
 - **Payment Security Compliance**: All Stripe integrations must follow PCI DSS guidelines and use
   secure webhook handling
 
-**Version**: 1.2.0 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-09
+### Vibe-Check Protocol
+
+Team wellness and code culture health checks ensure sustainable development practices:
+
+- **Daily Standup Vibes**: Team energy assessment during daily meetings - are we energized or burned
+  out?
+- **Code Review Atmosphere**: Constructive, supportive feedback culture over harsh criticism
+- **Feature Delivery Pressure**: Sustainable pace over crunch mode - no shipping broken code under
+  pressure
+- **Learning Environment**: Mistakes are learning opportunities, not blame targets
+- **Work-Life Balance**: Respect for boundaries - no expectation for weekend or late-night coding
+- **Technical Debt Acknowledgment**: Regular honest assessment of code quality without shame
+- **Collaboration Spirit**: "We build together" mentality over individual hero culture
+- **Innovation Encouragement**: Safe space for experimenting with new ideas and approaches
+- **Celebration Moments**: Acknowledge wins, both technical achievements and personal growth
+- **Burnout Prevention**: Watch for signs of exhaustion and address them proactively
+
+**Vibe-Check Triggers**:
+
+- Weekly team retrospectives include explicit vibe assessment
+- Pull request comments that feel harsh trigger team discussion
+- Multiple late-night commits in a week trigger workload review
+- Repeated "quick fixes" without tests trigger technical debt discussion
+- Team member expressing frustration triggers one-on-one check-in
+
+**Version**: 1.4.0 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-11

@@ -31,20 +31,8 @@ export async function GET(request: Request) {
     }
 
     // Ensure the user exists in our database (upsert from Clerk)
-    await prisma.user.upsert({
-      where: { id: user.id },
-      update: {
-        name: user.fullName || user.firstName || null,
-        email: user.primaryEmailAddress?.emailAddress || null,
-        image: user.imageUrl || null,
-      },
-      create: {
-        id: user.id,
-        name: user.fullName || user.firstName || null,
-        email: user.primaryEmailAddress?.emailAddress || null,
-        image: user.imageUrl || null,
-      },
-    });
+    const { syncUserFromClerk } = await import('@/lib/api/users');
+    await syncUserFromClerk(user);
 
     // Get user's bookings with pagination
     const where = {
@@ -142,20 +130,8 @@ export async function POST(request: Request) {
     }
 
     // Ensure the user exists in our database (upsert from Clerk)
-    await prisma.user.upsert({
-      where: { id: user.id },
-      update: {
-        name: user.fullName || user.firstName || null,
-        email: user.primaryEmailAddress?.emailAddress || null,
-        image: user.imageUrl || null,
-      },
-      create: {
-        id: user.id,
-        name: user.fullName || user.firstName || null,
-        email: user.primaryEmailAddress?.emailAddress || null,
-        image: user.imageUrl || null,
-      },
-    });
+    const { syncUserFromClerk } = await import('@/lib/api/users');
+    await syncUserFromClerk(user);
 
     // Check if user already has a booking for this course
     const existingBooking = await prisma.booking.findFirst({

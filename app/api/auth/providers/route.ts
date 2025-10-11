@@ -4,21 +4,14 @@
  */
 
 import { NextResponse } from 'next/server';
+import { withErrorHandling, logError } from '@/lib/errors';
 
-export async function GET() {
-  try {
-    // Define the available auth providers as expected by the contract
-    const providers = ['google', 'github', 'microsoft', 'apple', 'credentials'];
+export const GET = withErrorHandling(async () => {
+  // Define the available auth providers as expected by the contract
+  const providers = ['google', 'github', 'microsoft', 'apple', 'credentials'];
 
-    return NextResponse.json({
-      providers,
-      count: providers.length,
-    });
-  } catch (error) {
-    console.error('Error fetching auth providers:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch auth providers' },
-      { status: 500 }
-    );
-  }
-}
+  return NextResponse.json({
+    providers,
+    count: providers.length,
+  });
+});

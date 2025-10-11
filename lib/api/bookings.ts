@@ -6,6 +6,16 @@ import {
   type Course,
   type User,
 } from '@prisma/client';
+import {
+  BookingNotFoundError,
+  BookingAlreadyExistsError,
+  InvalidBookingStatusError,
+  CourseNotFoundError,
+  CourseNotPublishedError,
+  UserNotFoundError,
+  DatabaseConnectionError,
+  logError,
+} from '@/lib/errors';
 
 /**
  * Booking model with API utilities
@@ -39,56 +49,66 @@ export interface BookingListResponse {
  * Create a new booking for a user and course
  */
 export async function createBooking(data: CreateBookingData): Promise<Booking> {
-  // Check if course exists and is published
-  const course = await prisma.course.findFirst({
-    where: {
-      id: data.courseId,
-      isPublished: true,
-    },
-  });
-
-  if (!course) {
-    throw new Error('Course not found or not available');
-  }
-
   try {
-    return await prisma.booking.upsert({
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: data.userId },
+    });
+
+    if (!user) {
+      throw new UserNotFoundError(data.userId);
+    }
+
+    // Check if course exists and is published
+    const course = await prisma.course.findFirst({
+      where: {
+        id: data.courseId,
+        isPublished: true,
+      },
+    });
+
+    if (!course) {
+      throw new CourseNotFoundError(data.courseId);
+    }
+
+    if (!course.isPublished) {
+      throw new CourseNotPublishedError(data.courseId);
+    }
+
+    // Check if booking already exists
+    const existingBooking = await prisma.booking.findUnique({
       where: {
         userId_courseId: {
           userId: data.userId,
           courseId: data.courseId,
         },
       },
-      update: {
-        paymentStatus: data.paymentStatus || PaymentStatus.PENDING,
-      },
-      create: {
+    });
+
+    if (existingBooking) {
+      throw new BookingAlreadyExistsError(data.userId, data.courseId);
+    }
+
+    return await prisma.booking.create({
+      data: {
         userId: data.userId,
         courseId: data.courseId,
         paymentStatus: data.paymentStatus || PaymentStatus.PENDING,
-        amount: 0,
+        amount: course.price || 0,
       },
     });
   } catch (error) {
     if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
+      error instanceof UserNotFoundError ||
+      error instanceof CourseNotFoundError ||
+      error instanceof CourseNotPublishedError ||
+      error instanceof BookingAlreadyExistsError
     ) {
-      const existing = await prisma.booking.findUnique({
-        where: {
-          userId_courseId: {
-            userId: data.userId,
-            courseId: data.courseId,
-          },
-        },
-      });
-
-      if (existing) {
-        return existing;
-      }
+      throw error; // Re-throw our custom errors
     }
 
-    throw error;
+    logError(error, { operation: 'createBooking', data });
+    throw new DatabaseConnectionError('creating booking', error as Error);
   }
 }
 
@@ -98,18 +118,36 @@ export async function createBooking(data: CreateBookingData): Promise<Booking> {
 export async function getUserBookings(
   userId: string
 ): Promise<BookingWithDetails[]> {
-  return prisma.booking.findMany({
-    where: {
-      userId,
-    },
-    include: {
-      course: true,
-      user: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+  try {
+    // Verify user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UserNotFoundError(userId);
+    }
+
+    return await prisma.booking.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        course: true,
+        user: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  } catch (error) {
+    if (error instanceof UserNotFoundError) {
+      throw error;
+    }
+
+    logError(error, { operation: 'getUserBookings', userId });
+    throw new DatabaseConnectionError('fetching user bookings', error as Error);
+  }
 }
 
 /**
@@ -118,17 +156,32 @@ export async function getUserBookings(
 export async function getBookingById(
   bookingId: string,
   userId: string
-): Promise<BookingWithDetails | null> {
-  return prisma.booking.findFirst({
-    where: {
-      id: bookingId,
-      userId, // Ensure user can only access their own bookings
-    },
-    include: {
-      course: true,
-      user: true,
-    },
-  });
+): Promise<BookingWithDetails> {
+  try {
+    const booking = await prisma.booking.findFirst({
+      where: {
+        id: bookingId,
+        userId, // Ensure user can only access their own bookings
+      },
+      include: {
+        course: true,
+        user: true,
+      },
+    });
+
+    if (!booking) {
+      throw new BookingNotFoundError(bookingId);
+    }
+
+    return booking;
+  } catch (error) {
+    if (error instanceof BookingNotFoundError) {
+      throw error;
+    }
+
+    logError(error, { operation: 'getBookingById', bookingId, userId });
+    throw new DatabaseConnectionError('fetching booking by ID', error as Error);
+  }
 }
 
 /**
@@ -138,14 +191,57 @@ export async function updateBookingPaymentStatus(
   bookingId: string,
   paymentStatus: PaymentStatus
 ): Promise<Booking> {
-  return prisma.booking.update({
-    where: {
-      id: bookingId,
-    },
-    data: {
+  try {
+    // Validate the payment status
+    if (!isValidBookingStatus(paymentStatus)) {
+      throw new InvalidBookingStatusError('UNKNOWN', paymentStatus);
+    }
+
+    // Check if booking exists
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+    });
+
+    if (!existingBooking) {
+      throw new BookingNotFoundError(bookingId);
+    }
+
+    // Validate status transition
+    if (
+      !isValidStatusTransition(existingBooking.paymentStatus, paymentStatus)
+    ) {
+      throw new InvalidBookingStatusError(
+        existingBooking.paymentStatus,
+        paymentStatus
+      );
+    }
+
+    return await prisma.booking.update({
+      where: {
+        id: bookingId,
+      },
+      data: {
+        paymentStatus,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof BookingNotFoundError ||
+      error instanceof InvalidBookingStatusError
+    ) {
+      throw error;
+    }
+
+    logError(error, {
+      operation: 'updateBookingPaymentStatus',
+      bookingId,
       paymentStatus,
-    },
-  });
+    });
+    throw new DatabaseConnectionError(
+      'updating booking payment status',
+      error as Error
+    );
+  }
 }
 
 /**
@@ -232,6 +328,29 @@ export async function getAllBookings(
 export function isValidBookingStatus(status: string): boolean {
   const normalized = status.toUpperCase();
   return (Object.values(PaymentStatus) as string[]).includes(normalized);
+}
+
+/**
+ * Validate booking status transition
+ */
+export function isValidStatusTransition(
+  currentStatus: PaymentStatus,
+  newStatus: PaymentStatus
+): boolean {
+  // Define valid status transitions
+  const validTransitions: Record<PaymentStatus, PaymentStatus[]> = {
+    [PaymentStatus.PENDING]: [
+      PaymentStatus.PAID,
+      PaymentStatus.FAILED,
+      PaymentStatus.CANCELLED,
+    ],
+    [PaymentStatus.PAID]: [PaymentStatus.REFUNDED, PaymentStatus.CANCELLED],
+    [PaymentStatus.FAILED]: [PaymentStatus.PENDING, PaymentStatus.CANCELLED],
+    [PaymentStatus.CANCELLED]: [], // Terminal state
+    [PaymentStatus.REFUNDED]: [], // Terminal state
+  };
+
+  return validTransitions[currentStatus]?.includes(newStatus) || false;
 }
 
 /**

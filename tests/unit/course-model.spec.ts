@@ -5,13 +5,13 @@ const prisma = new PrismaClient();
 
 describe('Course Model Validations', () => {
   beforeEach(async () => {
-    // Clean up test data
+    // Clean up test data in correct order (foreign keys first)
     await prisma.booking.deleteMany();
     await prisma.course.deleteMany();
   });
 
   afterEach(async () => {
-    // Clean up test data
+    // Clean up test data in correct order (foreign keys first)
     await prisma.booking.deleteMany();
     await prisma.course.deleteMany();
   });
@@ -53,20 +53,28 @@ describe('Course Model Validations', () => {
     });
 
     it('should require unique slug', async () => {
-      const courseData = {
+      // Use timestamp to ensure unique test data
+      const timestamp = Date.now();
+      const testSlug = `unique-slug-test-${timestamp}`;
+
+      const firstCourseData = {
         title: 'First Course',
-        slug: 'duplicate-slug',
+        slug: testSlug,
         price: 5000,
       };
 
-      await prisma.course.create({ data: courseData });
+      // Create first course
+      const firstCourse = await prisma.course.create({ data: firstCourseData });
+      expect(firstCourse.id).toBeDefined();
+      expect(firstCourse.slug).toBe(testSlug);
 
       const duplicateData = {
         title: 'Second Course',
-        slug: 'duplicate-slug', // Same slug
+        slug: testSlug, // Same slug as first course
         price: 7500,
       };
 
+      // Attempt to create second course with same slug should fail
       await expect(
         prisma.course.create({ data: duplicateData })
       ).rejects.toThrow();

@@ -1,6 +1,7 @@
 import { getFeaturedCourses } from '@/lib/api/courses';
 import { generateLandingPageMetadata } from '@/lib/seo/metadata';
 import { SCHEMA_COMBINATIONS } from '@/lib/seo/schemas';
+import NextCourseBanner from '@/components/NextCourseBanner';
 import {
   Box,
   Button,
@@ -45,7 +46,9 @@ export default async function HomePage() {
         />
       ))}
 
-      <main>
+      <NextCourseBanner />
+
+      <main style={{ paddingTop: '64px' }}>
         {/* Hero Section */}
         <Box
           component='section'

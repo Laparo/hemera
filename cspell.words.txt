@@ -18,6 +18,11 @@ parseable
 crawlable
 waitlist
 retriable
+uuidv
+Achtsamkeitsbasierte
+Teamdynamik
+Generationenmanagement
+generationenmanagement
 whsec
 VARCHAR
 autoincrement

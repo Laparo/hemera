@@ -49,7 +49,7 @@ export default function ProtectedLayout({
       sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
     >
       {/* Top Navigation Bar */}
-      <AppBar position='static' elevation={1}>
+      <AppBar position='fixed' elevation={1} sx={{ zIndex: 1100 }}>
         <Toolbar>
           <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
             Hemera Academy
@@ -101,6 +101,7 @@ export default function ProtectedLayout({
           py: 3,
           display: 'flex',
           flexDirection: 'column',
+          marginTop: '112px', // Space for fixed headers (64px AppBar + 48px Navigation)
         }}
       >
         {children}

@@ -22,7 +22,12 @@ export function PublicNavigation() {
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   );
   return (
-    <AppBar position='static' color='default' elevation={1}>
+    <AppBar
+      position='fixed'
+      color='default'
+      elevation={1}
+      sx={{ zIndex: 1100 }}
+    >
       <Container maxWidth='lg'>
         <Toolbar sx={{ py: 1 }}>
           {/* Logo/Brand */}

@@ -4,6 +4,12 @@
  */
 
 import { prisma } from '@/lib/db/prisma';
+import {
+  DatabaseConnectionError,
+  CourseNotFoundError,
+  CourseNotPublishedError,
+  logError,
+} from '@/lib/errors';
 
 export interface Course {
   id: string;
@@ -11,6 +17,7 @@ export interface Course {
   description: string | null;
   slug: string;
   price: number | null;
+  date: Date | null;
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -42,8 +49,11 @@ export async function getPublishedCourses(): Promise<Course[]> {
 
     return courses;
   } catch (error) {
-    console.error('Error fetching published courses:', error);
-    return [];
+    logError(error, { operation: 'getPublishedCourses' });
+    throw new DatabaseConnectionError(
+      'fetching published courses',
+      error as Error
+    );
   }
 }
 
@@ -65,8 +75,11 @@ export async function getFeaturedCourses(limit = 3): Promise<Course[]> {
 
     return courses;
   } catch (error) {
-    console.error('Error fetching featured courses:', error);
-    return [];
+    logError(error, { operation: 'getFeaturedCourses', limit });
+    throw new DatabaseConnectionError(
+      'fetching featured courses',
+      error as Error
+    );
   }
 }
 
@@ -74,7 +87,7 @@ export async function getFeaturedCourses(limit = 3): Promise<Course[]> {
  * Get a single course by ID
  * Used for course detail pages
  */
-export async function getCourseById(id: string): Promise<Course | null> {
+export async function getCourseById(id: string): Promise<Course> {
   try {
     const course = await prisma.course.findUnique({
       where: {
@@ -83,10 +96,56 @@ export async function getCourseById(id: string): Promise<Course | null> {
       },
     });
 
+    if (!course) {
+      throw new CourseNotFoundError(id);
+    }
+
     return course;
   } catch (error) {
-    console.error('Error fetching course by ID:', error);
-    return null;
+    if (error instanceof CourseNotFoundError) {
+      throw error; // Re-throw our custom error
+    }
+
+    logError(error, { operation: 'getCourseById', courseId: id });
+    throw new DatabaseConnectionError('fetching course by ID', error as Error);
+  }
+}
+
+/**
+ * Get a single course by slug
+ * Used for SEO-friendly course URLs
+ */
+export async function getCourseBySlug(slug: string): Promise<Course> {
+  try {
+    const course = await prisma.course.findUnique({
+      where: {
+        slug,
+        isPublished: true,
+      },
+    });
+
+    if (!course) {
+      throw new CourseNotFoundError(`slug:${slug}`);
+    }
+
+    if (!course.isPublished) {
+      throw new CourseNotPublishedError(course.id);
+    }
+
+    return course;
+  } catch (error) {
+    if (
+      error instanceof CourseNotFoundError ||
+      error instanceof CourseNotPublishedError
+    ) {
+      throw error; // Re-throw our custom errors
+    }
+
+    logError(error, { operation: 'getCourseBySlug', slug });
+    throw new DatabaseConnectionError(
+      'fetching course by slug',
+      error as Error
+    );
   }
 }
 
@@ -104,8 +163,37 @@ export async function getAllCourses(): Promise<Course[]> {
 
     return courses;
   } catch (error) {
-    console.error('Error fetching all courses:', error);
-    return [];
+    logError(error, { operation: 'getAllCourses' });
+    throw new DatabaseConnectionError('fetching all courses', error as Error);
+  }
+}
+
+/**
+ * Get the next upcoming course
+ * Returns the published course with the earliest date in the future
+ */
+export async function getNextUpcomingCourse(): Promise<Course | null> {
+  try {
+    const now = new Date();
+    const course = await prisma.course.findFirst({
+      where: {
+        isPublished: true,
+        date: {
+          gte: now,
+        },
+      },
+      orderBy: {
+        date: 'asc',
+      },
+    });
+
+    return course;
+  } catch (error) {
+    logError(error, { operation: 'getNextUpcomingCourse' });
+    throw new DatabaseConnectionError(
+      'fetching next upcoming course',
+      error as Error
+    );
   }
 }
 
@@ -127,11 +215,10 @@ export async function getCourseStats() {
       unpublished,
     };
   } catch (error) {
-    console.error('Error fetching course stats:', error);
-    return {
-      total: 0,
-      published: 0,
-      unpublished: 0,
-    };
+    logError(error, { operation: 'getCourseStats' });
+    throw new DatabaseConnectionError(
+      'fetching course statistics',
+      error as Error
+    );
   }
 }

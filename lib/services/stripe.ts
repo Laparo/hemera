@@ -1,6 +1,11 @@
 import Stripe from 'stripe';
 import { STRIPE_API_VERSION } from '../stripe/config';
 import { PaymentStatus } from './course';
+import {
+  StripeConfigurationError,
+  PaymentProcessingError,
+  logError,
+} from '@/lib/errors';
 
 /**
  * Stripe Service
@@ -17,7 +22,7 @@ export class StripeService {
 
   constructor() {
     if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('STRIPE_SECRET_KEY is required');
+      throw new StripeConfigurationError('STRIPE_SECRET_KEY');
     }
 
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -95,7 +100,9 @@ export class StripeService {
       });
 
       if (!session.id || !session.url) {
-        throw new Error('Failed to create checkout session');
+        throw new PaymentProcessingError(
+          'Stripe session creation returned incomplete data'
+        );
       }
 
       return {
@@ -103,9 +110,18 @@ export class StripeService {
         url: session.url,
       };
     } catch (error) {
-      console.error('Stripe checkout session creation failed:', error);
-      throw new Error(
-        `Failed to create checkout session: ${error instanceof Error ? error.message : 'Unknown error'}`
+      if (
+        error instanceof PaymentProcessingError ||
+        error instanceof StripeConfigurationError
+      ) {
+        throw error; // Re-throw our custom errors
+      }
+
+      logError(error, { operation: 'createCheckoutSession', params });
+      throw new PaymentProcessingError(
+        error instanceof Error
+          ? error.message
+          : 'Unknown error during checkout session creation'
       );
     }
   }
@@ -123,8 +139,8 @@ export class StripeService {
 
       return session;
     } catch (error) {
-      console.error('Failed to retrieve checkout session:', error);
-      throw new Error(
+      logError(error, { operation: 'getCheckoutSession', sessionId });
+      throw new PaymentProcessingError(
         `Failed to retrieve session: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
@@ -144,7 +160,7 @@ export class StripeService {
   }> {
     try {
       if (!process.env.STRIPE_WEBHOOK_SECRET) {
-        throw new Error('STRIPE_WEBHOOK_SECRET is required');
+        throw new StripeConfigurationError('STRIPE_WEBHOOK_SECRET');
       }
 
       // Verify webhook signature
