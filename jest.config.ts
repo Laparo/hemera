@@ -16,6 +16,7 @@ const config: Config = {
   ],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 30000, // Increase timeout for database operations
+  maxWorkers: 1, // Force sequential execution for database tests
   collectCoverageFrom: [
     'lib/**/*.{ts,tsx}',
     'app/**/*.{ts,tsx}',
