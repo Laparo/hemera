@@ -25,11 +25,8 @@ describe('Booking Model Validations', () => {
           id: uniqueId,
           title: `Test Course ${timestamp}`,
           description: 'Test Description',
-          price: 99.99,
-          duration: 60,
-          maxParticipants: 10,
-          startDate: new Date('2025-01-01'),
-          endDate: new Date('2025-02-01'),
+          slug: `test-course-${timestamp}-${randomSuffix}`,
+          price: 9999, // Price in cents
           currency: 'USD',
           isPublished: true,
         },
