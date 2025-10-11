@@ -40,8 +40,16 @@ class ErrorBoundary extends React.Component<
       errorInfo,
     });
 
-    // You can also log the error to an error reporting service here
-    // logError(error, { componentStack: errorInfo.componentStack });
+    // Report to Rollbar following official Next.js documentation pattern
+    if (typeof window !== 'undefined') {
+      // Client-side: Import Rollbar and report error
+      import('rollbar').then(Rollbar => {
+        import('@/lib/monitoring/rollbar-official').then(({ clientConfig }) => {
+          const rollbar = new Rollbar.default(clientConfig);
+          rollbar.error(error, { componentStack: errorInfo.componentStack });
+        });
+      });
+    }
   }
 
   resetError = () => {

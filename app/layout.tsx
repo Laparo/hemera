@@ -2,7 +2,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
 import { PublicNavigation } from '@/components/navigation/PublicNavigation';
-import { RollbarProviderWrapper } from '@/lib/monitoring/rollbar-react';
+import { RollbarProviderWrapper } from '@/lib/monitoring/rollbar-react-official';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import * as React from 'react';

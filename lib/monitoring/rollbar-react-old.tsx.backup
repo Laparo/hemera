@@ -1,103 +1,25 @@
 /**
- * Enhanced Client-Side Rollbar Configuration using @rollbar/react
- * Provides comprehensive error monitoring for React components and browser errors
+ * Rollbar React Provider following official Next.js documentation
+ * https://docs.rollbar.com/docs/nextjs
  */
 
 'use client';
 
-import {
-  ErrorBoundary as RollbarErrorBoundary,
-  Provider as RollbarProvider,
-} from '@rollbar/react';
+import { Provider as RollbarProvider } from '@rollbar/react';
 import React from 'react';
-import Rollbar from 'rollbar';
+import { clientConfig } from './rollbar-official';
 
-// Environment-specific configuration
-const isProduction = process.env.NODE_ENV === 'production';
-const isDevelopment = process.env.NODE_ENV === 'development';
-
-// Client-side Rollbar configuration (simplified)
-export const clientRollbarConfig: Rollbar.Configuration = {
-  accessToken: process.env.NEXT_PUBLIC_ROLLBAR_CLIENT_ACCESS_TOKEN,
-  environment: process.env.NODE_ENV || 'development',
-
-  // Capture uncaught exceptions and unhandled rejections
-  captureUncaught: isProduction,
-  captureUnhandledRejections: isProduction,
-
-  // Code version for release tracking
-  codeVersion:
-    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ||
-    process.env.npm_package_version,
-
-  // Transform function to add custom data
-  transform: (payload: any) => {
-    // Add deployment info
-    if (typeof window !== 'undefined') {
-      payload.client = {
-        ...payload.client,
-        url: window.location.href,
-        user_agent: navigator.userAgent,
-        timestamp: Date.now(),
-      };
-    }
-
-    // Add custom metadata
-    payload.custom = {
-      ...payload.custom,
-      buildId: process.env.NEXT_PUBLIC_BUILD_ID,
-      deployment: process.env.NEXT_PUBLIC_VERCEL_URL,
-      runtime: 'nextjs-client',
-    };
-  },
-
-  // Rate limiting
-  maxItems: 100, // Max items per minute for client
-  itemsPerMinute: 30,
-
-  // Ignore certain errors common in browsers
-  ignoredMessages: [
-    'Script error.',
-    'Network request failed',
-    'Load failed',
-    'Non-Error promise rejection captured',
-    'ResizeObserver loop limit exceeded',
-    'ChunkLoadError', // Webpack chunk loading errors
-    'Loading chunk', // More webpack errors
-  ],
-
-  // Enable only in production or when explicitly enabled
-  enabled: isProduction || process.env.NEXT_PUBLIC_ROLLBAR_ENABLED === 'true',
-
-  // Verbose logging in development
-  verbose: isDevelopment,
-  reportLevel: isDevelopment ? 'debug' : 'warning',
-};
-
-// Initialize client Rollbar instance
-let clientRollbar: Rollbar | null = null;
-
-if (typeof window !== 'undefined') {
-  clientRollbar = new Rollbar(clientRollbarConfig);
+interface RollbarProviderWrapperProps {
+  children: React.ReactNode;
 }
 
-/**
- * Enhanced client error reporting with context
- */
-export interface ClientErrorContext {
-  userId?: string;
-  userEmail?: string;
-  component?: string;
-  route?: string;
-  userAgent?: string;
-  url?: string;
-  timestamp?: Date;
-  additionalData?: Record<string, any>;
+export function RollbarProviderWrapper({ children }: RollbarProviderWrapperProps) {
+  return (
+    <RollbarProvider config={clientConfig}>
+      {children}
+    </RollbarProvider>
+  );
 }
-
-/**
- * Report client-side error to Rollbar with enhanced context
- */
 export function reportClientError(
   error: Error | string,
   context?: ClientErrorContext,

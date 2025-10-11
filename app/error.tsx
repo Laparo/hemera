@@ -2,6 +2,7 @@
 
 import { ErrorOutline, Refresh } from '@mui/icons-material';
 import { Box, Button, Container, Typography } from '@mui/material';
+import { useRollbar } from '@rollbar/react';
 import React from 'react';
 
 interface ErrorPageProps {
@@ -10,10 +11,15 @@ interface ErrorPageProps {
 }
 
 export default function Error({ error, reset }: ErrorPageProps) {
+  const rollbar = useRollbar();
+
   React.useEffect(() => {
     // Log the error to your error reporting service
     console.error('Application error:', error);
-  }, [error]);
+
+    // Report error to Rollbar following official Next.js documentation
+    rollbar.error(error);
+  }, [error, rollbar]);
 
   return (
     <Container maxWidth='md' sx={{ py: 8 }}>
