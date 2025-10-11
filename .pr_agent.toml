@@ -7,6 +7,11 @@ large_patch_policy = "clip"
 max_model_tokens = 32000
 patch_extra_lines_before = 3
 patch_extra_lines_after = 1
+model_token_count_estimate_factor = 0.3
+max_extra_lines_before_dynamic_context = 10
+enable_ai_metadata = false  # Disabled for free plan compatibility
+# extended_thinking_budget_tokens = 2048  # Commented out - requires paid plan for Claude models
+use_extra_bad_extensions = false
 
 [pr_reviewer]
 extra_instructions = """
@@ -25,6 +30,9 @@ Focus on the following areas for this TypeScript/Next.js project:
 require_tests_review = true
 require_score_review = false
 require_soc2_ticket = false
+publish_labels = false
+enable_auto_approval = false
+auto_approve_for_low_review_effort = -1
 
 [pr_code_suggestions]
 num_code_suggestions = 6
@@ -36,9 +44,50 @@ rank_suggestions = true
 add_original_user_description = true
 keep_original_user_title = true
 enable_pr_type = true
+publish_labels = false
+enable_help_text = false
+enable_help_comment = false
+enable_semantic_files_types = true
+collapsible_file_list = "adaptive"
+collapsible_file_list_threshold = 6
+inline_file_summary = false
+use_description_markers = false
+include_generated_by_header = true
+enable_large_pr_handling = true
+max_ai_calls = 4
+async_ai_calls = true
+final_update_message = false
+publish_description_as_comment = false
+publish_description_as_comment_persistent = true
+use_bullet_points = true
+generate_ai_title = false
+
+[pr_questions]
+enable_help_text = true
+enable_help_comment = false
+
+[pr_update_changelog]
+enable_auto_update_changelog = false
+changelog_type = "default"
+
+[pr_custom_labels]
+enable_custom_labels = false
+custom_labels = []
+# Note: Custom labels may require a paid plan
+
+[pr_help]
+enable_help_text = true
+help_text = "Available commands: /review, /describe, /improve, /ask, /help"
+
+[pr_diagram]
+enable_pr_diagram = false  # Disabled for free plan compatibility
+diagram_type = "mermaid"
+# Note: PR diagrams may require a paid plan
 
 [github_action_config]
 auto_review = true
 auto_describe = true
 auto_improve = true
+auto_update_changelog = false
+auto_questions = false
 pr_actions = ["opened", "reopened", "ready_for_review", "review_requested"]
