@@ -15,3 +15,20 @@
 
 - Per-page guards only: rejected as error-prone
 - Client-only checks: rejected due to security and SEO concerns
+
+## Perplexity Research Insights
+
+### Middleware Security Patterns
+
+- Query Perplexity: "Best practices for authentication middleware in Next.js"
+- Key insights: [To be filled with MCP query results]
+
+### SEO for Protected Content
+
+- Query Perplexity: "SEO strategies for authenticated content in web applications"
+- Key insights: [To be filled with MCP query results]
+
+### Access Control Implementation
+
+- Query Perplexity: "Implementing role-based access control in serverless applications"
+- Key insights: [To be filled with MCP query results]

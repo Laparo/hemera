@@ -58,3 +58,20 @@
 - **Single Payment Table**: Rejected - booking and payment are conceptually linked
 - **External Course API**: Rejected - admin interface provides sufficient control
 - **Client-side Payment Status**: Rejected - security and reliability concerns
+
+## Perplexity Research Insights
+
+### Stripe Integration Best Practices
+
+- Query Perplexity: "Best practices for Stripe Checkout integration in Next.js applications"
+- Key insights: [To be filled with MCP query results]
+
+### Payment Security Patterns
+
+- Query Perplexity: "Security best practices for handling payments in web applications"
+- Key insights: [To be filled with MCP query results]
+
+### Webhook Reliability
+
+- Query Perplexity: "Ensuring webhook reliability in serverless environments"
+- Key insights: [To be filled with MCP query results]

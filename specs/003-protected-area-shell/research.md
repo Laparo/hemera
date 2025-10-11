@@ -192,6 +192,23 @@ Server-side role checks in layouts and components
 - ⚠️ Performance impact of SSR - Acceptable for security benefits
 - ⚠️ Testing auth flows - Standard patterns available
 
+## Perplexity Research Insights
+
+### Authentication Best Practices
+
+- Query Perplexity: "Latest security best practices for authentication in Next.js applications"
+- Key insights: [To be filled with MCP query results]
+
+### Clerk Integration Patterns
+
+- Query Perplexity: "Advanced Clerk.js integration patterns for role-based access control"
+- Key insights: [To be filled with MCP query results]
+
+### Performance Optimization for Auth
+
+- Query Perplexity: "Optimizing authentication performance in serverless environments"
+- Key insights: [To be filled with MCP query results]
+
 ## Conclusion
 
 The research confirms that Clerk integration with Next.js App Router Server Components provides the

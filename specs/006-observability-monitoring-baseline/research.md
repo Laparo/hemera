@@ -21,6 +21,23 @@
 - Only attach user identifiers to telemetry if explicit consent exists (future work); default OFF.
 - Respect robots/noindex rules for private areas; telemetry must not affect public SEO.
 
+## Perplexity Research Insights
+
+### Observability Best Practices
+
+- Query Perplexity: "Best practices for observability in Next.js applications"
+- Key insights: [To be filled with MCP query results]
+
+### Error Monitoring Tools
+
+- Query Perplexity: "Comparison of error monitoring tools for web applications"
+- Key insights: [To be filled with MCP query results]
+
+### Privacy-Compliant Telemetry
+
+- Query Perplexity: "Implementing privacy-compliant telemetry in user-facing applications"
+- Key insights: [To be filled with MCP query results]
+
 ## Open Questions
 
 - Sampling defaults for production (e.g., tracesSampleRate 0.05) to be confirmed later.

@@ -20,3 +20,21 @@
 - Supabase: first-class Postgres + auth, but we standardize on NextAuth
 - SQLite (LibSQL): simpler local dev, but Vercel Postgres chosen for prod
 - Other UI kits (Chakra, Ant): conflict with Material Design principle
+
+## Perplexity Research Insights
+
+### Latest Trends in Vercel Postgres
+
+- Query Perplexity: "Latest performance benchmarks for Vercel Postgres vs other managed Postgres
+  services"
+- Key insights: [To be filled with MCP query results]
+
+### Prisma Best Practices
+
+- Query Perplexity: "Best practices for Prisma ORM with Next.js 14 and App Router"
+- Key insights: [To be filled with MCP query results]
+
+### Security Considerations
+
+- Query Perplexity: "Security best practices for database connections in serverless environments"
+- Key insights: [To be filled with MCP query results]
