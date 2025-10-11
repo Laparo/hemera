@@ -18,9 +18,18 @@ import { PaymentStatus } from './course';
  */
 
 export class StripeService {
-  private stripe: Stripe;
+  private stripe: Stripe | null = null;
 
   constructor() {
+    // Skip Stripe initialization during build time
+    const isBuildTime =
+      process.env.NODE_ENV === 'production' && !process.env.STRIPE_SECRET_KEY;
+
+    if (isBuildTime) {
+      console.log('⚠️ Build time detected - skipping Stripe initialization');
+      return;
+    }
+
     if (!process.env.STRIPE_SECRET_KEY) {
       throw new StripeConfigurationError('STRIPE_SECRET_KEY');
     }
@@ -29,6 +38,15 @@ export class StripeService {
       apiVersion: STRIPE_API_VERSION,
       typescript: true,
     });
+  }
+
+  private ensureStripe(): Stripe {
+    if (!this.stripe) {
+      throw new Error(
+        'Stripe not initialized - service unavailable during build'
+      );
+    }
+    return this.stripe;
   }
 
   /**
@@ -64,7 +82,7 @@ export class StripeService {
         };
       }
 
-      const session = await this.stripe.checkout.sessions.create({
+      const session = await this.ensureStripe().checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [
           {
@@ -133,9 +151,12 @@ export class StripeService {
     sessionId: string
   ): Promise<Stripe.Checkout.Session> {
     try {
-      const session = await this.stripe.checkout.sessions.retrieve(sessionId, {
-        expand: ['payment_intent'],
-      });
+      const session = await this.ensureStripe().checkout.sessions.retrieve(
+        sessionId,
+        {
+          expand: ['payment_intent'],
+        }
+      );
 
       return session;
     } catch (error) {
@@ -164,7 +185,7 @@ export class StripeService {
       }
 
       // Verify webhook signature
-      const event = this.stripe.webhooks.constructEvent(
+      const event = this.ensureStripe().webhooks.constructEvent(
         payload,
         signature,
         process.env.STRIPE_WEBHOOK_SECRET
@@ -357,7 +378,7 @@ export class StripeService {
         metadata,
       } = params;
 
-      const refund = await this.stripe.refunds.create({
+      const refund = await this.ensureStripe().refunds.create({
         payment_intent: paymentIntentId,
         amount,
         reason,
@@ -390,7 +411,7 @@ export class StripeService {
   }> {
     try {
       const paymentIntent =
-        await this.stripe.paymentIntents.retrieve(paymentIntentId);
+        await this.ensureStripe().paymentIntents.retrieve(paymentIntentId);
 
       return {
         id: paymentIntent.id,
@@ -422,7 +443,7 @@ export class StripeService {
     try {
       const { email, name, userId } = params;
 
-      const customer = await this.stripe.customers.create({
+      const customer = await this.ensureStripe().customers.create({
         email,
         name,
         metadata: {
@@ -451,7 +472,7 @@ export class StripeService {
         return false;
       }
 
-      this.stripe.webhooks.constructEvent(
+      this.ensureStripe().webhooks.constructEvent(
         payload,
         signature,
         process.env.STRIPE_WEBHOOK_SECRET

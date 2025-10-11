@@ -5,19 +5,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { z } from 'zod';
 
-// Ensure we're using test mode for localhost development
-const isLocalhost = process.env.NEXT_PUBLIC_APP_URL?.includes('localhost');
-const stripeKey = process.env.STRIPE_SECRET_KEY;
+// Skip Stripe initialization during build process
+const isBuildTime =
+  process.env.NODE_ENV === 'production' && !process.env.STRIPE_SECRET_KEY;
 
-// Create stripe instance only when key is available (runtime check)
+// Create stripe instance only at runtime
 const createStripeInstance = () => {
+  // During build time, don't validate Stripe config
+  if (isBuildTime) {
+    console.log('⚠️ Build time detected - skipping Stripe validation');
+    return null;
+  }
+
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) {
     throw new Error(
-      'STRIPE_SECRET_KEY is not configured. Add it to your environment (e.g. .env.local).'
+      'STRIPE_SECRET_KEY is not configured. Add it to your environment variables.'
     );
   }
 
   // Safety check: Ensure test keys for localhost
+  const isLocalhost = process.env.NEXT_PUBLIC_APP_URL?.includes('localhost');
   if (isLocalhost && !stripeKey.startsWith('sk_test_')) {
     throw new Error(
       'Live Stripe keys are not allowed on localhost. Use test keys only.'
@@ -41,6 +49,17 @@ const createCheckoutSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
+    // Handle build time gracefully
+    if (isBuildTime) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Service temporarily unavailable during deployment',
+        },
+        { status: 503 }
+      );
+    }
+
     const user = await currentUser();
 
     if (!user?.id) {
@@ -101,6 +120,13 @@ export async function POST(request: NextRequest) {
 
     // Create Stripe checkout session
     const stripe = createStripeInstance();
+    if (!stripe) {
+      return NextResponse.json(
+        { success: false, error: 'Payment service unavailable' },
+        { status: 503 }
+      );
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
