@@ -10,11 +10,11 @@ Modified Sections:
 - Enhanced: Core Technologies (added Perplexity MCP for AI research assistance)
 
 Key Changes:
-- Perplexity MCP server integration for enhanced research and documentation
+- Perplexity MCP server and Context7 integration for enhanced research and documentation
 - AI-powered research capabilities for spec development and technical decisions
 - Integration with existing research workflows in specs/*/research.md
 
-Rationale: Adding Perplexity MCP integration enhances research quality and technical decision-making
+Rationale: Adding Perplexity MCP and Context7 integration enhances research quality and technical decision-making
 while maintaining constitutional standards for documentation and research processes.
 -->
 
@@ -279,7 +279,8 @@ All deployments follow the GitHub Actions workflow (`.github/workflows/deploy.ym
 - **Styling**: Material-UI (MUI) with custom theme support
 - **Testing**: Playwright for E2E, Jest/Vitest for unit tests
 - **Error Monitoring**: Rollbar for comprehensive error tracking and performance monitoring
-- **AI Research Assistant**: Perplexity MCP server for enhanced research and documentation
+- **AI Research Assistant**: Perplexity MCP server and Context7 for enhanced research and
+  documentation
 - **Code Quality**: Prettier, ESLint, Husky for pre-commit hooks
 
 ### Development Tools
