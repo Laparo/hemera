@@ -9,47 +9,58 @@ describe('Booking Model Validations', () => {
   let testUser2: any;
 
   beforeEach(async () => {
-    // Clean up test data in correct order
+    // Clean up test data in correct order with explicit waiting
     await prisma.booking.deleteMany();
     await prisma.course.deleteMany();
     await prisma.account.deleteMany();
     await prisma.user.deleteMany();
 
-    // Create test users for booking tests
+    // Wait a bit to ensure cleanup is complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Create test users for booking tests with unique IDs per test run
+    const timestamp = Date.now();
     testUser = await prisma.user.create({
       data: {
-        id: 'test-user-123',
-        email: 'test1@example.com',
+        id: `test-user-123-${timestamp}`,
+        email: `test1-${timestamp}@example.com`,
         name: 'Test User 1',
       },
     });
 
     testUser2 = await prisma.user.create({
       data: {
-        id: 'test-user-456',
-        email: 'test2@example.com',
+        id: `test-user-456-${timestamp}`,
+        email: `test2-${timestamp}@example.com`,
         name: 'Test User 2',
       },
     });
 
-    // Create a test course for booking tests
+    // Create a test course for booking tests with unique ID
     testCourse = await prisma.course.create({
       data: {
         title: 'Test Course for Bookings',
-        slug: 'test-course-bookings',
+        slug: `test-course-bookings-${timestamp}`,
         price: 9900,
         currency: 'USD',
         isPublished: true,
       },
     });
+
+    // Wait a bit to ensure creation is complete
+    await new Promise(resolve => setTimeout(resolve, 100));
   });
 
   afterEach(async () => {
-    // Clean up test data in correct order
-    await prisma.booking.deleteMany();
-    await prisma.course.deleteMany();
-    await prisma.account.deleteMany();
-    await prisma.user.deleteMany();
+    // Clean up test data in correct order with error handling
+    try {
+      await prisma.booking.deleteMany();
+      await prisma.course.deleteMany();
+      await prisma.account.deleteMany();
+      await prisma.user.deleteMany();
+    } catch (error) {
+      console.warn('Cleanup warning:', error);
+    }
   });
 
   describe('Required Fields', () => {
