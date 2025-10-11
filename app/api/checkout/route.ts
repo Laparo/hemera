@@ -9,22 +9,25 @@ import { z } from 'zod';
 const isLocalhost = process.env.NEXT_PUBLIC_APP_URL?.includes('localhost');
 const stripeKey = process.env.STRIPE_SECRET_KEY;
 
-if (!stripeKey) {
-  throw new Error(
-    'STRIPE_SECRET_KEY is not configured. Add it to your environment (e.g. .env.local).'
-  );
-}
+// Create stripe instance only when key is available (runtime check)
+const createStripeInstance = () => {
+  if (!stripeKey) {
+    throw new Error(
+      'STRIPE_SECRET_KEY is not configured. Add it to your environment (e.g. .env.local).'
+    );
+  }
 
-// Safety check: Ensure test keys for localhost
-if (isLocalhost && !stripeKey.startsWith('sk_test_')) {
-  throw new Error(
-    'Live Stripe keys are not allowed on localhost. Use test keys only.'
-  );
-}
+  // Safety check: Ensure test keys for localhost
+  if (isLocalhost && !stripeKey.startsWith('sk_test_')) {
+    throw new Error(
+      'Live Stripe keys are not allowed on localhost. Use test keys only.'
+    );
+  }
 
-const stripe = new Stripe(stripeKey, {
-  apiVersion: STRIPE_API_VERSION,
-});
+  return new Stripe(stripeKey, {
+    apiVersion: STRIPE_API_VERSION,
+  });
+};
 
 const createCheckoutSchema = z.object({
   courseId: z.string().min(1),
@@ -97,6 +100,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create Stripe checkout session
+    const stripe = createStripeInstance();
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [

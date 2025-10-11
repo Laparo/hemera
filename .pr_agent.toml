@@ -1,4 +1,4 @@
-[config]
+weiter[config]
 model = "gpt-4o"
 fallback_models = ["gpt-3.5-turbo"]
 verbosity_level = 1
