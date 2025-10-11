@@ -22,13 +22,16 @@ export default function ClerkProviderWrapper({
     );
   }
 
-  console.log('Clerk Config:', {
-    publishableKey: publishableKey.substring(0, 15) + '...',
-    signInUrl: clerkConfig.signInUrl,
-    signUpUrl: clerkConfig.signUpUrl,
-    afterSignInUrl: clerkConfig.afterSignInUrl,
-    afterSignUpUrl: clerkConfig.afterSignUpUrl,
-  });
+  // Only log config in development to avoid hydration issues
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Clerk Config:', {
+      publishableKey: publishableKey.substring(0, 15) + '...',
+      signInUrl: clerkConfig.signInUrl,
+      signUpUrl: clerkConfig.signUpUrl,
+      afterSignInUrl: clerkConfig.afterSignInUrl,
+      afterSignUpUrl: clerkConfig.afterSignUpUrl,
+    });
+  }
 
   return (
     <ClerkProvider
