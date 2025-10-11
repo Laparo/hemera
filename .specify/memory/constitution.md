@@ -2,6 +2,60 @@
 
 <!--
 SYNC IMPACT REPORT - Constitution Amendment
+Version Change: 1.6.0 → 1.7.0
+Amendment Date: 2025-10-11
+Amendment Type: MINOR (GitHub Actions exclusive deployment mandate added)
+
+Modified Sections:
+- Enhanced: Deployment Standards (added GitHub Actions exclusive deployment requirement)
+- Enhanced: GitHub Actions Workflow Requirements (strengthened workflow-only deployment enforcement)
+- Enhanced: Constitution Enforcement (added deployment compliance monitoring)
+
+Key Changes:
+- Mandatory GitHub Actions workflows for ALL deployments (preview and production)
+- Explicit prohibition of manual CLI deployments (vercel --prod, npm run deploy, etc.)
+- Workflow-only access to deployment tokens and secrets
+- Deployment audit trail through GitHub Actions logs required
+- Constitutional violation status for manual deployments
+- Enhanced monitoring and compliance verification for deployment activities
+
+Rationale: Ensuring all deployments follow constitutional quality gates and audit trails
+while preventing unauthorized manual deployments that bypass security and quality controls.
+Standardizes deployment process and maintains complete traceability for all releases.
+-->
+
+<!--
+SYNC IMPACT REPORT - Constitution Amendment
+Version Change: 1.5.0 → 1.6.0
+Amendment Date: 2025-10-11
+Amendment Type: MINOR (Holistic Error Handling framework added)
+
+Modified Sections:
+- Enhanced: VI. Error Monitoring & Observability → VI. Holistic Error Handling & Observability
+- Added: Comprehensive error prevention, detection, classification, and recovery strategies
+- Added: User-centric error handling with graceful degradation patterns
+- Enhanced: Error monitoring with proactive prevention and automated recovery
+- Added: Privacy and security considerations for error handling
+- Enhanced: Development integration standards for error handling validation
+
+Key Changes:
+- Complete lifecycle error management from prevention to recovery
+- User experience focused error handling with meaningful recovery options
+- Proactive error prevention through TypeScript guards and validation layers
+- Graceful degradation and progressive enhancement strategies
+- Comprehensive error classification system with severity levels
+- Auto-recovery mechanisms for transient failures
+- Privacy-first error reporting with PII filtering
+- CI/CD integration for error handling validation
+- Team training and documentation requirements for error scenarios
+
+Rationale: Evolving from reactive error monitoring to proactive holistic error handling
+ensures exceptional user experience even when things go wrong, while maintaining
+constitutional standards for reliability, security, and development quality.
+-->
+
+<!--
+SYNC IMPACT REPORT - Constitution Amendment
 Version Change: 1.4.0 → 1.5.0
 Amendment Date: 2025-10-11
 Amendment Type: MINOR (Perplexity MCP server integration added)
@@ -176,20 +230,71 @@ Every feature follows a structured development process:
 - **Error Monitoring Integration**: Rollbar error tracking configured for development and production
   environments
 
-### VI. Error Monitoring & Observability
+### VI. Holistic Error Handling & Observability
 
-Comprehensive error tracking and performance monitoring for production reliability:
+Comprehensive error management across the entire application lifecycle with proactive monitoring,
+graceful degradation, and user-centric recovery strategies:
 
-- **Rollbar Integration**: Mandatory error tracking for all production applications
-- **Client-Side Monitoring**: React Error Boundaries capture unhandled component errors
-- **Server-Side Tracking**: All API routes and server functions report errors to Rollbar
-- **Performance Monitoring**: Track critical user flows and performance bottlenecks
-- **Error Classification**: Proper error categorization and severity levels
-- **Security Incident Tracking**: Monitor for authentication failures and security breaches
-- **Environment Separation**: Separate Rollbar projects for development, staging, and production
-- **Alert Configuration**: Real-time notifications for critical errors and performance degradation
-- **Data Privacy**: Sensitive information filtered from error reports (PII, tokens, passwords)
-- **Integration Testing**: Error monitoring functionality validated in CI/CD pipeline
+#### Error Prevention & Detection
+
+- **Rollbar Integration**: Mandatory error tracking for all production applications with official
+  Next.js patterns
+- **Client-Side Monitoring**: React Error Boundaries with `useRollbar` hooks capture component
+  errors
+- **Server-Side Tracking**: All API routes, middleware, and server functions report to Rollbar
+- **Global Error Handlers**: App Router `error.tsx` and `global-error.tsx` for comprehensive
+  coverage
+- **Instrumentation**: Next.js `instrumentation.ts` for uncaught exceptions and unhandled rejections
+- **Performance Monitoring**: Track critical user flows, Core Web Vitals, and performance
+  bottlenecks
+- **TypeScript Guards**: Strict type checking prevents runtime errors at compile time
+- **Validation Layers**: Zod schemas for API input/output validation with detailed error messages
+
+#### Error Classification & Response
+
+- **Severity Levels**: Critical (system down), Error (feature broken), Warning (degraded), Info
+  (tracking)
+- **Error Categories**: Authentication, Payment, Database, Network, Validation, Security,
+  Performance
+- **User-Facing Errors**: Meaningful error messages with actionable recovery steps
+- **Silent Monitoring**: Background errors logged without disrupting user experience
+- **Cascade Prevention**: Circuit breakers prevent error propagation across services
+- **Graceful Degradation**: Fallback mechanisms when external services are unavailable
+
+#### Recovery & User Experience
+
+- **Error Boundaries**: Isolate component failures with recovery options (retry, refresh, fallback
+  UI)
+- **Progressive Enhancement**: Core functionality works even when advanced features fail
+- **Offline Resilience**: Service workers cache critical assets and provide offline experiences
+- **User Feedback Loops**: Error reporting mechanisms with user context and reproduction steps
+- **Auto-Recovery**: Automatic retry mechanisms for transient failures (network, rate limits)
+- **Maintenance Mode**: Graceful handling of planned downtime with informative messaging
+
+#### Monitoring & Alerting
+
+- **Real-Time Alerts**: Immediate notifications for critical errors affecting user experience
+- **Trend Analysis**: Error rate monitoring and anomaly detection across time periods
+- **Environment Separation**: Isolated Rollbar projects for development, staging, and production
+- **Dashboard Visibility**: Error metrics integrated into development and operations dashboards
+- **Escalation Procedures**: Automated escalation paths based on error severity and impact
+- **Post-Incident Reviews**: Structured analysis of major incidents with prevention planning
+
+#### Privacy & Security
+
+- **Data Privacy**: PII, tokens, and sensitive data filtered from all error reports
+- **Security Incident Tracking**: Enhanced monitoring for authentication failures and breaches
+- **Audit Trails**: Comprehensive logging of security-related events and error responses
+- **Access Controls**: Restricted access to error monitoring data based on team roles
+- **Compliance**: Error handling aligned with GDPR, CCPA, and industry security standards
+
+#### Development Integration
+
+- **CI/CD Validation**: Error monitoring functionality tested in all deployment pipelines
+- **Development Tools**: Local error simulation and testing capabilities
+- **Documentation**: Runbooks for common error scenarios and resolution procedures
+- **Team Training**: Regular education on error handling best practices and incident response
+- **Metrics Integration**: Error rates included in definition of done for all features
 
 ### IV. Authentication & Security
 
@@ -229,7 +334,10 @@ Modular, reusable component design principles:
 - **Prettier Tests**: Automated formatting validation with `npm run test:prettier`
 - **Performance Tests**: Load testing for authentication and course enrollment flows
 - **Payment Integration Tests**: Stripe webhook testing and checkout flow validation
-- **Error Monitoring Tests**: Rollbar integration testing for error capture and reporting
+- **Error Handling Tests**: Comprehensive error scenario testing including boundary conditions,
+  recovery flows, and graceful degradation
+- **Error Monitoring Tests**: Rollbar integration testing for error capture, classification, and
+  reporting across all error types
 - **Security Tests**: Vulnerability scanning and penetration testing for auth flows
 
 ### Code Organization
@@ -239,8 +347,8 @@ Modular, reusable component design principles:
 - **Database Layer**: Prisma ORM with type-safe database operations
 - **API Routes**: Next.js API routes with proper error handling and validation
 - **Payment Processing**: Stripe integration with secure webhook endpoints and proper error handling
-- **Error Monitoring**: Rollbar integration with React Error Boundaries and server-side error
-  tracking
+- **Holistic Error Handling**: Comprehensive error management with prevention, detection, graceful
+  recovery, and user-centric error experiences
 - **Component Structure**: Separate presentational and container components
 
 ### Quality Gates
@@ -293,35 +401,56 @@ All deployments follow the GitHub Actions workflow (`.github/workflows/deploy.ym
 
 ### Deployment Standards
 
-All deployments follow a structured CI/CD pipeline with mandatory quality gates:
+All deployments follow a structured CI/CD pipeline with mandatory quality gates and exclusive GitHub
+Actions enforcement:
 
+- **GitHub Workflow Mandate**: ALL deployments (preview and production) MUST be executed exclusively
+  through GitHub Actions workflows - manual deployments via CLI are strictly prohibited
+- **No Manual Deployments**: Direct use of `vercel --prod`, `npm run deploy`, or any manual
+  deployment commands is forbidden
+- **Workflow-Only Access**: Production environment access is restricted to GitHub Actions workflows
+  with proper authentication tokens
 - **Quality Gates**: Every deployment must pass TypeScript compilation, Prettier formatting, ESLint
-  validation, unit tests, and build verification
+  validation, unit tests, and build verification through automated pipelines
 - **Preview Deployments**: All pull requests automatically deploy to Vercel preview environments
-  with unique URLs
+  with unique URLs via GitHub Actions
 - **Production Deployment**: Only `main` branch pushes trigger production deployments to Vercel
+  through GitHub Actions workflows
 - **Post-Deployment Testing**: E2E tests run against production environment after successful
-  deployment
-- **Rollback Strategy**: Failed deployments must be immediately rolled back with incident
-  documentation
+  deployment via automated workflows
+- **Rollback Strategy**: Failed deployments must be immediately rolled back through GitHub Actions
+  with incident documentation
 - **Environment Secrets**: All sensitive configuration managed through Vercel environment variables
-  and GitHub secrets
+  and GitHub secrets within workflow context
 - **Payment Configuration**: Stripe keys (test/live) managed securely with environment-based mode
-  switching
+  switching through GitHub Actions secrets
+- **Deployment Audit Trail**: All deployments must be traceable through GitHub Actions logs with
+  proper commit SHA tracking
 
 ### GitHub Actions Workflow Requirements
 
-The deployment workflow (`.github/workflows/deploy.yml`) enforces constitutional compliance:
+The deployment workflow (`.github/workflows/deploy.yml`) enforces constitutional compliance and is
+the EXCLUSIVE deployment mechanism:
 
+- **Sole Deployment Authority**: GitHub Actions is the only authorized method for all deployments -
+  no exceptions for manual CLI deployments
 - **Multi-Stage Pipeline**: Separate jobs for quality gates, preview deployment, production
   deployment, and E2E validation
-- **Dependency Chain**: Production deployment only occurs after all quality gates pass
+- **Dependency Chain**: Production deployment only occurs after all quality gates pass in automated
+  sequence
+- **Access Control**: Deployment tokens and secrets are exclusively available to GitHub Actions
+  runners
 - **Automated PR Comments**: Preview deployment URLs automatically posted to pull request comments
-- **Artifact Management**: Playwright reports uploaded for debugging failed E2E tests
+  through workflow automation
+- **Artifact Management**: Playwright reports uploaded for debugging failed E2E tests via workflow
+  artifacts
 - **Security**: VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID managed as GitHub repository
-  secrets
+  secrets with workflow-only access
 - **Payment Security**: Stripe webhook secrets and API keys secured in repository secrets with
-  proper test/live separation
+  proper test/live separation and workflow-restricted access
+- **Deployment Verification**: Every deployment includes automated health checks and error
+  monitoring validation
+- **Failure Handling**: Automated rollback procedures triggered by workflow failure detection
 
 ## Governance
 
@@ -329,10 +458,18 @@ The deployment workflow (`.github/workflows/deploy.yml`) enforces constitutional
 
 This constitution supersedes all other development practices and must be followed strictly:
 
-- **PR Reviews**: All pull requests must verify constitutional compliance
-- **Quality Gates**: Automated checks enforce formatting, testing, and build requirements
-- **Exception Process**: Any deviation requires explicit justification and team approval
-- **Regular Audits**: Monthly reviews of compliance and process effectiveness
+- **PR Reviews**: All pull requests must verify constitutional compliance including deployment
+  workflow adherence
+- **Quality Gates**: Automated checks enforce formatting, testing, and build requirements through
+  GitHub Actions exclusively
+- **Deployment Compliance**: Manual deployments are constitutional violations and must be
+  immediately reported and reversed
+- **Workflow Monitoring**: All deployment activities are logged and audited through GitHub Actions
+  for compliance verification
+- **Exception Process**: Any deviation requires explicit justification and team approval - NO
+  exceptions for deployment workflow bypass
+- **Regular Audits**: Monthly reviews of compliance and process effectiveness including deployment
+  workflow adherence
 
 ### Amendment Process
 
@@ -347,8 +484,10 @@ This constitution supersedes all other development practices and must be followe
 - **Prettier Compliance**: All code must pass `npm run test:prettier` validation
 - **Contract Validation**: API and component contracts must be tested before implementation
 - **Payment Flow Testing**: Stripe checkout and webhook flows must be validated in test mode
-- **Error Monitoring Validation**: Rollbar error tracking must be tested for both client and server
-  scenarios
+- **Error Handling Validation**: All error scenarios must have tested recovery paths and graceful
+  degradation
+- **Error Monitoring Validation**: Rollbar error tracking tested for prevention, detection,
+  classification, and recovery workflows
 - **Performance Benchmarks**: Authentication flows must meet sub-100ms response requirements
 - **Security Validation**: All auth-related code requires security review and testing
 - **Payment Security Compliance**: All Stripe integrations must follow PCI DSS guidelines and use
@@ -379,4 +518,4 @@ Team wellness and code culture health checks ensure sustainable development prac
 - Repeated "quick fixes" without tests trigger technical debt discussion
 - Team member expressing frustration triggers one-on-one check-in
 
-**Version**: 1.5.0 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-11
+**Version**: 1.7.0 | **Ratified**: 2025-10-04 | **Last Amended**: 2025-10-11
