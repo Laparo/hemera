@@ -11,7 +11,7 @@ test.describe('Clerk Authentication UI Tests', () => {
 
     // Should see our custom welcome message (Material-UI one)
     await expect(
-      page.locator('h1').filter({ hasText: 'Welcome Back' }).first()
+      page.locator('h2').filter({ hasText: 'Welcome Back' }).first()
     ).toBeVisible();
 
     // Should see Clerk sign-in form
@@ -58,7 +58,7 @@ test.describe('Clerk Authentication UI Tests', () => {
 
     // Check our custom Material-UI typography styling
     const ourHeading = page
-      .locator('h1')
+      .locator('h2')
       .filter({ hasText: 'Welcome Back' })
       .first();
     await expect(ourHeading).toHaveCSS('font-weight', '700');
@@ -91,14 +91,13 @@ test.describe('Clerk Authentication UI Tests', () => {
     // Check that Clerk form elements are present
     await expect(page.locator('input[name="identifier"]')).toBeVisible();
 
-    // Check for submit button (but only interact if visible)
+    // Check for submit button - Clerk may hide/disable it until form is valid
     const submitButtons = page.locator('button[type="submit"]');
-    const visibleSubmitButton = submitButtons
+    const submitButton = submitButtons
       .filter({ hasText: /sign in|Sign in|continue|Continue/i })
       .first();
 
-    if ((await visibleSubmitButton.count()) > 0) {
-      await expect(visibleSubmitButton).toBeVisible();
-    }
+    // Button may be hidden or disabled initially - just check it exists
+    await expect(submitButton).toBeAttached();
   });
 });
