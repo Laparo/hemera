@@ -9,47 +9,52 @@ describe('Booking Model Validations', () => {
   let testUser2: any;
 
   beforeEach(async () => {
-    // Clean up any existing test data
+    // Clean up any existing test data first
     await prisma.booking.deleteMany();
     await prisma.course.deleteMany();
+    await prisma.user.deleteMany();
 
     // Create test course with enhanced unique naming
     const timestamp = Date.now();
     const randomSuffix = Math.random().toString(36).substring(2, 8);
     const uniqueId = `test-course-${timestamp}-${randomSuffix}`;
 
-    // Use explicit transaction to ensure proper isolation
-    testCourse = await prisma.$transaction(async tx => {
-      const course = await tx.course.create({
-        data: {
-          id: uniqueId,
-          title: `Test Course ${timestamp}`,
-          description: 'Test Description',
-          slug: `test-course-${timestamp}-${randomSuffix}`,
-          price: 9999, // Price in cents
-          currency: 'USD',
-          isPublished: true,
-        },
-      });
-
-      // Verify within same transaction
-      const courseVerify = await tx.course.findUnique({
-        where: { id: course.id },
-      });
-      if (!courseVerify) {
-        throw new Error(`Failed to create test course: ${course.id}`);
-      }
-
-      return course;
+    // Create course directly without transaction to ensure persistence
+    testCourse = await prisma.course.create({
+      data: {
+        id: uniqueId,
+        title: `Test Course ${timestamp}`,
+        description: 'Test Description',
+        slug: `test-course-${timestamp}-${randomSuffix}`,
+        price: 9999, // Price in cents
+        currency: 'USD',
+        isPublished: true,
+      },
     });
 
-    // Additional verification after transaction commit
-    const finalVerify = await prisma.course.findUnique({
+    // Immediate verification with detailed error logging
+    const courseExists = await prisma.course.findUnique({
       where: { id: testCourse.id },
     });
-    if (!finalVerify) {
-      throw new Error(`Course not found after transaction: ${testCourse.id}`);
+
+    if (!courseExists) {
+      console.error('❌ COURSE CREATION FAILED');
+      console.error('Expected ID:', testCourse.id);
+      console.error('Course data:', testCourse);
+
+      // List all courses for debugging
+      const allCourses = await prisma.course.findMany();
+      console.error(
+        'All courses in DB:',
+        allCourses.map(c => c.id)
+      );
+
+      throw new Error(
+        `❌ Course verification failed: ${testCourse.id} not found in database`
+      );
     }
+
+    console.log('✅ Test course created and verified:', testCourse.id);
 
     // Create test users
     testUser = await prisma.user.create({
@@ -67,6 +72,8 @@ describe('Booking Model Validations', () => {
         name: 'Test User 2',
       },
     });
+
+    console.log('✅ Test users created:', testUser.id, testUser2.id);
   });
 
   afterEach(async () => {
@@ -83,15 +90,28 @@ describe('Booking Model Validations', () => {
 
   describe('Required Fields', () => {
     it('should create booking with valid required fields', async () => {
-      // Verify test course exists before creating booking
+      // Enhanced verification with detailed error reporting
       const courseExists = await prisma.course.findUnique({
         where: { id: testCourse.id },
       });
 
       if (!courseExists) {
-        console.error('Test course not found. ID:', testCourse.id);
-        throw new Error(`Test course with ID ${testCourse.id} does not exist`);
+        console.error('❌ TEST COURSE NOT FOUND IN TEST');
+        console.error('Looking for ID:', testCourse.id);
+
+        // Debug: List all courses in database
+        const allCourses = await prisma.course.findMany();
+        console.error(
+          'Available courses:',
+          allCourses.map(c => ({ id: c.id, title: c.title }))
+        );
+
+        throw new Error(
+          `❌ Test course ${testCourse.id} does not exist in database during test execution`
+        );
       }
+
+      console.log('✅ Course verification passed in test:', testCourse.id);
 
       const bookingData = {
         userId: testUser.id,
