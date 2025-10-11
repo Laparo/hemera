@@ -1,8 +1,8 @@
 # Hemera – Specs-first Workspace
 
 This repository is currently in a planning/documentation phase. Features are defined and refined
-under `specs/` using a specs-first workflow. No application code has been committed yet;
-implementation starts only after tasks are generated and approved.
+under `specs/` using a specs-first workflow. Implementation follows a structured approach with
+automated code review and quality assurance through Qodo PR Agent integration.
 
 ## Workflow
 
