@@ -56,11 +56,19 @@ jobs:
 
       - name: Setup test database and environment
         run: |
-          # Create a minimal .env.local for tests
+          # Create a minimal .env.local for tests with mock Clerk keys
           cat > .env.local << EOF
           NEXTAUTH_URL=http://localhost:3000
           NEXTAUTH_SECRET=test-secret-for-ci-only
           DATABASE_URL=file:./test.db
+
+          # Mock Clerk configuration for CI tests
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_mock_ci_key_for_testing_only
+          CLERK_SECRET_KEY=sk_test_mock_ci_secret_for_testing_only
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
           EOF
 
           # Create a temporary SQLite schema for CI testing

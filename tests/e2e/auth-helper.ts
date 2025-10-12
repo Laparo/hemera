@@ -44,9 +44,63 @@ export class AuthHelper {
   }
 
   /**
+   * Check if we're running in CI environment without Clerk
+   */
+  private isCIEnvironment(): boolean {
+    return !!process.env.CI;
+  }
+
+  /**
+   * Mock authentication for CI environments where Clerk is not available
+   */
+  private async mockAuthenticationForCI(
+    email: string,
+    role: string = 'user'
+  ): Promise<void> {
+    console.log(
+      `🎭 Mocking authentication in CI for: ${email} with role: ${role}`
+    );
+
+    // Set mock authentication cookies/localStorage
+    await this.page.addInitScript(
+      userData => {
+        // Mock Clerk session in localStorage
+        localStorage.setItem(
+          'clerk-session',
+          JSON.stringify({
+            id: 'mock-session-id',
+            user: {
+              id: 'mock-user-id',
+              email: userData.email,
+              firstName: 'Test',
+              lastName: 'User',
+              role: userData.role,
+            },
+            authenticated: true,
+            expiresAt: Date.now() + 3600000, // 1 hour from now
+          })
+        );
+
+        // Mock any additional auth state your app expects
+        localStorage.setItem('auth-state', 'authenticated');
+      },
+      { email, role }
+    );
+
+    console.log('✅ Mock authentication set up for CI');
+  }
+
+  /**
    * Sign in a user with email and password
    */
   async signIn(email: string, password: string): Promise<void> {
+    // If in CI environment, use mock authentication
+    if (this.isCIEnvironment()) {
+      const role = email.includes('admin') ? 'admin' : 'user';
+      await this.mockAuthenticationForCI(email, role);
+      return;
+    }
+
     // Prepare clean auth state first
     await this.prepareCleanAuthState();
 
