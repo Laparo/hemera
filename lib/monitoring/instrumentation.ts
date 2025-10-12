@@ -3,8 +3,8 @@
  * Ensures Rollbar is properly configured on both server and client side
  */
 
-import { rollbar } from '@/lib/monitoring/rollbar';
 import { deploymentMonitor } from '@/lib/monitoring/deployment-monitor';
+import { rollbar } from '@/lib/monitoring/rollbar';
 
 // Initialize Rollbar on app startup
 if (typeof window === 'undefined') {
