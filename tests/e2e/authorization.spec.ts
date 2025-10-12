@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { AuthHelper } from './auth-helper';
 
 /**
  * Role-Based Authorization
@@ -137,81 +138,27 @@ test.describe('Role-Based Navigation Contract', () => {
 
 // Helper functions for Clerk authentication
 async function signInAsUser(page: any) {
-  // Clear cookies to ensure clean auth state
-  await page.context().clearCookies();
-  console.log('🧹 Cleared cookies for clean auth state');
-
-  await page.goto('/sign-in');
-
-  // Wait for Clerk Sign In component to load
-  await page.waitForSelector('[data-testid="sign-in-card"]', {
-    timeout: 10000,
-  });
-
-  // Wait for Clerk form fields to be available
-  await page.waitForSelector('input[name="identifier"]', { timeout: 10000 });
-
-  // Use test user credentials with Clerk's actual input names
-  await page.fill('input[name="identifier"]', 'e2e.dashboard@example.com');
-  await page.fill(
-    'input[name="password"]',
+  const authHelper = new AuthHelper(page);
+  await authHelper.signIn(
+    'e2e.dashboard@example.com',
     'E2ETestPassword2024!SecureForTesting'
   );
-
-  // Use a more specific selector for Clerk submit button that's not hidden
-  const submitButton = page.locator(
-    'button[data-localization-key="formButtonPrimary"]:not([aria-hidden="true"])'
-  );
-  await submitButton.waitFor({ state: 'visible', timeout: 10000 });
-  await submitButton.click();
-
-  await page.waitForURL('/dashboard', { timeout: 30000 }); // Increased timeout
 }
 
 async function signInAsAdmin(page: any) {
-  // Clear cookies to ensure clean auth state
-  await page.context().clearCookies();
-  console.log('🧹 Cleared cookies for clean auth state');
-
-  await page.goto('/sign-in');
-
-  // Wait for Clerk Sign In component to load
-  await page.waitForSelector('[data-testid="sign-in-card"]', {
-    timeout: 10000,
-  });
-
-  // Wait for Clerk form fields to be available
-  await page.waitForSelector('input[name="identifier"]', { timeout: 10000 });
-
-  // Use test admin credentials with Clerk's actual input names
-  await page.fill('input[name="identifier"]', 'e2e.dashboard@example.com');
-  await page.fill(
-    'input[name="password"]',
+  const authHelper = new AuthHelper(page);
+  await authHelper.signIn(
+    'e2e.admin@example.com',
     'E2ETestPassword2024!SecureForTesting'
   );
-
-  // Use a more specific selector for Clerk submit button that's not hidden
-  const submitButton = page.locator(
-    'button[data-localization-key="formButtonPrimary"]:not([aria-hidden="true"])'
-  );
-  await submitButton.waitFor({ state: 'visible', timeout: 10000 });
-  await submitButton.click();
-
-  // Wait for redirect to complete
-  await page.waitForURL('/dashboard', { timeout: 30000 }); // Increased timeout
 }
 
 async function signInWithRole(page: any, role: string) {
-  // This would need to be implemented based on how test users with specific roles are created
-  // For now, simulate by signing in as user and then somehow setting the role
-  await signInAsUser(page);
-
-  // This is a placeholder - in real implementation, this might involve:
-  // 1. API call to update user metadata
-  // 2. Using a test user that already has the specified role
-  // 3. Mocking the role in the auth context
-  console.warn(
-    `signInWithRole('${role}') not fully implemented - fallback to user role`
+  const authHelper = new AuthHelper(page);
+  // Use default test user for role testing
+  await authHelper.signIn(
+    'e2e.dashboard@example.com',
+    'E2ETestPassword2024!SecureForTesting'
   );
 }
 
