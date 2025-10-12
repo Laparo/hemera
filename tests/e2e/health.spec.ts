@@ -11,5 +11,10 @@ test('health endpoint returns ok', async ({ request }) => {
   const res = await request.get('/api/health');
   expect(res.ok()).toBeTruthy();
   const body = await res.json();
-  expect(body).toEqual({ status: 'ok' });
+
+  // Validate structured response format
+  expect(body.success).toBe(true);
+  expect(body.data.status).toBe('ok');
+  expect(body.data.environment).toBeDefined();
+  expect(body.meta.requestId).toBeDefined();
 });
