@@ -2,14 +2,11 @@ import { expect, test } from '@playwright/test';
 import { AuthHelper, TEST_USERS } from './auth-helper';
 
 /**
- * T004: Authentication Contract Test
- * File: tests/e2e/auth-protected-area.spec.ts
- *
- * This test validates the AuthenticationContract from contracts/README.md
- * Tests must FAIL initially until Clerk implementation is complete
+ * Authentication Flow Validation
+ * Validates complete authentication flow from login to protected areas
  */
 
-test.describe('Protected Area Authentication Contract', () => {
+test.describe('Authentication Flow', () => {
   test('should redirect unauthenticated users to sign-in', async ({ page }) => {
     // Attempt to access protected area without authentication
     await page.goto('/dashboard');

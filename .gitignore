@@ -1,5 +1,6 @@
 # macOS
 .DS_Store
+**/.DS_Store
 
 # Node/Next.js
 node_modules/
@@ -9,6 +10,7 @@ dist/
 build/
 coverage/
 .eslintcache
+tsconfig.tsbuildinfo
 next-env.d.ts
 
 # Logs
@@ -38,6 +40,35 @@ pnpm-debug.log*
 # Testing artifacts
 playwright-report/
 test-results/
+/test-results/
+
+# Debug files (should not be committed)
+debug-*.png
+debug-*.js
+*-debug.png
+temp-test.*
+e2e-*.png
+final-test-*.png
+robuster-test-*.png
+server-test.png
+signin-page-test.png
+test-*.png
+
+# Temporary files
+*.tmp
+*.temp
+temp-*
+.tmp/
+
+# Tool-specific directories
+.qodo/
+.specify/
+.playwright-mcp/
+
+# Documentation artifacts (use docs/ instead)
+*-BERICHT.md
+*_SUCCESS_SUMMARY.md
+*_SETUP.md
 
 # MCP configuration
 mcp.json

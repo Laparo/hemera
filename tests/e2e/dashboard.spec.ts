@@ -2,18 +2,10 @@ import { expect, Page, test } from '@playwright/test';
 import { AuthHelper, TEST_USERS } from './auth-helper';
 
 /**
- * E2E Test: User Dashboard
+ * User Dashboard Management
  *
- * This test validates the complete user dashboard functionality
- * including booking history, payment status, course access, and account management.
- *
- * Test Scenarios:
- * 1. Dashboard navigation and layout
- * 2. Booking history display and filtering
- * 3. Payment status tracking
- * 4. Course access management
- * 5. Profile and account settings
- * 6. Booking actions (cancellation, refunds)
+ * Validates complete dashboard functionality including booking history,
+ * payment status, course access, and account management features.
  */
 
 test.describe('User Dashboard E2E', () => {

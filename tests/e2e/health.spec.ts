@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-// Contract: GET /api/health returns { status: 'ok' }
+/**
+ * Health Endpoint Validation
+ *
+ * Validates API health check endpoint returns proper status response.
+ */
+
+// Health endpoint validation
 test('health endpoint returns ok', async ({ request }) => {
   const res = await request.get('/api/health');
   expect(res.ok()).toBeTruthy();

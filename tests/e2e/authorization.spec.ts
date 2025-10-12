@@ -1,11 +1,10 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * T005: Role Permission Contract Test
- * File: tests/e2e/role-based-navigation.spec.ts
+ * Role-Based Authorization
  *
- * This test validates the RolePermissionContract from contracts/README.md
- * Tests role-based navigation visibility and access control
+ * Validates role-based navigation and access control permissions
+ * across different user roles and protected routes.
  */
 
 test.describe('Role-Based Navigation Contract', () => {

@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
 
+/**
+ * Performance Metrics Validation
+ *
+ * Validates Core Web Vitals and application performance thresholds.
+ */
+
 test.describe('Core Web Vitals Validation', () => {
   test('landing page should meet Core Web Vitals thresholds', async ({
     page,

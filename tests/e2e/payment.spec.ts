@@ -2,18 +2,10 @@ import { expect, Page, test } from '@playwright/test';
 import { AuthHelper, TEST_USERS } from './auth-helper';
 
 /**
- * E2E Test: Stripe React Elements Payment Flow
+ * Payment Flow Integration
  *
- * This test validates the complete payment journey using React Stripe Elements
- * instead of the old Hosted Checkout iframe approach.
- *
- * Test Scenario:
- * 1. User browses available paid courses (excludes free courses)
- * 2. User signs in with Clerk authentication
- * 3. User selects a paid course and initiates checkout
- * 4. User completes payment via React Stripe Elements
- * 5. User receives booking confirmation
- * 6. Booking appears in user dashboard
+ * Validates the complete payment journey using React Stripe Elements.
+ * Covers course selection, authentication, checkout process, and booking confirmation.
  */
 
 test.describe('Stripe React Elements Payment Flow E2E', () => {
