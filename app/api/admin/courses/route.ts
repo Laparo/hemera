@@ -21,7 +21,6 @@ export async function GET(request: NextRequest) {
       total: courses.length,
     });
   } catch (error) {
-    console.error('Error fetching courses for admin:', error);
     return NextResponse.json(
       { error: 'Failed to fetch courses' },
       { status: 500 }

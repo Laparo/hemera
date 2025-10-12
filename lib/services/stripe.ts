@@ -3,6 +3,7 @@ import {
   StripeConfigurationError,
   logError,
 } from '@/lib/errors';
+import { serverInstance } from '@/lib/monitoring/rollbar-official';
 import Stripe from 'stripe';
 import { STRIPE_API_VERSION } from '../stripe/config';
 import { PaymentStatus } from './course';
@@ -26,7 +27,7 @@ export class StripeService {
       process.env.NODE_ENV === 'production' && !process.env.STRIPE_SECRET_KEY;
 
     if (isBuildTime) {
-      console.log('⚠️ Build time detected - skipping Stripe initialization');
+      // Build time detected - skipping Stripe initialization
       return;
     }
 
@@ -191,7 +192,7 @@ export class StripeService {
         process.env.STRIPE_WEBHOOK_SECRET
       );
 
-      console.log(`Processing webhook event: ${event.type} (${event.id})`);
+      // Process webhook event: ${event.type} (${event.id})
 
       const result = {
         eventId: event.id,
@@ -230,13 +231,16 @@ export class StripeService {
           break;
 
         default:
-          console.log(`Unhandled event type: ${event.type}`);
+          // Unhandled event type: ${event.type}
           result.processed = false;
       }
 
       return result;
     } catch (error) {
-      console.error('Webhook processing failed:', error);
+      serverInstance.error('Webhook processing failed', {
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString(),
+      });
 
       if (error instanceof Stripe.errors.StripeSignatureVerificationError) {
         throw new Error('Invalid webhook signature');
@@ -370,14 +374,14 @@ export class StripeService {
     amount: number;
     status: string;
   }> {
-    try {
-      const {
-        paymentIntentId,
-        amount,
-        reason = 'requested_by_customer',
-        metadata,
-      } = params;
+    const {
+      paymentIntentId,
+      amount,
+      reason = 'requested_by_customer',
+      metadata,
+    } = params;
 
+    try {
       const refund = await this.ensureStripe().refunds.create({
         payment_intent: paymentIntentId,
         amount,
@@ -391,7 +395,12 @@ export class StripeService {
         status: refund.status || 'unknown',
       };
     } catch (error) {
-      console.error('Refund creation failed:', error);
+      serverInstance.error('Refund creation failed', {
+        error: error instanceof Error ? error.message : String(error),
+        paymentIntentId,
+        amount,
+        timestamp: new Date().toISOString(),
+      });
       throw new Error(
         `Failed to create refund: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -422,7 +431,11 @@ export class StripeService {
         metadata: paymentIntent.metadata,
       };
     } catch (error) {
-      console.error('Failed to retrieve payment details:', error);
+      serverInstance.error('Failed to retrieve payment details', {
+        error: error instanceof Error ? error.message : String(error),
+        paymentIntentId,
+        timestamp: new Date().toISOString(),
+      });
       throw new Error(
         `Failed to get payment details: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -456,7 +469,12 @@ export class StripeService {
         email: customer.email || email,
       };
     } catch (error) {
-      console.error('Customer creation failed:', error);
+      serverInstance.error('Customer creation failed', {
+        error: error instanceof Error ? error.message : String(error),
+        email: params.email,
+        userId: params.userId,
+        timestamp: new Date().toISOString(),
+      });
       throw new Error(
         `Failed to create customer: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -481,6 +499,60 @@ export class StripeService {
       return true;
     } catch (error) {
       return false;
+    }
+  }
+
+  /**
+   * Create a payment intent for direct payment processing
+   */
+  async createPaymentIntent(params: {
+    amount: number;
+    currency: string;
+    courseId: string;
+    userId: string;
+    metadata?: Record<string, string>;
+  }): Promise<Stripe.PaymentIntent> {
+    try {
+      const paymentIntent = await this.ensureStripe().paymentIntents.create({
+        amount: params.amount,
+        currency: params.currency.toLowerCase(),
+        automatic_payment_methods: {
+          enabled: true,
+        },
+        metadata: {
+          courseId: params.courseId,
+          userId: params.userId,
+          ...params.metadata,
+        },
+      });
+
+      return paymentIntent;
+    } catch (error) {
+      logError('Payment intent creation failed', error as Record<string, any>);
+      throw new PaymentProcessingError(
+        'Failed to create payment intent',
+        error as string
+      );
+    }
+  }
+
+  /**
+   * Retrieve a payment intent by ID
+   */
+  async retrievePaymentIntent(
+    paymentIntentId: string
+  ): Promise<Stripe.PaymentIntent> {
+    try {
+      const paymentIntent =
+        await this.ensureStripe().paymentIntents.retrieve(paymentIntentId);
+
+      return paymentIntent;
+    } catch (error) {
+      logError('Payment intent retrieval failed', error as Record<string, any>);
+      throw new PaymentProcessingError(
+        'Failed to retrieve payment intent',
+        error as string
+      );
     }
   }
 
@@ -516,3 +588,10 @@ export const createRefund = (
 
 export const getPaymentDetails = (paymentIntentId: string) =>
   stripeService.getPaymentDetails(paymentIntentId);
+
+export const createPaymentIntent = (
+  params: Parameters<StripeService['createPaymentIntent']>[0]
+) => stripeService.createPaymentIntent(params);
+
+export const retrievePaymentIntent = (paymentIntentId: string) =>
+  stripeService.retrievePaymentIntent(paymentIntentId);

@@ -15,7 +15,6 @@ export default function Error({ error, reset }: ErrorPageProps) {
 
   React.useEffect(() => {
     // Log the error to your error reporting service
-    console.error('Application error:', error);
 
     // Report error to Rollbar following official Next.js documentation
     rollbar.error(error);

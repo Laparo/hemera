@@ -93,7 +93,6 @@ export async function GET(request: Request) {
       );
     }
 
-    console.error('Bookings fetch error:', error);
     return NextResponse.json(
       { success: false, error: 'Internal error' },
       { status: 500 }
@@ -192,7 +191,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error('Booking creation error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create booking' },
       { status: 500 }

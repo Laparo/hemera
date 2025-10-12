@@ -229,6 +229,35 @@ export async function getCourseBookings(
 }
 
 /**
+ * Update booking status with additional payment information
+ */
+export async function updateBookingStatus(params: {
+  id: string;
+  status: PaymentStatus;
+  stripePaymentIntentId?: string;
+  stripeSessionId?: string;
+}): Promise<Booking> {
+  const { id, status, stripePaymentIntentId, stripeSessionId } = params;
+
+  const updateData: any = { paymentStatus: status };
+
+  if (stripePaymentIntentId) {
+    updateData.stripePaymentIntentId = stripePaymentIntentId;
+  }
+
+  if (stripeSessionId) {
+    updateData.stripeSessionId = stripeSessionId;
+  }
+
+  const booking = await prisma.booking.update({
+    where: { id },
+    data: updateData,
+  });
+
+  return booking as unknown as Booking;
+}
+
+/**
  * Update booking payment status
  */
 export async function updateBookingPaymentStatus(

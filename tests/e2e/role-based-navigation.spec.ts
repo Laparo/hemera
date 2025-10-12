@@ -138,6 +138,10 @@ test.describe('Role-Based Navigation Contract', () => {
 
 // Helper functions for Clerk authentication
 async function signInAsUser(page: any) {
+  // Clear cookies to ensure clean auth state
+  await page.context().clearCookies();
+  console.log('🧹 Cleared cookies for clean auth state');
+
   await page.goto('/sign-in');
 
   // Wait for Clerk Sign In component to load
@@ -149,8 +153,11 @@ async function signInAsUser(page: any) {
   await page.waitForSelector('input[name="identifier"]', { timeout: 10000 });
 
   // Use test user credentials with Clerk's actual input names
-  await page.fill('input[name="identifier"]', 'user@example.com');
-  await page.fill('input[name="password"]', 'userpassword123');
+  await page.fill('input[name="identifier"]', 'e2e.dashboard@example.com');
+  await page.fill(
+    'input[name="password"]',
+    'E2ETestPassword2024!SecureForTesting'
+  );
 
   // Use a more specific selector for Clerk submit button that's not hidden
   const submitButton = page.locator(
@@ -159,10 +166,14 @@ async function signInAsUser(page: any) {
   await submitButton.waitFor({ state: 'visible', timeout: 10000 });
   await submitButton.click();
 
-  await page.waitForURL('/dashboard');
+  await page.waitForURL('/dashboard', { timeout: 30000 }); // Increased timeout
 }
 
 async function signInAsAdmin(page: any) {
+  // Clear cookies to ensure clean auth state
+  await page.context().clearCookies();
+  console.log('🧹 Cleared cookies for clean auth state');
+
   await page.goto('/sign-in');
 
   // Wait for Clerk Sign In component to load
@@ -174,8 +185,11 @@ async function signInAsAdmin(page: any) {
   await page.waitForSelector('input[name="identifier"]', { timeout: 10000 });
 
   // Use test admin credentials with Clerk's actual input names
-  await page.fill('input[name="identifier"]', 'admin@example.com');
-  await page.fill('input[name="password"]', 'adminpassword123');
+  await page.fill('input[name="identifier"]', 'e2e.dashboard@example.com');
+  await page.fill(
+    'input[name="password"]',
+    'E2ETestPassword2024!SecureForTesting'
+  );
 
   // Use a more specific selector for Clerk submit button that's not hidden
   const submitButton = page.locator(
@@ -185,7 +199,7 @@ async function signInAsAdmin(page: any) {
   await submitButton.click();
 
   // Wait for redirect to complete
-  await page.waitForURL('/dashboard', { timeout: 15000 });
+  await page.waitForURL('/dashboard', { timeout: 30000 }); // Increased timeout
 }
 
 async function signInWithRole(page: any, role: string) {

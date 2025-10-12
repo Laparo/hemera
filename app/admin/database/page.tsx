@@ -56,7 +56,6 @@ export default function DatabaseAdminPage() {
         setCourses(coursesData.courses || []);
         setUsers(usersData.users || []);
       })
-      .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 

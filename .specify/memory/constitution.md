@@ -2,6 +2,29 @@
 
 <!--
 SYNC IMPACT REPORT - Constitution Amendment
+Version Change: 1.7.0 → 1.8.0
+Amendment Date: 2025-10-12
+Amendment Type: MINOR (Mandatory Rollbar Error Logging requirement added)
+
+Modified Sections:
+- Enhanced: Error Prevention & Detection (added mandatory Rollbar error logging requirement)
+- Enhanced: Holistic Error Handling & Observability (strengthened error logging standards)
+
+Key Changes:
+- Mandatory Rollbar error logging for ALL error scenarios (replaces console.error)
+- Explicit requirement to use serverInstance.error() from @/lib/monitoring/rollbar-official
+- Structured context data required for all error logs (userId, requestId, timestamp, error details)
+- Prohibition of console.error statements in production code
+- Error severity level maintenance (critical, error, warning, info, debug)
+- Constitutional violation status for console.error usage in new code
+
+Rationale: Ensuring consistent, structured, and centralized error logging through Rollbar
+for better observability, debugging, and production issue resolution. Eliminates scattered
+console.error statements that provide no actionable production insights.
+-->
+
+<!--
+SYNC IMPACT REPORT - Constitution Amendment
 Version Change: 1.6.0 → 1.7.0
 Amendment Date: 2025-10-11
 Amendment Type: MINOR (GitHub Actions exclusive deployment mandate added)
@@ -239,6 +262,11 @@ graceful degradation, and user-centric recovery strategies:
 
 - **Rollbar Integration**: Mandatory error tracking for all production applications with official
   Next.js patterns
+- **Mandatory Rollbar Error Logging**: All error logging MUST use Rollbar instead of console.error
+  - Use `serverInstance.error()` from `@/lib/monitoring/rollbar-official` for all server-side errors
+  - Include structured context data (userId, requestId, timestamp, error details)
+  - Replace all `console.error` statements with appropriate Rollbar logging calls
+  - Maintain error severity levels (critical, error, warning, info, debug)
 - **Client-Side Monitoring**: React Error Boundaries with `useRollbar` hooks capture component
   errors
 - **Server-Side Tracking**: All API routes, middleware, and server functions report to Rollbar

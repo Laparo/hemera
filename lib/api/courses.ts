@@ -17,10 +17,15 @@ export interface Course {
   description: string | null;
   slug: string;
   price: number | null;
+  currency: string;
+  capacity?: number | null;
   date: Date | null;
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;
+  availableSpots?: number | null;
+  totalBookings?: number;
+  userBookingStatus?: string | null;
 }
 
 export interface CourseWithSEO extends Course {
@@ -71,9 +76,28 @@ export async function getFeaturedCourses(limit = 3): Promise<Course[]> {
         createdAt: 'desc',
       },
       take: limit,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        slug: true,
+        price: true,
+        date: true,
+        isPublished: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
-    return courses;
+    // Erweitere die Kurse um die fehlenden Felder für die Component-Kompatibilität
+    return courses.map(course => ({
+      ...course,
+      currency: 'EUR',
+      capacity: null,
+      availableSpots: null,
+      totalBookings: 0,
+      userBookingStatus: null,
+    }));
   } catch (error) {
     logError(error, { operation: 'getFeaturedCourses', limit });
     throw new DatabaseConnectionError(

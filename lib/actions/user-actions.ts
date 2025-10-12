@@ -17,6 +17,7 @@ import {
   type ServerActionContext,
   type ServerActionResult,
 } from '@/lib/middleware/server-action-error-handling';
+import { serverInstance } from '@/lib/monitoring/rollbar-official';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -85,7 +86,10 @@ export const updateProfileAction = async (
       data: updatedUser,
     };
   } catch (error) {
-    console.error('Update profile error:', error);
+    serverInstance.error('Update profile error', {
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString(),
+    });
     return {
       success: false,
       error: {
@@ -176,7 +180,10 @@ export const checkEmailAvailabilityAction = async (
       throw error;
     }
   } catch (error) {
-    console.error('Check email availability error:', error);
+    serverInstance.error('Check email availability error', {
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString(),
+    });
     return {
       success: false,
       error: {
@@ -209,7 +216,10 @@ export const updateUserPreferenceAction = async (
       data: { [key]: value },
     };
   } catch (error) {
-    console.error('Update user preference error:', error);
+    serverInstance.error('Update user preference error', {
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString(),
+    });
     return {
       success: false,
       error: {

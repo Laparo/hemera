@@ -52,6 +52,8 @@ model Course {
   isPublished Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  endTime     DateTime?
+  startTime   DateTime?
   bookings    Booking[]
 
   @@map("courses")
@@ -81,4 +83,5 @@ enum PaymentStatus {
   FAILED
   CANCELLED
   REFUNDED
+  CONFIRMED
 }

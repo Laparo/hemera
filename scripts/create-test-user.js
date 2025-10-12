@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
+import dotenv from 'dotenv';
 import https from 'https';
+
+// Load environment variables
+dotenv.config({ path: '.env.local' });
 
 const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
 
@@ -10,10 +14,14 @@ if (!CLERK_SECRET_KEY) {
 }
 
 const userData = {
-  email_address: ['test-user@example.com'],
-  password: 'TestUser123!SecurePassword',
-  first_name: 'Test',
-  last_name: 'User',
+  email_address: [
+    'e2e.test@example.com',
+    'e2e.duplicate@example.com',
+    'e2e.dashboard@example.com',
+  ],
+  password: 'E2ETestPassword2024!SecureForTesting',
+  first_name: 'E2E',
+  last_name: 'Test',
   public_metadata: {
     role: 'user',
   },
@@ -44,9 +52,11 @@ const req = https.request(options, res => {
 
   res.on('end', () => {
     if (res.statusCode === 200 || res.statusCode === 201) {
-      console.log('✅ Test user created successfully!');
-      console.log('Email: test-user@example.com');
-      console.log('Password: TestUser123!SecurePassword');
+      console.log('✅ Test users created successfully!');
+      console.log(
+        'Emails: e2e.test@example.com, e2e.duplicate@example.com, e2e.dashboard@example.com'
+      );
+      console.log('Password: TestPassword123!');
       const response = JSON.parse(data);
       console.log('User ID:', response.id);
     } else {

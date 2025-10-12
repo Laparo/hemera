@@ -13,7 +13,6 @@ const isBuildTime =
 const createStripeInstance = () => {
   // During build time, don't validate Stripe config
   if (isBuildTime) {
-    console.log('⚠️ Build time detected - skipping Stripe validation');
     return null;
   }
 
@@ -161,8 +160,6 @@ export async function POST(request: NextRequest) {
       sessionId: session.id,
     });
   } catch (error) {
-    console.error('Checkout creation error:', error);
-
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {

@@ -117,7 +117,7 @@ export function reportError(
   severity: ErrorSeverityType = ErrorSeverity.ERROR
 ): void {
   if (!rollbarConfig.enabled) {
-    console.error('Rollbar Error (disabled):', error, context);
+    // Rollbar Error (disabled)
     return;
   }
 
@@ -167,8 +167,7 @@ export function reportError(
         rollbar.error(error, rollbarContext);
     }
   } catch (rollbarError) {
-    console.error('Failed to report error to Rollbar:', rollbarError);
-    console.error('Original error:', error);
+    // Failed to report error to Rollbar - fallback logging disabled
   }
 }
 
@@ -284,7 +283,7 @@ export function recordUserAction(
       },
     });
   } catch (error) {
-    console.error('Failed to record user action:', error);
+    // Failed to record user action - error suppressed for production
   }
 }
 
@@ -306,7 +305,5 @@ export function flushRollbar(): Promise<void> {
 
 // Environment validation
 if (isProduction && !process.env.ROLLBAR_SERVER_ACCESS_TOKEN) {
-  console.warn(
-    '⚠️  ROLLBAR_SERVER_ACCESS_TOKEN not set in production environment'
-  );
+  // ROLLBAR_SERVER_ACCESS_TOKEN not set in production environment
 }

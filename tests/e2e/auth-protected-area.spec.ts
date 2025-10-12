@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { AuthHelper, TEST_USERS } from './auth-helper';
 
 /**
  * T004: Authentication Contract Test
@@ -24,27 +25,34 @@ test.describe('Protected Area Authentication Contract', () => {
   test('should allow authenticated users to access protected area', async ({
     page,
   }) => {
-    // Step 1: Sign in with Clerk
-    await page.goto('/sign-in');
+    // Use AuthHelper for robust authentication
+    const authHelper = new AuthHelper(page);
 
-    // Wait for Clerk component to load
-    await page.waitForSelector('input[name="identifier"]', { timeout: 10000 });
+    try {
+      // Sign in using AuthHelper which handles Clerk complexities
+      await authHelper.signIn(
+        TEST_USERS.DASHBOARD.email,
+        TEST_USERS.DASHBOARD.password
+      );
 
-    // Fill in test credentials
-    await page.fill('input[name="identifier"]', 'test-user@example.com');
-    await page.fill('input[name="password"]', 'TestUser123!SecurePassword');
+      // Navigate to dashboard to verify access
+      await page.goto('/dashboard');
 
-    // Wait for form to be ready and press Enter to submit
-    await page.press('input[name="password"]', 'Enter');
+      // Should show authenticated user interface
+      await expect(page.locator('[data-testid=dashboard-title]')).toBeVisible();
 
-    // Should redirect to protected dashboard after successful sign-in
-    await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
+      // Verify we can see the main dashboard content
+      await expect(page.locator('[data-testid=courses-card]')).toBeVisible();
+    } catch (error) {
+      // Debug: Show current URL and page content
+      const currentUrl = page.url();
+      console.log('❌ Authentication failed. Current URL:', currentUrl);
 
-    // Should show authenticated user interface
-    await expect(page.locator('[data-testid=dashboard-title]')).toBeVisible();
+      await page.screenshot({ path: 'debug-auth-failure.png' });
+      console.log('📸 Debug screenshot saved as debug-auth-failure.png');
 
-    // Verify we can see the main dashboard content
-    await expect(page.locator('[data-testid=courses-card]')).toBeVisible();
+      throw error;
+    }
   });
 
   test('should handle authentication errors gracefully', async ({ page }) => {
@@ -69,17 +77,17 @@ test.describe('Protected Area Authentication Contract', () => {
   });
 
   test('should handle sign-out functionality', async ({ page }) => {
+    // Use AuthHelper for robust authentication
+    const authHelper = new AuthHelper(page);
+
     // Sign in first
-    await page.goto('/sign-in');
-    await page.waitForSelector('input[name="identifier"]', { timeout: 10000 });
-    await page.fill('input[name="identifier"]', 'test-user@example.com');
-    await page.fill('input[name="password"]', 'TestUser123!SecurePassword');
+    await authHelper.signIn(
+      TEST_USERS.DASHBOARD.email,
+      TEST_USERS.DASHBOARD.password
+    );
 
-    // Press Enter to submit
-    await page.press('input[name="password"]', 'Enter');
-
-    // Wait for redirect to dashboard
-    await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
+    // Navigate to dashboard
+    await page.goto('/dashboard');
 
     // Verify we're logged in by checking for dashboard content
     await expect(page.locator('[data-testid=dashboard-title]')).toBeVisible();
@@ -102,16 +110,17 @@ test.describe('Protected Area Authentication Contract', () => {
   });
 
   test('should maintain session across page refreshes', async ({ page }) => {
+    // Use AuthHelper for robust authentication
+    const authHelper = new AuthHelper(page);
+
     // Sign in and navigate to protected area
-    await page.goto('/sign-in');
-    await page.waitForSelector('input[name="identifier"]', { timeout: 10000 });
-    await page.fill('input[name="identifier"]', 'test-user@example.com');
-    await page.fill('input[name="password"]', 'TestUser123!SecurePassword');
+    await authHelper.signIn(
+      TEST_USERS.DASHBOARD.email,
+      TEST_USERS.DASHBOARD.password
+    );
 
-    // Press Enter to submit
-    await page.press('input[name="password"]', 'Enter');
-
-    await expect(page).toHaveURL('/dashboard', { timeout: 15000 });
+    // Navigate to dashboard
+    await page.goto('/dashboard');
 
     // Refresh the page
     await page.reload();

@@ -1,16 +1,8 @@
+import CourseListing from '@/components/CourseListing';
 import { getFeaturedCourses } from '@/lib/api/courses';
 import { generateLandingPageMetadata } from '@/lib/seo/metadata';
 import { SCHEMA_COMBINATIONS } from '@/lib/seo/schemas';
-import NextCourseBanner from '@/components/NextCourseBanner';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
-  Grid,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Container, Grid, Typography } from '@mui/material';
 import { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -45,8 +37,6 @@ export default async function HomePage() {
           }}
         />
       ))}
-
-      <NextCourseBanner />
 
       <main style={{ paddingTop: '64px' }}>
         {/* Hero Section */}
@@ -177,134 +167,7 @@ export default async function HomePage() {
               Featured Courses
             </Typography>
 
-            {featuredCourses.length > 0 ? (
-              <Grid container spacing={4}>
-                {featuredCourses.map(course => (
-                  <Grid item xs={12} md={4} key={course.id}>
-                    <Card
-                      data-testid='course-card'
-                      sx={{
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-8px)',
-                          boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
-                        },
-                      }}
-                    >
-                      {/* Course Image Placeholder */}
-                      <Box
-                        sx={{
-                          height: 160,
-                          bgcolor: 'primary.light',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Typography
-                          variant='h4'
-                          sx={{ color: 'primary.contrastText' }}
-                        >
-                          {course.title.charAt(0)}
-                        </Typography>
-                      </Box>
-
-                      <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                        <Typography
-                          variant='h6'
-                          component='h3'
-                          gutterBottom
-                          sx={{ fontWeight: 600, mb: 1 }}
-                        >
-                          {course.title}
-                        </Typography>
-
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          sx={{ mb: 2, fontSize: '0.875rem' }}
-                        >
-                          Instructor: Expert Teacher
-                        </Typography>
-
-                        {/* Rating */}
-                        <Box
-                          sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
-                        >
-                          <Typography variant='body2' sx={{ mr: 1 }}>
-                            ⭐⭐⭐⭐⭐
-                          </Typography>
-                          <Typography variant='body2' color='text.secondary'>
-                            (4.8)
-                          </Typography>
-                        </Box>
-
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          paragraph
-                          sx={{ fontSize: '0.875rem', lineHeight: 1.4 }}
-                        >
-                          {course.description && course.description.length > 100
-                            ? `${course.description.substring(0, 100)}...`
-                            : course.description ||
-                              'Keine Beschreibung verfügbar'}
-                        </Typography>
-
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            mt: 2,
-                          }}
-                        >
-                          <Typography variant='body2' color='text.secondary'>
-                            8 Stunden
-                          </Typography>
-
-                          <Typography
-                            variant='h6'
-                            component='span'
-                            sx={{ fontWeight: 'bold' }}
-                          >
-                            {course.price && course.price > 0
-                              ? `€${(course.price / 100).toFixed(2)}`
-                              : 'Kostenlos'}
-                          </Typography>
-                        </Box>
-                        <Button
-                          component={Link}
-                          href={`/checkout?courseId=${course.id}`}
-                          variant='contained'
-                          fullWidth
-                          sx={{
-                            mt: 2,
-                            fontWeight: 'bold',
-                            textTransform: 'none',
-                          }}
-                        >
-                          Book Course
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            ) : (
-              <Box textAlign='center' sx={{ py: 4 }}>
-                <Typography variant='h6' color='text.secondary'>
-                  New courses coming soon! Stay tuned for exciting learning
-                  opportunities.
-                </Typography>
-              </Box>
-            )}
+            <CourseListing courses={featuredCourses} />
 
             <Box textAlign='center' sx={{ mt: 6 }}>
               <Button

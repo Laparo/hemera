@@ -224,8 +224,7 @@ class ErrorAnalyticsService {
     // - DataDog: datadogLogger.error(error)
     // - AWS CloudWatch: cloudWatchLogs.putLogEvents(error)
     // - New Relic: newrelic.recordCustomEvent('Error', error)
-
-    console.log('📊 Sending error to monitoring service:', error.errorCode);
+    // Temporarily disabled console logging for production
   }
 }
 

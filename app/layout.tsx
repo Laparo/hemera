@@ -1,6 +1,7 @@
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
+import StripeProvider from '@/components/payment/StripeProvider';
 import { PublicNavigation } from '@/components/navigation/PublicNavigation';
 import { RollbarProviderWrapper } from '@/lib/monitoring/rollbar-react-official';
 import type { Metadata } from 'next';
@@ -30,10 +31,12 @@ export default function RootLayout({
         <body className={inter.className}>
           <RollbarProviderWrapper>
             <ThemeRegistry>
-              <ErrorBoundary>
-                <PublicNavigation />
-                {children}
-              </ErrorBoundary>
+              <StripeProvider>
+                <ErrorBoundary>
+                  <PublicNavigation />
+                  {children}
+                </ErrorBoundary>
+              </StripeProvider>
             </ThemeRegistry>
           </RollbarProviderWrapper>
         </body>

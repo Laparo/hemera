@@ -15,7 +15,6 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   React.useEffect(() => {
     // Log the global error
-    console.error('Global application error:', error);
 
     // Report critical error to Rollbar
     rollbar.critical(error, {

@@ -6,6 +6,7 @@ import {
   type UpdateUserData,
 } from '@/lib/api/users';
 import { checkUserAdminStatus } from '@/lib/auth/helpers';
+import { serverInstance } from '@/lib/monitoring/rollbar-official';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -51,7 +52,10 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error in GET /api/users/[id]:', error);
+    serverInstance.error('Error in GET /api/users/[id]', {
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -134,7 +138,10 @@ export async function PUT(
       data: updatedUser,
     });
   } catch (error) {
-    console.error('Error in PUT /api/users/[id]:', error);
+    serverInstance.error('Error in PUT /api/users/[id]', {
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -182,7 +189,10 @@ export async function DELETE(
       message: 'User deleted successfully',
     });
   } catch (error) {
-    console.error('Error in DELETE /api/users/[id]:', error);
+    serverInstance.error('Error in DELETE /api/users/[id]', {
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

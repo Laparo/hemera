@@ -7,22 +7,23 @@ import { serverInstance } from '@/lib/monitoring/rollbar-official';
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    // Server-side instrumentation
-    console.log('Initializing Rollbar server-side instrumentation');
+    // Initialize Rollbar for error tracking
 
-    // Set up global error handlers
+    // Register error handlers
     process.on('uncaughtException', error => {
-      serverInstance.critical(error, { context: 'uncaughtException' });
-      console.error('Uncaught Exception:', error);
+      serverInstance.error('Uncaught Exception', {
+        error: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString(),
+      });
     });
 
     process.on('unhandledRejection', (reason, promise) => {
-      serverInstance.error('Unhandled Rejection', {
-        reason,
-        promise,
-        context: 'unhandledRejection',
+      serverInstance.error('Unhandled Promise Rejection', {
+        reason: reason instanceof Error ? reason.message : String(reason),
+        stack: reason instanceof Error ? reason.stack : undefined,
+        timestamp: new Date().toISOString(),
       });
-      console.error('Unhandled Rejection at:', promise, 'reason:', reason);
     });
   }
 }

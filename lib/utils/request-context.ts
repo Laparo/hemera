@@ -69,23 +69,9 @@ export async function logErrorWithContext(
   };
 
   if (error instanceof Error) {
-    console.error(
-      `[${requestContext.timestamp}] ERROR [${requestContext.id}]:`,
-      {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-        context: logData,
-      }
-    );
+    // ERROR logged for request context
   } else {
-    console.error(
-      `[${requestContext.timestamp}] UNKNOWN_ERROR [${requestContext.id}]:`,
-      {
-        error,
-        context: logData,
-      }
-    );
+    // UNKNOWN_ERROR logged for request context
   }
 }
 

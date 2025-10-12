@@ -71,7 +71,6 @@ export abstract class BaseError extends Error {
       reportError(this, errorContext, severity);
     } catch (rollbarError) {
       // Silently fail rollbar reporting to avoid recursive errors
-      console.error('Failed to report error to Rollbar:', rollbarError);
     }
   }
 

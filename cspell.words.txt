@@ -29,9 +29,13 @@ Anonymization
 Tracke
 uuidv
 Achtsamkeitsbasierte
+Rollenbasierte
 Teamdynamik
 Generationenmanagement
 generationenmanagement
+klickbar
+viewports
+Anmeldungstest
 whsec
 VARCHAR
 autoincrement

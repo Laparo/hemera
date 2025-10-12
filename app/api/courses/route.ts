@@ -1,7 +1,17 @@
 import { CourseWithBookings, getCourses } from '@/lib/services/courses';
+import { createApiLogger } from '@/lib/utils/api-logger';
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  ErrorCodes,
+} from '@/lib/utils/api-response';
+import {
+  createRequestContext,
+  getOrCreateRequestId,
+} from '@/lib/utils/request-id';
 import { currentUser } from '@clerk/nextjs/server';
 import { PaymentStatus } from '@prisma/client';
-import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { z } from 'zod';
 
 // Force dynamic rendering
@@ -19,17 +29,45 @@ const CourseSearchSchema = z.object({
   limit: z.coerce.number().min(1).max(100).optional(),
 });
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  const requestId = getOrCreateRequestId(request);
+  const context = createRequestContext(requestId, 'GET', '/api/courses');
+  const logger = createApiLogger(context);
+
   try {
+    logger.info('Starting course list request');
+
     const user = await currentUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unautorisiert' }, { status: 401 });
+      logger.warn('Unauthorized access attempt');
+      return createErrorResponse(
+        'Unautorisiert',
+        ErrorCodes.UNAUTHORIZED,
+        requestId,
+        401
+      );
     }
 
     const { searchParams } = new URL(request.url);
     const queryParams = Object.fromEntries(searchParams.entries());
 
-    const validatedParams = CourseSearchSchema.parse(queryParams);
+    let validatedParams;
+    try {
+      validatedParams = CourseSearchSchema.parse(queryParams);
+    } catch (error) {
+      logger.warn('Invalid query parameters', { queryParams, error });
+      return createErrorResponse(
+        'Ungültige Query-Parameter',
+        ErrorCodes.INVALID_INPUT,
+        requestId,
+        400
+      );
+    }
+
+    logger.info('Fetching courses', {
+      userId: user.id,
+      params: validatedParams,
+    });
 
     // Kurse von der Mock-Funktion abrufen
     const courses = await getCourses();
@@ -158,12 +196,19 @@ export async function GET(request: Request) {
       },
     };
 
-    return NextResponse.json(response);
+    logger.info('Course list request completed successfully', {
+      courseCount: paginatedCourses.length,
+      totalResults: filteredCourses.length,
+    });
+
+    return createSuccessResponse(response, requestId);
   } catch (error) {
-    console.error('Fehler beim Abrufen der Kurse:', error);
-    return NextResponse.json(
-      { error: 'Interner Serverfehler' },
-      { status: 500 }
+    logger.error('Error in GET /api/courses', error as Error);
+    return createErrorResponse(
+      'Interner Serverfehler beim Abrufen der Kurse',
+      ErrorCodes.INTERNAL_ERROR,
+      requestId,
+      500
     );
   }
 }

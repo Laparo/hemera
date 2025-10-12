@@ -359,21 +359,12 @@ async function main() {
     )
   );
 
-  console.log(`Seeded ${courses.length} courses (each priced at €1.00):`);
-  courses.forEach(course => {
-    console.log(
-      `- ${course.title}: €${(course.price / 100).toFixed(2)} (${course.slug})`
-    );
-  });
-
   // Minimal DB connectivity check
   await prisma.$queryRaw`SELECT 1`;
-  console.log('Database connectivity verified');
 }
 
 main()
   .catch(e => {
-    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

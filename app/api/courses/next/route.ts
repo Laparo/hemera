@@ -1,13 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getNextUpcomingCourse } from '@/lib/api/courses';
+import { serverInstance } from '@/lib/monitoring/rollbar-official';
 
 /**
  * GET /api/courses/next
  * Returns the next upcoming course
  */
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = Math.random().toString(36).slice(2);
+
   try {
     const course = await getNextUpcomingCourse();
+    const duration = Date.now() - startTime;
+    serverInstance.info('GET /api/courses/next completed', {
+      requestId,
+      durationMs: duration,
+      found: Boolean(course),
+      timestamp: new Date().toISOString(),
+    });
 
     if (!course) {
       // Return a mock course for testing
@@ -30,7 +41,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(formattedCourse);
   } catch (error) {
-    console.error('Error fetching next course:', error);
+    serverInstance.error('Error fetching next course', {
+      requestId,
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { error: 'Failed to fetch next course' },
       { status: 500 }

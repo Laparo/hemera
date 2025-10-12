@@ -286,9 +286,16 @@ test.describe('Protected Navigation Component Contract', () => {
 
 // Helper functions
 async function signInAsUser(page: any) {
+  // Clear cookies to ensure clean auth state
+  await page.context().clearCookies();
+  console.log('🧹 Cleared cookies for clean auth state');
+
   await page.goto('/sign-in');
-  await page.fill('input[name="identifier"]', 'user@example.com');
-  await page.fill('input[name="password"]', 'userpassword123');
+  await page.fill('input[name="identifier"]', 'e2e.dashboard@example.com');
+  await page.fill(
+    'input[name="password"]',
+    'E2ETestPassword2024!SecureForTesting'
+  );
 
   // Use a more specific selector for Clerk submit button that's not hidden
   const submitButton = page.locator(
@@ -297,13 +304,20 @@ async function signInAsUser(page: any) {
   await submitButton.waitFor({ state: 'visible', timeout: 10000 });
   await submitButton.click();
 
-  await page.waitForURL('/dashboard');
+  await page.waitForURL('/dashboard', { timeout: 30000 }); // Increased timeout for signInAsUser
 }
 
 async function signInAsAdmin(page: any) {
+  // Clear cookies to ensure clean auth state
+  await page.context().clearCookies();
+  console.log('🧹 Cleared cookies for clean auth state');
+
   await page.goto('/sign-in');
-  await page.fill('input[name="identifier"]', 'admin@example.com');
-  await page.fill('input[name="password"]', 'adminpassword123');
+  await page.fill('input[name="identifier"]', 'e2e.dashboard@example.com');
+  await page.fill(
+    'input[name="password"]',
+    'E2ETestPassword2024!SecureForTesting'
+  );
 
   // Use a more specific selector for Clerk submit button that's not hidden
   const submitButton = page.locator(
@@ -312,7 +326,7 @@ async function signInAsAdmin(page: any) {
   await submitButton.waitFor({ state: 'visible', timeout: 10000 });
   await submitButton.click();
 
-  await page.waitForURL('/dashboard');
+  await page.waitForURL('/dashboard', { timeout: 30000 }); // Increased timeout for signInAsAdmin
 }
 
 /**

@@ -10,15 +10,15 @@ export interface Course {
   title: string;
   description: string | null;
   slug: string;
-  price: number;
+  price: number | null;
   currency: string;
-  capacity: number | null;
+  capacity?: number | null;
   date: Date | null;
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;
-  availableSpots: number | null;
-  totalBookings: number;
+  availableSpots?: number | null;
+  totalBookings?: number;
   userBookingStatus?: string | null;
 }
 
@@ -41,17 +41,27 @@ const CourseCard: React.FC<CourseCardProps> = ({
   course,
   showBookingStatus = false,
 }) => {
+  // Debug logging removed per observability standards
+
   const isAvailable =
     course.capacity === null ||
-    (course.availableSpots !== null && course.availableSpots > 0);
+    (course.availableSpots !== null &&
+      course.availableSpots !== undefined &&
+      course.availableSpots > 0);
   const isUserBooked = course.userBookingStatus === 'PAID';
 
   return (
-    <div className='bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200'>
+    <div
+      className='bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200'
+      data-testid='course-card'
+    >
       <div className='p-6'>
         {/* Header with title and status */}
         <div className='flex justify-between items-start mb-3'>
-          <h3 className='text-xl font-semibold text-gray-900 line-clamp-2'>
+          <h3
+            className='text-xl font-semibold text-gray-900 line-clamp-2 course-name'
+            data-testid='course-name'
+          >
             {course.title}
           </h3>
           <div className='flex flex-col items-end gap-1 ml-4'>
@@ -127,11 +137,13 @@ const CourseCard: React.FC<CourseCardProps> = ({
                 />
               </svg>
               {course.totalBookings}/{course.capacity} Teilnehmer
-              {course.availableSpots !== null && course.availableSpots > 0 && (
-                <span className='ml-1 text-green-600'>
-                  ({course.availableSpots} frei)
-                </span>
-              )}
+              {course.availableSpots !== null &&
+                course.availableSpots !== undefined &&
+                course.availableSpots > 0 && (
+                  <span className='ml-1 text-green-600'>
+                    ({course.availableSpots} frei)
+                  </span>
+                )}
             </div>
           )}
 
@@ -161,19 +173,24 @@ const CourseCard: React.FC<CourseCardProps> = ({
         {/* Price and CTA */}
         <div className='flex items-center justify-between pt-4 border-t border-gray-100'>
           <div className='flex items-baseline'>
-            <span className='text-2xl font-bold text-gray-900'>
-              {course.price.toLocaleString('de-DE', {
-                style: 'currency',
-                currency: course.currency,
-              })}
+            <span
+              className='text-2xl font-bold text-gray-900'
+              data-testid='course-price'
+            >
+              {course.price
+                ? course.price.toLocaleString('de-DE', {
+                    style: 'currency',
+                    currency: course.currency,
+                  })
+                : 'Kostenlos'}
             </span>
           </div>
 
           <Link
-            href={`/courses/${course.slug}`}
+            href={`/checkout?courseId=${course.id}`}
             className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200'
           >
-            Details anzeigen
+            Book Course
             <svg
               className='ml-2 -mr-1 w-4 h-4'
               fill='none'

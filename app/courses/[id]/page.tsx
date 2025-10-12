@@ -101,7 +101,6 @@ export default function CourseDetailPage() {
       const { url } = await response.json();
       window.location.href = url;
     } catch (err) {
-      console.error('Booking error:', err);
       alert('Fehler beim Buchen des Kurses. Bitte versuchen Sie es erneut.');
     } finally {
       setBookingLoading(false);

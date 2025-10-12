@@ -3,6 +3,7 @@ import {
   updateUser,
   type UpdateUserData,
 } from '@/lib/api/users';
+import { serverInstance } from '@/lib/monitoring/rollbar-official';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -20,7 +21,11 @@ export async function GET() {
       data: profile,
     });
   } catch (error) {
-    console.error('Error in GET /api/users/profile:', error);
+    serverInstance.error('Error in GET /api/users/profile', {
+      error: error instanceof Error ? error.message : String(error),
+      userId: 'unknown',
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -84,7 +89,10 @@ export async function PUT(request: NextRequest) {
       data: updatedUser,
     });
   } catch (error) {
-    console.error('Error in PUT /api/users/profile:', error);
+    serverInstance.error('Error in PUT /api/users/profile', {
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString(),
+    });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

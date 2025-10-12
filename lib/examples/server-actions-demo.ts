@@ -155,9 +155,7 @@ export const enrollInCourseAction = withAuthenticatedServerAction(
       const enrollment = await createEnrollment(userId, 'course-id');
 
       // Send welcome email (fire and forget)
-      sendWelcomeEmail(userId, 'course-id').catch(error => {
-        console.error('Failed to send welcome email:', error);
-      });
+      sendWelcomeEmail(userId, 'course-id').catch(error => {});
 
       return enrollment;
     } catch (error) {

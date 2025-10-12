@@ -343,7 +343,15 @@ export function isValidStatusTransition(
       PaymentStatus.FAILED,
       PaymentStatus.CANCELLED,
     ],
-    [PaymentStatus.PAID]: [PaymentStatus.REFUNDED, PaymentStatus.CANCELLED],
+    [PaymentStatus.PAID]: [
+      PaymentStatus.CONFIRMED,
+      PaymentStatus.REFUNDED,
+      PaymentStatus.CANCELLED,
+    ],
+    [PaymentStatus.CONFIRMED]: [
+      PaymentStatus.REFUNDED,
+      PaymentStatus.CANCELLED,
+    ],
     [PaymentStatus.FAILED]: [PaymentStatus.PENDING, PaymentStatus.CANCELLED],
     [PaymentStatus.CANCELLED]: [], // Terminal state
     [PaymentStatus.REFUNDED]: [], // Terminal state
@@ -360,6 +368,8 @@ export function formatBookingStatus(status: PaymentStatus): string {
     case PaymentStatus.PENDING:
       return 'Pending Payment';
     case PaymentStatus.PAID:
+      return 'Paid';
+    case PaymentStatus.CONFIRMED:
       return 'Confirmed';
     case PaymentStatus.FAILED:
       return 'Payment Failed';

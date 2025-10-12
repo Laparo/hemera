@@ -15,14 +15,14 @@ import {
   Card,
   CardContent,
   Chip,
-  CircularProgress,
   Divider,
   Grid,
+  Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface Booking {
   id: string;
@@ -42,64 +42,80 @@ interface DashboardStats {
 }
 
 const UserDashboard: React.FC = () => {
-  const { user } = useUser();
+  const { user, isLoaded: userLoaded } = useUser();
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalBookings: 0,
-    confirmedBookings: 0,
-    pendingPayments: 0,
-    totalSpent: 0,
-  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const response = await fetch('/api/bookings');
-        if (!response.ok) {
-          throw new Error('Failed to fetch bookings');
-        }
-        const data = await response.json();
+  // Memoized stats calculation to avoid recalculation on every render
+  const stats = useMemo((): DashboardStats => {
+    const totalBookings = bookings.length;
+    const confirmedBookings = bookings.filter(
+      b => b.paymentStatus === 'PAID'
+    ).length;
+    const pendingPayments = bookings.filter(
+      b => b.paymentStatus === 'PENDING'
+    ).length;
+    const totalSpent = bookings
+      .filter(b => b.paymentStatus === 'PAID')
+      .reduce((sum, b) => sum + b.coursePrice, 0);
 
-        if (data.success) {
-          const bookingsData = data.data.bookings || [];
-          setBookings(bookingsData);
-
-          // Calculate stats
-          const totalBookings = bookingsData.length;
-          const confirmedBookings = bookingsData.filter(
-            (b: Booking) => b.paymentStatus === 'PAID'
-          ).length;
-          const pendingPayments = bookingsData.filter(
-            (b: Booking) => b.paymentStatus === 'PENDING'
-          ).length;
-          const totalSpent = bookingsData
-            .filter((b: Booking) => b.paymentStatus === 'PAID')
-            .reduce((sum: number, b: Booking) => sum + b.coursePrice, 0);
-
-          setStats({
-            totalBookings,
-            confirmedBookings,
-            pendingPayments,
-            totalSpent,
-          });
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to load dashboard data'
-        );
-      } finally {
-        setLoading(false);
-      }
+    return {
+      totalBookings,
+      confirmedBookings,
+      pendingPayments,
+      totalSpent,
     };
+  }, [bookings]);
 
-    if (user) {
-      fetchBookings();
+  // Optimized fetch function with useCallback
+  const fetchBookings = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/bookings', {
+        // Add cache headers for better performance
+        headers: {
+          'Cache-Control': 'max-age=30', // Cache for 30 seconds
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: Failed to fetch bookings`);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        const bookingsData = data.data.bookings || [];
+        setBookings(bookingsData);
+      } else {
+        throw new Error(data.error || 'Failed to load bookings');
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to load dashboard data';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   }, [user]);
 
-  const getStatusColor = (status: string) => {
+  useEffect(() => {
+    // Only fetch when user is loaded and available
+    if (userLoaded && user) {
+      fetchBookings();
+    } else if (userLoaded && !user) {
+      // User is not authenticated
+      setLoading(false);
+    }
+  }, [userLoaded, user, fetchBookings]);
+
+  // Memoized helper functions for better performance
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'PAID':
         return 'success';
@@ -110,9 +126,9 @@ const UserDashboard: React.FC = () => {
       default:
         return 'default';
     }
-  };
+  }, []);
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = useCallback((status: string) => {
     switch (status) {
       case 'PAID':
         return <CheckCircleOutlined />;
@@ -121,39 +137,11 @@ const UserDashboard: React.FC = () => {
       default:
         return <PendingOutlined />;
     }
-  };
+  }, []);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant='h4'
-          component='h1'
-          gutterBottom
-          data-testid='dashboard-title'
-        >
-          Willkommen zurück, {user?.firstName || 'User'}!
-        </Typography>
-        <Typography variant='body1' color='text.secondary'>
-          Hier finden Sie eine Übersicht über Ihre Buchungen und Aktivitäten.
-        </Typography>
-      </Box>
-
-      {error && (
-        <Alert severity='error' sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Dashboard Stats */}
+  // Memoized stats cards component
+  const StatsCards = useMemo(
+    () => (
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card>
@@ -227,8 +215,13 @@ const UserDashboard: React.FC = () => {
           </Card>
         </Grid>
       </Grid>
+    ),
+    [stats]
+  );
 
-      {/* Bookings List */}
+  // Memoized bookings list component
+  const BookingsList = useMemo(
+    () => (
       <Card data-testid='courses-card'>
         <CardContent>
           <Typography variant='h6' gutterBottom>
@@ -313,6 +306,82 @@ const UserDashboard: React.FC = () => {
           )}
         </CardContent>
       </Card>
+    ),
+    [bookings, getStatusColor, getStatusIcon]
+  );
+
+  // Loading state with skeleton
+  if (!userLoaded || loading) {
+    return (
+      <Box sx={{ p: 3 }}>
+        {/* Title skeleton */}
+        <Skeleton variant='text' width={200} height={40} sx={{ mb: 3 }} />
+
+        {/* Stats cards skeleton */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {[1, 2, 3, 4].map(item => (
+            <Grid item xs={12} sm={6} md={3} key={item}>
+              <Card>
+                <CardContent>
+                  <Skeleton variant='text' width='60%' height={20} />
+                  <Skeleton
+                    variant='text'
+                    width='40%'
+                    height={32}
+                    sx={{ mt: 1 }}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* Bookings table skeleton */}
+        <Card>
+          <CardContent>
+            <Skeleton variant='text' width={150} height={32} sx={{ mb: 2 }} />
+            {[1, 2, 3].map(row => (
+              <Box key={row} sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <Skeleton variant='text' width='25%' height={20} />
+                <Skeleton variant='text' width='20%' height={20} />
+                <Skeleton variant='text' width='15%' height={20} />
+                <Skeleton variant='text' width='15%' height={20} />
+                <Skeleton variant='text' width='25%' height={20} />
+              </Box>
+            ))}
+          </CardContent>
+        </Card>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography
+          variant='h4'
+          component='h1'
+          gutterBottom
+          data-testid='dashboard-title'
+        >
+          Willkommen zurück, {user?.firstName || 'User'}!
+        </Typography>
+        <Typography variant='body1' color='text.secondary'>
+          Hier finden Sie eine Übersicht über Ihre Buchungen und Aktivitäten.
+        </Typography>
+      </Box>
+
+      {error && (
+        <Alert severity='error' sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+
+      {/* Optimized Dashboard Stats */}
+      {StatsCards}
+
+      {/* Optimized Bookings List */}
+      {BookingsList}
     </Box>
   );
 };

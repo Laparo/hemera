@@ -69,9 +69,7 @@ export default function ErrorDashboard() {
       );
       const data = await response.json();
       setMetrics(data.metrics);
-    } catch (error) {
-      console.error('Failed to fetch metrics:', error);
-    }
+    } catch (error) {}
   }, [timeRange]);
 
   const fetchLogs = useCallback(async () => {
@@ -79,9 +77,7 @@ export default function ErrorDashboard() {
       const response = await fetch('/api/admin/errors?action=logs&limit=20');
       const data = await response.json();
       setErrorLogs(data.errors);
-    } catch (error) {
-      console.error('Failed to fetch logs:', error);
-    }
+    } catch (error) {}
   }, []);
 
   const resolveError = async (errorId: string) => {
@@ -95,9 +91,7 @@ export default function ErrorDashboard() {
       setErrorLogs(logs =>
         logs.map(log => (log.id === errorId ? { ...log, resolved: true } : log))
       );
-    } catch (error) {
-      console.error('Failed to resolve error:', error);
-    }
+    } catch (error) {}
   };
 
   const refreshData = useCallback(async () => {

@@ -17,7 +17,7 @@ import Link from 'next/link';
  * Shows user menu for authenticated users
  */
 export function PublicNavigation() {
-  // Check if Clerk is properly configured
+  // Render Clerk UI only when configured; otherwise use simple links
   const isClerkConfigured = Boolean(
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   );

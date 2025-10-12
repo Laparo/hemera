@@ -15,9 +15,7 @@ const isBuildTime =
 // Create stripe instance only at runtime
 const createStripeInstance = () => {
   if (isBuildTime) {
-    console.log(
-      '⚠️ Build time detected - skipping Stripe verify initialization'
-    );
+    // Build time detected - skipping Stripe verify initialization
     return null;
   }
 
@@ -356,7 +354,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Payment verification error:', error);
     if (error instanceof Stripe.errors.StripeError) {
       return NextResponse.json(
         { success: false, error: error.message, code: error.code },
