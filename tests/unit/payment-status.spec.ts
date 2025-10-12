@@ -10,6 +10,7 @@ describe('PaymentStatus Enum Handling', () => {
         'FAILED',
         'CANCELLED',
         'REFUNDED',
+        'CONFIRMED',
       ];
       const actualStatuses = Object.values(PaymentStatus);
 
@@ -37,6 +38,10 @@ describe('PaymentStatus Enum Handling', () => {
 
     it('should provide REFUNDED as a valid status', () => {
       expect(PaymentStatus.REFUNDED).toBe('REFUNDED');
+    });
+
+    it('should provide CONFIRMED as a valid status', () => {
+      expect(PaymentStatus.CONFIRMED).toBe('CONFIRMED');
     });
   });
 
