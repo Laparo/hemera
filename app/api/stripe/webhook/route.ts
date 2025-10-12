@@ -12,9 +12,7 @@ const isBuildTime =
 // Create stripe instance only at runtime
 const createStripeInstance = () => {
   if (isBuildTime) {
-    console.log(
-      '⚠️ Build time detected - skipping Stripe webhook initialization'
-    );
+    // Build time detected - skipping Stripe webhook initialization
     return null;
   }
 

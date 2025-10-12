@@ -9,9 +9,7 @@ const isBuildTime =
 // Create stripe instance only at runtime
 const createStripeInstance = () => {
   if (isBuildTime) {
-    console.log(
-      '⚠️ Build time detected - skipping Stripe webhook initialization'
-    );
+    // Build time detected - skipping Stripe webhook initialization
     return null;
   }
 
@@ -25,9 +23,7 @@ const createStripeInstance = () => {
   // Safety check for localhost development
   const isLocalhost = process.env.NEXT_PUBLIC_APP_URL?.includes('localhost');
   if (isLocalhost && !stripeKey.startsWith('sk_test_')) {
-    console.warn(
-      '⚠️  WARNING: Using live Stripe key on localhost! This should be a test key.'
-    );
+    // WARNING: Using live Stripe key on localhost! This should be a test key.
   }
 
   return new Stripe(stripeKey, {
@@ -78,7 +74,7 @@ export async function POST(request: NextRequest) {
     const signature = (await headers()).get('stripe-signature');
 
     if (!signature) {
-      console.error('Missing Stripe signature');
+      // Missing Stripe signature
       return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
     }
 
@@ -87,11 +83,11 @@ export async function POST(request: NextRequest) {
     try {
       event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
     } catch (err) {
-      console.error('Webhook signature verification failed:', err);
+      // Webhook signature verification failed
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
     }
 
-    console.log('Processing Stripe webhook event:', event.type);
+    // Processing Stripe webhook event: ${event.type}
 
     // Process the webhook event based on type
     let result = { success: true, processed: false };
@@ -99,7 +95,7 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
-        console.log('Checkout session completed:', session.id);
+        // Checkout session completed: ${session.id}
 
         // Update booking status to PAID
         // TODO: Implement booking status update logic
@@ -108,33 +104,33 @@ export async function POST(request: NextRequest) {
 
       case 'payment_intent.succeeded':
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log('Payment intent succeeded:', paymentIntent.id);
+        // Payment intent succeeded: ${paymentIntent.id}
         result.processed = true;
         break;
 
       case 'payment_intent.payment_failed':
         const failedPaymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.log('Payment intent failed:', failedPaymentIntent.id);
+        // Payment intent failed: ${failedPaymentIntent.id}
         result.processed = true;
         break;
 
       default:
-        console.log('Unhandled event type:', event.type);
+        // Unhandled event type: ${event.type}
         result.processed = false;
     }
 
     if (result.success) {
-      console.log('Webhook processed successfully:', result);
+      // Webhook processed successfully
       return NextResponse.json({ received: true, ...result });
     } else {
-      console.error('Webhook processing failed:', result);
+      // Webhook processing failed
       return NextResponse.json(
         { error: 'Webhook processing failed' },
         { status: 400 }
       );
     }
   } catch (error) {
-    console.error('Stripe webhook error:', error);
+    // Stripe webhook error
     return NextResponse.json(
       {
         error: 'Webhook processing failed',

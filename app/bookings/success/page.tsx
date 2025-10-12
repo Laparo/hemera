@@ -1,20 +1,20 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { CheckCircle, Error } from '@mui/icons-material';
 import {
+  Alert,
+  Box,
+  Button,
   Card,
   CardContent,
   CardHeader,
-  Typography,
   CircularProgress,
-  Button,
-  Box,
   Container,
-  Alert,
+  Typography,
 } from '@mui/material';
-import { CheckCircle, Error } from '@mui/icons-material';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 function BookingSuccessContent() {
   const searchParams = useSearchParams();

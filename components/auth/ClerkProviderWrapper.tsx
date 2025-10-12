@@ -14,7 +14,7 @@ export default function ClerkProviderWrapper({
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
   if (!publishableKey) {
-    console.error('ERROR: Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY');
+    // ERROR: Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
     return (
       <div style={{ padding: '20px', color: 'red' }}>
         Error: Clerk authentication is not configured. Missing publishable key.
@@ -24,13 +24,7 @@ export default function ClerkProviderWrapper({
 
   // Only log config in development to avoid hydration issues
   if (process.env.NODE_ENV === 'development') {
-    console.log('Clerk Config:', {
-      publishableKey: publishableKey.substring(0, 15) + '...',
-      signInUrl: clerkConfig.signInUrl,
-      signUpUrl: clerkConfig.signUpUrl,
-      afterSignInUrl: clerkConfig.afterSignInUrl,
-      afterSignUpUrl: clerkConfig.afterSignUpUrl,
-    });
+    // Clerk Config logged in development mode only
   }
 
   return (

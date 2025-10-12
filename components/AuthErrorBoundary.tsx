@@ -1,14 +1,14 @@
 'use client';
 
-import React from 'react';
 import {
+  Alert,
   Box,
   Button,
   Card,
   CardContent,
   Typography,
-  Alert,
 } from '@mui/material';
+import React from 'react';
 
 interface AuthErrorBoundaryState {
   hasError: boolean;
@@ -40,7 +40,7 @@ export class AuthErrorBoundary extends React.Component<
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to monitoring service in production
-    console.error('Auth Error Boundary caught an error:', error, errorInfo);
+    // Auth Error Boundary caught an error
 
     // In production, send to error tracking service
     if (process.env.NODE_ENV === 'production') {

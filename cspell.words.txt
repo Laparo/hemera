@@ -18,6 +18,15 @@ parseable
 crawlable
 waitlist
 retriable
+Überwachbarkeit
+Rückwärtskompatible
+Generierungszeit
+Serialisierungszeit
+produktionstauglicher
+Invalidierung
+Skalierungs
+Anonymization
+Tracke
 uuidv
 Achtsamkeitsbasierte
 Teamdynamik
