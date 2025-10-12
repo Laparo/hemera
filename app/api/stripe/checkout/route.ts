@@ -1,3 +1,4 @@
+import { serverInstance } from '@/lib/monitoring/rollbar-official';
 import { canUserBookCourse, createBooking } from '@/lib/services/booking';
 import { getCourseById } from '@/lib/services/course';
 import { createCheckoutSession } from '@/lib/services/stripe';
@@ -54,15 +55,16 @@ function checkRateLimit(userId: string): boolean {
  * - Comprehensive error handling
  * - Structured logging
  */
-export async function POST(request: NextRequest) {
-  const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  console.log(`[${requestId}] Starting checkout creation`);
+export async function POST(req: NextRequest) {
+  const requestId = Math.random().toString(36).substring(7);
+  let userId: string | null = null;
 
   try {
-    // Authentication
-    const { userId } = await auth();
+    // 1. Authenticate user
+    const auth_result = await auth();
+    userId = auth_result.userId;
+
     if (!userId) {
-      console.warn(`[${requestId}] Unauthorized access attempt`);
       return NextResponse.json(
         {
           success: false,
@@ -73,11 +75,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[${requestId}] User authenticated: ${userId}`);
-
-    // Rate limiting
+    // 2. Rate limiting check
     if (!checkRateLimit(userId)) {
-      console.warn(`[${requestId}] Rate limit exceeded for user: ${userId}`);
+      serverInstance.warn('Rate limit exceeded for checkout', {
+        userId,
+        requestId,
+      });
       return NextResponse.json(
         {
           success: false,
@@ -89,11 +92,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Input validation
-    const body = await request.json();
+    const body = await req.json();
     const validatedData = createCheckoutSchema.parse(body);
-    console.log(
-      `[${requestId}] Request validated for course: ${validatedData.courseId}`
-    );
 
     // Get user details from Clerk
     const clerk = await clerkClient();
@@ -104,9 +104,6 @@ export async function POST(request: NextRequest) {
     // Verify course exists and is available
     const course = await getCourseById(validatedData.courseId);
     if (!course) {
-      console.warn(
-        `[${requestId}] Course not found: ${validatedData.courseId}`
-      );
       return NextResponse.json(
         {
           success: false,
@@ -118,9 +115,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!course.isPublished) {
-      console.warn(
-        `[${requestId}] Course not published: ${validatedData.courseId}`
-      );
       return NextResponse.json(
         {
           success: false,
@@ -134,7 +128,6 @@ export async function POST(request: NextRequest) {
     // Check booking eligibility and conflicts
     const eligibility = await canUserBookCourse(userId, course.id);
     if (!eligibility.canBook) {
-      console.warn(`[${requestId}] Booking not allowed: ${eligibility.reason}`);
       return NextResponse.json(
         {
           success: false,
@@ -145,19 +138,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(
-      `[${requestId}] Creating booking for user ${userId}, course ${course.id}`
-    );
+    serverInstance.info('Creating booking for checkout', {
+      requestId,
+      userId,
+      courseId: course.id,
+    });
 
     // Create booking with PENDING status
     const booking = await createBooking({
       userId,
       courseId: course.id,
-      amount: course.price * 100, // Convert to cents for Stripe
+      amount: course.price, // Already stored in cents (Int)
       currency: course.currency,
     });
-
-    console.log(`[${requestId}] Booking created: ${booking.id}`);
 
     // Generate URLs
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
@@ -172,26 +165,12 @@ export async function POST(request: NextRequest) {
     const checkoutResult = await createCheckoutSession({
       courseId: course.id,
       courseName: course.title,
-      coursePrice: course.price * 100, // Convert to cents
+      coursePrice: course.price, // Already in cents
       userId,
       userEmail,
       successUrl,
       cancelUrl,
       bookingId: booking.id, // Pass booking ID for reference
-    });
-
-    console.log(
-      `[${requestId}] Checkout session created: ${checkoutResult.sessionId}`
-    );
-
-    // Log successful checkout creation for monitoring
-    console.log(`[${requestId}] Checkout creation successful`, {
-      userId,
-      courseId: course.id,
-      bookingId: booking.id,
-      sessionId: checkoutResult.sessionId,
-      amount: course.price,
-      currency: course.currency,
     });
 
     return NextResponse.json({
@@ -204,7 +183,12 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error(`[${requestId}] Checkout creation failed:`, error);
+    serverInstance.error(`Checkout creation failed [${requestId}]`, {
+      error: error instanceof Error ? error.message : String(error),
+      userId: userId || 'unknown',
+      requestId,
+      timestamp: new Date().toISOString(),
+    });
 
     // Handle specific error types
     if (error instanceof z.ZodError) {
