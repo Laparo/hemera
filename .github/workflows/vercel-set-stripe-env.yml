@@ -37,6 +37,8 @@ jobs:
       - name: Validate required secrets
         shell: bash
         env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
           SECRET_KEY_INPUT: ${{ inputs.stripe_secret_key }}
           PUBLISHABLE_KEY_INPUT: ${{ inputs.next_public_stripe_publishable_key }}
         run: |
@@ -48,8 +50,13 @@ jobs:
           if [ -z "${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}" ] && [ -z "${PUBLISHABLE_KEY_INPUT:-}" ]; then
             echo "::error::Provide NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as a secret or input"; exit 1; fi
 
-      - name: Install Vercel CLI
-        run: npm i -g vercel@latest
+      - name: Ensure jq is available
+        shell: bash
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
 
       - name: Resolve Vercel project name/id
         id: project
@@ -70,7 +77,7 @@ jobs:
             echo "::error::Set VERCEL_PROJECT_ID or VERCEL_PROJECT_NAME as a repository secret"; exit 1
           fi
 
-      - name: Configure Stripe env (production & preview)
+      - name: Configure Stripe env (production & preview) via Vercel API
         shell: bash
         env:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
@@ -84,18 +91,58 @@ jobs:
           VERCEL_PROJECT="${{ steps.project.outputs.project }}"
           if [ -z "${VERCEL_PROJECT:-}" ]; then
             echo "::error::Please set repository secret VERCEL_PROJECT_ID or VERCEL_PROJECT_NAME"; exit 1; fi
+          API_BASE="https://api.vercel.com"
+
           # Resolve values: prefer explicit workflow inputs over secrets when provided
           EFFECTIVE_STRIPE_SECRET_KEY="${SECRET_KEY_INPUT:-${STRIPE_SECRET_KEY:-}}"
           EFFECTIVE_PUBLISHABLE_KEY="${PUBLISHABLE_KEY_INPUT:-${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:-}}"
+
+          api_get_envs() {
+            local TARGET="$1"
+            curl -sS -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              "${API_BASE}/v9/projects/${VERCEL_PROJECT}/env?target=${TARGET}&decrypt=false&teamId=${VERCEL_ORG_ID}"
+          }
+
+          api_delete_env_by_id() {
+            local ID="$1"
+            curl -sS -X DELETE -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              "${API_BASE}/v9/projects/${VERCEL_PROJECT}/env/${ID}?teamId=${VERCEL_ORG_ID}" > /dev/null
+          }
+
+          api_create_env() {
+            local KEY="$1"; local VALUE="$2"; local TARGET="$3"
+            if [ -z "${VALUE:-}" ]; then return 0; fi
+            local PAYLOAD
+            PAYLOAD=$(jq -cn \
+              --arg key "$KEY" \
+              --arg value "$VALUE" \
+              --arg target "$TARGET" \
+              '{key:$key, value:$value, type:"encrypted", target:[$target]}')
+            curl -sS -X POST -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d "${PAYLOAD}" \
+              "${API_BASE}/v9/projects/${VERCEL_PROJECT}/env?teamId=${VERCEL_ORG_ID}" > /dev/null
+          }
+
           add_var() {
             local KEY="$1"; local VALUE="$2"
             if [ -z "${VALUE:-}" ]; then
-              echo "Skipping $KEY (empty)"; return 0; fi
+              echo "Skipping ${KEY} (empty)"; return 0; fi
             for TARGET in production preview; do
-              # Remove existing variable (ignore errors if it doesn't exist)
-              vercel env rm -y "$KEY" "$TARGET" --scope "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT" --token "$VERCEL_TOKEN" || true
-              # Add new variable securely from stdin
-              printf '%s' "$VALUE" | vercel env add "$KEY" "$TARGET" --scope "$VERCEL_ORG_ID" --project "$VERCEL_PROJECT" --token "$VERCEL_TOKEN"
+              # Find existing env var IDs by key and target, then delete
+              IDS=$(api_get_envs "$TARGET" | jq -r \
+                --arg key "$KEY" \
+                --arg target "$TARGET" \
+                '(.envs // .) 
+                 | map(select(.key == $key and (((.target // []) | index($target)) != null or ((.target // []) | length) == 0))) 
+                 | .[].id // empty')
+              if [ -n "${IDS:-}" ]; then
+                printf '%s\n' "${IDS}" | while IFS= read -r ID; do
+                  [ -z "$ID" ] || api_delete_env_by_id "$ID"
+                done
+              fi
+              # Create (or replace) env var for this target
+              api_create_env "$KEY" "$VALUE" "$TARGET"
             done
           }
 
@@ -109,8 +156,14 @@ jobs:
             add_var STRIPE_API_VERSION "${STRIPE_API_VERSION:-}"
           fi
 
-      - name: List Vercel env (sanity check)
+      - name: List Vercel env (sanity check) via API
         shell: bash
         run: |
-          # This prints names only; Vercel does not reveal secret values
-          vercel env ls --scope "$VERCEL_ORG_ID" --project "${{ steps.project.outputs.project }}" --token "$VERCEL_TOKEN"
+          set -euo pipefail
+          API_BASE="https://api.vercel.com"
+          VERCEL_PROJECT="${{ steps.project.outputs.project }}"
+          for TARGET in production preview; do
+            echo "Targets: $TARGET"
+            curl -sS -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+              "${API_BASE}/v9/projects/${VERCEL_PROJECT}/env?target=${TARGET}&decrypt=false&teamId=${VERCEL_ORG_ID}" \
+              | jq -r '(.envs // .) | map("- \(.key) [\(((.target // []) | join(",")))]") | .[]?'

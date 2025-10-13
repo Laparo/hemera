@@ -1,0 +1,19 @@
+# yamllint configuration for this repo
+# Base on default with pragmatic relaxations for CI/workflows/specs
+extends: default
+
+rules:
+  line-length: disable # allow long lines in workflows/specs
+  truthy: disable # GitHub Actions uses on: [push], etc.
+  comments-indentation: disable # comments vary in generated files
+  document-start: disable # '---' not common in GH workflows
+  indentation:
+    indent-sequences: consistent
+
+ignore: |
+  node_modules/
+  .next/
+  coverage/
+  playwright-report/
+  test-results/
+  **/*.md
