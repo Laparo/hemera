@@ -30,12 +30,12 @@ export default function ClerkProviderWrapper({
   return (
     <ClerkProvider
       publishableKey={publishableKey}
-      afterSignInUrl={clerkConfig.afterSignInUrl}
-      afterSignUpUrl={clerkConfig.afterSignUpUrl}
       signInUrl={clerkConfig.signInUrl}
       signUpUrl={clerkConfig.signUpUrl}
-      signInFallbackRedirectUrl={clerkConfig.afterSignInUrl}
-      signUpFallbackRedirectUrl={clerkConfig.afterSignUpUrl}
+      signInFallbackRedirectUrl={clerkConfig.signInFallbackRedirectUrl}
+      signUpFallbackRedirectUrl={clerkConfig.signUpFallbackRedirectUrl}
+      signInForceRedirectUrl={clerkConfig.signInForceRedirectUrl}
+      signUpForceRedirectUrl={clerkConfig.signUpForceRedirectUrl}
     >
       {children}
     </ClerkProvider>

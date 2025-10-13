@@ -195,8 +195,22 @@ export const socialProviderConfig = {
 export const clerkConfig = {
   signInUrl: env.NEXT_PUBLIC_CLERK_SIGN_IN_URL || '/sign-in',
   signUpUrl: env.NEXT_PUBLIC_CLERK_SIGN_UP_URL || '/sign-up',
-  afterSignInUrl: env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || '/dashboard',
-  afterSignUpUrl: env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || '/dashboard',
+  // New Clerk redirect props
+  signInFallbackRedirectUrl:
+    env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL || '/dashboard',
+  signUpFallbackRedirectUrl:
+    env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL || '/dashboard',
+  // Optional force redirects (leave empty to disable)
+  signInForceRedirectUrl: undefined as string | undefined,
+  signUpForceRedirectUrl: undefined as string | undefined,
+  // Backward-compat convenience (deprecated): map to new names
+  // TODO: remove when all usages are migrated
+  get afterSignInUrl() {
+    return this.signInFallbackRedirectUrl;
+  },
+  get afterSignUpUrl() {
+    return this.signUpFallbackRedirectUrl;
+  },
   dashboardUrl: '/dashboard',
   profileUrl: '/my-courses', // Use existing route instead of /protected/profile
 };
