@@ -16,7 +16,11 @@ import Link from 'next/link';
  * Shows login/signup buttons for unauthenticated users
  * Shows user menu for authenticated users
  */
-export function PublicNavigation() {
+export function PublicNavigation({
+  hideMyCourses = false,
+}: {
+  hideMyCourses?: boolean;
+}) {
   // Render Clerk UI only when configured; otherwise use simple links
   const isClerkConfigured = Boolean(
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
@@ -84,18 +88,20 @@ export function PublicNavigation() {
 
                 {/* User Menu for Authenticated Users */}
                 <SignedIn>
-                  <Button
-                    variant='text'
-                    color='inherit'
-                    component={Link}
-                    href='/dashboard'
-                    sx={{
-                      textTransform: 'none',
-                      mr: 1,
-                    }}
-                  >
-                    Meine Kurse
-                  </Button>
+                  {!hideMyCourses && (
+                    <Button
+                      variant='text'
+                      color='inherit'
+                      component={Link}
+                      href='/dashboard'
+                      sx={{
+                        textTransform: 'none',
+                        mr: 1,
+                      }}
+                    >
+                      Meine Kurse
+                    </Button>
+                  )}
                   <UserButton
                     afterSignOutUrl='/'
                     appearance={{

@@ -4,7 +4,7 @@ import { ProtectedNavigation } from '@/components/navigation/ProtectedNavigation
 import { useAuth, useUser } from '@clerk/nextjs';
 import { UserButton } from '@clerk/nextjs';
 import { AppBar, Box, Container, Toolbar, Typography } from '@mui/material';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function ProtectedLayout({
@@ -15,6 +15,7 @@ export default function ProtectedLayout({
   const { isSignedIn, isLoaded } = useAuth();
   const { user } = useUser();
   const router = useRouter();
+  const pathname = usePathname() || '/';
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -101,9 +102,10 @@ export default function ProtectedLayout({
           py: 3,
           display: 'flex',
           flexDirection: 'column',
-          // Space for fixed headers in protected routes:
-          // 64px (Protected AppBar) + 48px (Tabs Navigation) = 112px
-          marginTop: '112px',
+          // Dynamic space for fixed headers in protected routes:
+          // Dashboard shows PublicNavigation as well -> 64 (Public) + 64 (Protected) + 48 (Tabs) = 176
+          // Other protected routes hide PublicNavigation -> 64 (Protected) + 48 (Tabs) = 112
+          marginTop: pathname.startsWith('/dashboard') ? '176px' : '112px',
         }}
       >
         {children}

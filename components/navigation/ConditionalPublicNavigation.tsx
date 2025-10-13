@@ -13,6 +13,11 @@ export default function ConditionalPublicNavigation() {
     prefix => pathname === prefix || pathname.startsWith(prefix + '/')
   );
 
+  // Show header also on dashboard, but hide the "Meine Kurse" button
+  if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
+    return <PublicNavigation hideMyCourses />;
+  }
+
   if (isProtected) return null;
 
   return <PublicNavigation />;
