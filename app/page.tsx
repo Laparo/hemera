@@ -75,9 +75,9 @@ export default async function HomePage() {
                 lineHeight: 1.1,
               }}
             >
-              Transform Your Career with
+              Transformiere deine Karriere mit
               <br />
-              Expert-Led Courses
+              von Experten geleiteten Kursen
             </Typography>
 
             <Typography
@@ -93,8 +93,9 @@ export default async function HomePage() {
                 lineHeight: 1.4,
               }}
             >
-              Join thousands of students advancing their careers in technology,
-              business, and creative skills with Hemera Academy
+              Schließe dich tausenden von Studenten an, die ihre Karriere in
+              Technologie, Business und kreativen Fähigkeiten mit Hemera Academy
+              vorantreiben
             </Typography>
 
             <Box
@@ -117,7 +118,7 @@ export default async function HomePage() {
                   fontWeight: 'bold',
                 }}
               >
-                Explore Courses
+                Kurse erkunden
               </Button>
 
               <Button
@@ -140,7 +141,7 @@ export default async function HomePage() {
                   },
                 }}
               >
-                Login
+                Anmelden
               </Button>
             </Box>
           </Container>
@@ -164,7 +165,7 @@ export default async function HomePage() {
                 mb: 6,
               }}
             >
-              Featured Courses
+              Ausgewählte Kurse
             </Typography>
 
             <CourseListing courses={featuredCourses} />
@@ -180,7 +181,7 @@ export default async function HomePage() {
                   fontSize: '1rem',
                 }}
               >
-                View All Courses
+                Alle Kurse ansehen
               </Button>
             </Box>
           </Container>
@@ -210,7 +211,7 @@ export default async function HomePage() {
                   color: 'text.primary',
                 }}
               >
-                Ready to Start Learning?
+                Bereit zum Lernen?
               </Typography>
 
               <Typography
@@ -223,8 +224,8 @@ export default async function HomePage() {
                   lineHeight: 1.5,
                 }}
               >
-                Join our community of learners and take the next step in your
-                career journey
+                Schließe dich unserer Lern-Community an und mache den nächsten
+                Schritt in deiner Karriere
               </Typography>
 
               <Box
@@ -249,7 +250,7 @@ export default async function HomePage() {
                     textTransform: 'none',
                   }}
                 >
-                  Get Started
+                  Jetzt starten
                 </Button>
 
                 <Button
@@ -266,7 +267,7 @@ export default async function HomePage() {
                     textTransform: 'none',
                   }}
                 >
-                  Browse Courses
+                  Kurse durchsuchen
                 </Button>
               </Box>
             </Box>
@@ -292,8 +293,8 @@ export default async function HomePage() {
                   Hemera Academy
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 2 }}>
-                  Transform your career with expert-led courses in technology,
-                  business, and creative skills.
+                  Transformiere deine Karriere mit von Experten geleiteten
+                  Kursen in Technologie, Business und kreativen Fähigkeiten.
                 </Typography>
               </Grid>
 
@@ -310,7 +311,7 @@ export default async function HomePage() {
                       href='/courses'
                       style={{ color: 'grey.400', textDecoration: 'none' }}
                     >
-                      All Courses
+                      Alle Kurse
                     </Link>
                   </li>
                   <li>
@@ -318,7 +319,7 @@ export default async function HomePage() {
                       href='/courses?category=tech'
                       style={{ color: 'grey.400', textDecoration: 'none' }}
                     >
-                      Technology
+                      Technologie
                     </Link>
                   </li>
                   <li>
@@ -353,7 +354,7 @@ export default async function HomePage() {
                       href='/help'
                       style={{ color: 'grey.400', textDecoration: 'none' }}
                     >
-                      Help Center
+                      Hilfe-Center
                     </Link>
                   </li>
                   <li>
@@ -361,7 +362,7 @@ export default async function HomePage() {
                       href='/contact'
                       style={{ color: 'grey.400', textDecoration: 'none' }}
                     >
-                      Contact Us
+                      Kontakt
                     </Link>
                   </li>
                   <li>
@@ -396,7 +397,7 @@ export default async function HomePage() {
                       href='/about'
                       style={{ color: 'grey.400', textDecoration: 'none' }}
                     >
-                      About Us
+                      Über uns
                     </Link>
                   </li>
                   <li>
@@ -404,7 +405,7 @@ export default async function HomePage() {
                       href='/careers'
                       style={{ color: 'grey.400', textDecoration: 'none' }}
                     >
-                      Careers
+                      Karriere
                     </Link>
                   </li>
                   <li>
@@ -412,7 +413,7 @@ export default async function HomePage() {
                       href='/press'
                       style={{ color: 'grey.400', textDecoration: 'none' }}
                     >
-                      Press
+                      Presse
                     </Link>
                   </li>
                   <li>
@@ -420,7 +421,7 @@ export default async function HomePage() {
                       href='/investors'
                       style={{ color: 'grey.400', textDecoration: 'none' }}
                     >
-                      Investors
+                      Investoren
                     </Link>
                   </li>
                 </Box>

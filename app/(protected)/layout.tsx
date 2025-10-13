@@ -101,7 +101,10 @@ export default function ProtectedLayout({
           py: 3,
           display: 'flex',
           flexDirection: 'column',
-          marginTop: '112px', // Space for fixed headers (64px AppBar + 48px Navigation)
+          // Space for fixed headers:
+          // 64px (Public AppBar) + 64px (Protected AppBar) + 48px (Tabs Navigation) = 176px
+          // Note: Once PublicNavigation is excluded from protected routes, this can be reduced to 112px.
+          marginTop: '176px',
         }}
       >
         {children}
