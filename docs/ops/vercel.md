@@ -116,3 +116,9 @@ Für E2E-Auth-Flows in Preview-Deployments setze folgende Variablen (Scope: Prev
 Du kannst diese Variablen manuell in den Vercel Project Settings setzen oder den Workflow
 `.github/workflows/vercel-e2e-env.yml` verwenden (benötigt `VERCEL_TOKEN`, `VERCEL_ORG_ID`,
 `VERCEL_PROJECT_ID` als GitHub Secrets). Nach Änderungen ein neues Preview-Deployment auslösen.
+
+### Redeploy anstoßen
+
+Wenn nach dem Setzen von Umgebungsvariablen ein neuer Build/Deploy nötig ist, reicht ein kleiner,
+inhaltlich neutraler Commit (z. B. eine Doc-Zeile wie diese), um die Git‑Integration von Vercel
+einen neuen Deploy ausführen zu lassen.
