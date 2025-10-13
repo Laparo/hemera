@@ -30,6 +30,7 @@ pnpm-debug.log*
 
 # Editor
 .vscode/
+!.vscode/mcp.json
 .idea/
 
 # Misc

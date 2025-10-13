@@ -40,6 +40,10 @@ Providers (optional; configure the ones you use)
 - Google: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 - Apple: `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`
 - Instagram: `INSTAGRAM_CLIENT_ID`, `INSTAGRAM_CLIENT_SECRET`
+- Stripe (required if payments enabled):
+  - `STRIPE_SECRET_KEY` (Server)
+  - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (Client)
+  - optional: `STRIPE_WEBHOOK_SECRET`, `STRIPE_API_VERSION`
 
 Observability (optional)
 
@@ -64,6 +68,9 @@ Vercel CI-only (as GitHub Secrets, not app env)
 
 - Go to Vercel → Project `hemera` → Settings → Environment Variables
 - Add variables for `Preview` and `Production` with the same names as in `.env.example`
+- If you use Stripe, ensure BOTH keys are set in Production:
+  - `STRIPE_SECRET_KEY` and `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+  - Builds will fail on Vercel if they are missing (see `scripts/verify-env.mjs`).
 - Use pooled Neon DSN for serverless runtimes; include `?sslmode=require&schema=hemera`
   - Achte auf `?sslmode=require&schema=hemera` in der DSN. Für Previews unbedingt die gepoolte DSN
     verwenden.

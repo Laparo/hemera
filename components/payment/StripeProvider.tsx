@@ -4,25 +4,19 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { ReactNode } from 'react';
 
-// Initialize Stripe with publishable key
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
+// Initialize Stripe with publishable key (lazily, guard against missing key)
+const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = publishableKey ? loadStripe(publishableKey) : undefined;
 
 interface StripeProviderProps {
   children: ReactNode;
 }
 
 export default function StripeProvider({ children }: StripeProviderProps) {
-  const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-
-  if (!publishableKey) {
-    return (
-      <div style={{ padding: '20px', color: 'red' }}>
-        Error: Stripe payment processing is not configured. Missing publishable
-        key.
-      </div>
-    );
+  // If no publishable key is configured, don't block the app – just render children.
+  // Payment-related pages/components should handle missing configuration explicitly.
+  if (!publishableKey || !stripePromise) {
+    return <>{children}</>;
   }
 
   return (
