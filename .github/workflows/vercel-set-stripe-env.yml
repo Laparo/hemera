@@ -167,3 +167,4 @@ jobs:
             curl -sS -H "Authorization: Bearer ${VERCEL_TOKEN}" \
               "${API_BASE}/v9/projects/${VERCEL_PROJECT}/env?target=${TARGET}&decrypt=false&teamId=${VERCEL_ORG_ID}" \
               | jq -r '(.envs // .) | map("- \(.key) [\(((.target // []) | join(",")))]") | .[]?'
+          done
