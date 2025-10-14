@@ -93,6 +93,9 @@ jobs:
           timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
         env:
           NODE_ENV: development
+          E2E_TEST: true
+          NEXT_PUBLIC_DISABLE_CLERK: 1
+          NEXT_PUBLIC_DISABLE_ROLLBAR: 1
 
       - name: Run E2E tests
         id: e2e
