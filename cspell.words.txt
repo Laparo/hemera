@@ -127,3 +127,5 @@ tracken
 Chakra
 Ausgewählte
 Kurse
+postgresql
+timeframe
