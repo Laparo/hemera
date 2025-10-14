@@ -16,6 +16,7 @@ export default function ProtectedLayout({
   const { user } = useUser();
   const router = useRouter();
   const pathname = usePathname() || '/';
+  const isDashboard = pathname.startsWith('/dashboard');
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -102,10 +103,16 @@ export default function ProtectedLayout({
           py: 3,
           display: 'flex',
           flexDirection: 'column',
-          // Dynamic space for fixed headers in protected routes:
-          // Dashboard shows PublicNavigation as well -> 64 (Public) + 64 (Protected) + 48 (Tabs) = 176
-          // Other protected routes hide PublicNavigation -> 64 (Protected) + 48 (Tabs) = 112
-          marginTop: pathname.startsWith('/dashboard') ? '176px' : '112px',
+          // Dynamic and responsive space for fixed headers in protected routes:
+          // Dashboard (with PublicNavigation):
+          //   xs: 56 (Public) + 56 (Protected) + 48 (Tabs) = 160 -> plus Toolbar padding (Public: py=1 => ~16) ≈ 176
+          //   sm+: 64 (Public) + 64 (Protected) + 48 (Tabs) = 176 -> plus Toolbar padding (~16) ≈ 192
+          // Other protected routes (without PublicNavigation):
+          //   xs: 56 (Protected) + 48 (Tabs) = 104
+          //   sm+: 64 (Protected) + 48 (Tabs) = 112
+          marginTop: isDashboard
+            ? { xs: '176px', sm: '192px' }
+            : { xs: '104px', sm: '112px' },
         }}
       >
         {children}
