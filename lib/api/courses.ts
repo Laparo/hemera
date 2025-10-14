@@ -43,57 +43,16 @@ export interface CourseWithSEO extends Course {
  */
 export async function getPublishedCourses(): Promise<Course[]> {
   try {
-    // Debug: Check all courses first
-    const allCourses = await prisma.course.findMany();
-
-    // Check if any have isPublished = true
-    const publishedCount = allCourses.filter(
-      c => c.isPublished === true
-    ).length;
-
-    // Write debug info to file for CI inspection
-    const debugInfo = {
-      totalCourses: allCourses.length,
-      publishedCountFilter: publishedCount,
-      firstCoursePublished:
-        allCourses[0]?.isPublished !== undefined
-          ? {
-              value: allCourses[0].isPublished,
-              type: typeof allCourses[0].isPublished,
-            }
-          : null,
-      sampleCourses: allCourses.slice(0, 3).map(c => ({
-        id: c.id,
-        title: c.title,
-        isPublished: c.isPublished,
-        isPublishedType: typeof c.isPublished,
-      })),
-    };
-
-    // Write to file
-    if (typeof window === 'undefined') {
-      // Only on server
-      const fs = await import('fs');
-      fs.writeFileSync(
-        '/tmp/course-debug.json',
-        JSON.stringify(debugInfo, null, 2)
-      );
-    }
-
-    const courses = await prisma.course.findMany({
-      where: {
-        isPublished: true,
-      },
+    // Note: In SQLite (used in CI), Prisma's boolean filtering may not work correctly
+    // due to SQLite storing booleans as integers (0/1). We fetch all and filter in JS.
+    const allCourses = await prisma.course.findMany({
       orderBy: {
         createdAt: 'desc',
       },
     });
 
-    if (courses.length === 0 && allCourses.length > 0) {
-      throw new Error(
-        `[E2E DEBUG] Query returned 0 courses but DB has ${allCourses.length} total. Check /tmp/course-debug.json for details.`
-      );
-    }
+    // Filter published courses in JavaScript to ensure compatibility with SQLite
+    const courses = allCourses.filter(course => course.isPublished === true);
 
     return courses;
   } catch (error) {
