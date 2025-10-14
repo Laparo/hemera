@@ -43,6 +43,28 @@ export interface CourseWithSEO extends Course {
  */
 export async function getPublishedCourses(): Promise<Course[]> {
   try {
+    // Debug: Check all courses first
+    const allCourses = await prisma.course.findMany();
+    // eslint-disable-next-line no-console
+    console.error(`[DEBUG] Total courses in DB: ${allCourses.length}`);
+
+    // Check if any have isPublished = true
+    const publishedCount = allCourses.filter(
+      c => c.isPublished === true
+    ).length;
+    // eslint-disable-next-line no-console
+    console.error(`[DEBUG] Courses with isPublished===true: ${publishedCount}`);
+
+    // Check raw values
+    if (allCourses.length > 0) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[DEBUG] First course isPublished value:`,
+        allCourses[0]?.isPublished,
+        typeof allCourses[0]?.isPublished
+      );
+    }
+
     const courses = await prisma.course.findMany({
       where: {
         isPublished: true,
@@ -52,11 +74,12 @@ export async function getPublishedCourses(): Promise<Course[]> {
       },
     });
 
-    // Debug: Log course count and throw if empty to see in CI logs
+    // eslint-disable-next-line no-console
+    console.error(`[DEBUG] Query result count: ${courses.length}`);
+
     if (courses.length === 0) {
-      const allCourses = await prisma.course.findMany();
       throw new Error(
-        `No published courses found! Total courses in DB: ${allCourses.length}, Published filter result: ${courses.length}`
+        `[E2E DEBUG] No published courses found! Total: ${allCourses.length}, Published (filter): ${publishedCount}, Query result: ${courses.length}`
       );
     }
 
