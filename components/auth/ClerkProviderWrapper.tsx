@@ -17,7 +17,7 @@ export default function ClerkProviderWrapper({
     process.env.NEXT_PUBLIC_DISABLE_CLERK === '1';
 
   // In E2E tests or when explicitly disabled, bypass Clerk to not block rendering
-  if (isE2E && !publishableKey) return <>{children}</>;
+  if (isE2E) return <>{children}</>;
 
   if (!publishableKey) {
     // ERROR: Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
