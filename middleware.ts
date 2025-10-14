@@ -1,7 +1,18 @@
 import { clerkMiddleware } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+// In E2E test mode, bypass Clerk middleware entirely
+const isE2EMode =
+  process.env.E2E_TEST === 'true' ||
+  process.env.NEXT_PUBLIC_DISABLE_CLERK === '1';
 
 // Minimal Clerk middleware per current Quickstart (App Router)
-export default clerkMiddleware();
+export default isE2EMode
+  ? function middleware(request: NextRequest) {
+      return NextResponse.next();
+    }
+  : clerkMiddleware();
 
 export const config = {
   matcher: [
