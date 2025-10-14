@@ -45,23 +45,38 @@ export async function getPublishedCourses(): Promise<Course[]> {
   try {
     // Debug: Check all courses first
     const allCourses = await prisma.course.findMany();
-    // eslint-disable-next-line no-console
-    console.error(`[DEBUG] Total courses in DB: ${allCourses.length}`);
 
     // Check if any have isPublished = true
     const publishedCount = allCourses.filter(
       c => c.isPublished === true
     ).length;
-    // eslint-disable-next-line no-console
-    console.error(`[DEBUG] Courses with isPublished===true: ${publishedCount}`);
 
-    // Check raw values
-    if (allCourses.length > 0) {
-      // eslint-disable-next-line no-console
-      console.error(
-        `[DEBUG] First course isPublished value:`,
-        allCourses[0]?.isPublished,
-        typeof allCourses[0]?.isPublished
+    // Write debug info to file for CI inspection
+    const debugInfo = {
+      totalCourses: allCourses.length,
+      publishedCountFilter: publishedCount,
+      firstCoursePublished:
+        allCourses[0]?.isPublished !== undefined
+          ? {
+              value: allCourses[0].isPublished,
+              type: typeof allCourses[0].isPublished,
+            }
+          : null,
+      sampleCourses: allCourses.slice(0, 3).map(c => ({
+        id: c.id,
+        title: c.title,
+        isPublished: c.isPublished,
+        isPublishedType: typeof c.isPublished,
+      })),
+    };
+
+    // Write to file
+    if (typeof window === 'undefined') {
+      // Only on server
+      const fs = await import('fs');
+      fs.writeFileSync(
+        '/tmp/course-debug.json',
+        JSON.stringify(debugInfo, null, 2)
       );
     }
 
@@ -74,22 +89,16 @@ export async function getPublishedCourses(): Promise<Course[]> {
       },
     });
 
-    // eslint-disable-next-line no-console
-    console.error(`[DEBUG] Query result count: ${courses.length}`);
-
-    if (courses.length === 0) {
+    if (courses.length === 0 && allCourses.length > 0) {
       throw new Error(
-        `[E2E DEBUG] No published courses found! Total: ${allCourses.length}, Published (filter): ${publishedCount}, Query result: ${courses.length}`
+        `[E2E DEBUG] Query returned 0 courses but DB has ${allCourses.length} total. Check /tmp/course-debug.json for details.`
       );
     }
 
     return courses;
   } catch (error) {
     logError(error, { operation: 'getPublishedCourses' });
-    throw new DatabaseConnectionError(
-      'fetching published courses',
-      error as Error
-    );
+    throw error;
   }
 }
 

@@ -107,6 +107,16 @@ jobs:
           PLAYWRIGHT_BASE_URL: ${{ steps.base.outputs.base }}
         run: npm run e2e:dev
 
+      - name: Debug - Check course data
+        if: failure()
+        run: |
+          echo "=== Course Debug Information ==="
+          if [ -f /tmp/course-debug.json ]; then
+            cat /tmp/course-debug.json
+          else
+            echo "Debug file not found"
+          fi
+
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
