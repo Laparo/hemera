@@ -16,7 +16,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = generateCourseListMetadata();
-export const revalidate = 86400; // 24 hours in seconds
+// Force dynamic rendering to ensure freshly seeded courses are visible immediately
+export const dynamic = 'force-dynamic';
 
 export default async function CoursesPage() {
   const courses = await getPublishedCourses();

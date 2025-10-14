@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 const hasExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 const webServerCommand = process.env.PW_WEB_SERVER_COMMAND || 'npm run dev';
+const e2eEnvPrefix =
+  'E2E_TEST=true NEXT_PUBLIC_DISABLE_CLERK=1 NEXT_PUBLIC_DISABLE_ROLLBAR=1';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -21,10 +23,10 @@ export default defineConfig({
   webServer: hasExternalBase
     ? undefined
     : {
-        command: webServerCommand,
+        command: `${e2eEnvPrefix} ${webServerCommand}`,
         port: 3000,
         reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
+        timeout: 180_000,
       },
   projects: [
     {

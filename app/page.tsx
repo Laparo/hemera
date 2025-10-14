@@ -2,6 +2,8 @@ import CourseListing from '@/components/CourseListing';
 import { getFeaturedCourses } from '@/lib/api/courses';
 import { generateLandingPageMetadata } from '@/lib/seo/metadata';
 import { SCHEMA_COMBINATIONS } from '@/lib/seo/schemas';
+import { formatDistanceToNow } from 'date-fns';
+import { de } from 'date-fns/locale';
 import { Box, Button, Container, Grid, Typography } from '@mui/material';
 import { Metadata } from 'next';
 import Link from 'next/link';
@@ -14,10 +16,11 @@ import Link from 'next/link';
  * - SEO-optimized metadata and structured data
  * - Hero section with clear value proposition
  * - Featured courses overview
- * - Call-to-action registration area
+ * - Call-to-action registrationAus area
  */
 
 export const metadata: Metadata = generateLandingPageMetadata();
+export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   const featuredCourses = await getFeaturedCourses(3);
@@ -142,46 +145,6 @@ export default async function HomePage() {
                 }}
               >
                 Anmelden
-              </Button>
-            </Box>
-          </Container>
-        </Box>
-
-        {/* Course Overview Section */}
-        <Box
-          component='section'
-          data-testid='course-overview'
-          sx={{ py: { xs: 6, md: 10 } }}
-        >
-          <Container maxWidth='lg'>
-            <Typography
-              variant='h2'
-              component='h2'
-              align='center'
-              gutterBottom
-              sx={{
-                fontSize: { xs: '2rem', md: '2.5rem' },
-                fontWeight: 'bold',
-                mb: 6,
-              }}
-            >
-              Ausgewählte Kurse
-            </Typography>
-
-            <CourseListing courses={featuredCourses} />
-
-            <Box textAlign='center' sx={{ mt: 6 }}>
-              <Button
-                variant='outlined'
-                size='large'
-                href='/courses'
-                sx={{
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1rem',
-                }}
-              >
-                Alle Kurse ansehen
               </Button>
             </Box>
           </Container>

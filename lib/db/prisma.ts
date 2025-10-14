@@ -11,13 +11,17 @@ function withSchemaParam(url: string, schema?: string): string {
 
 // Resolve schema in the following order:
 // 1) Explicit env overrides: PREVIEW_SCHEMA or PR_SCHEMA
-// 2) Vercel Preview auto-detection: hemera_pr_<VERCEL_GIT_PULL_REQUEST_ID>
+// 2) Optional (feature-flagged) Vercel Preview auto-detection when ENABLE_PREVIEW_SCHEMA=1
 const runtimeSchemaFromEnv =
   process.env.PREVIEW_SCHEMA || process.env.PR_SCHEMA;
 const vercelEnv = process.env.VERCEL_ENV;
 const vercelPrId = process.env.VERCEL_GIT_PULL_REQUEST_ID;
+const enablePreviewSchema = process.env.ENABLE_PREVIEW_SCHEMA === '1';
 const inferredSchema =
-  !runtimeSchemaFromEnv && vercelEnv === 'preview' && vercelPrId
+  !runtimeSchemaFromEnv &&
+  enablePreviewSchema &&
+  vercelEnv === 'preview' &&
+  vercelPrId
     ? `hemera_pr_${vercelPrId}`
     : undefined;
 const runtimeSchema = runtimeSchemaFromEnv || inferredSchema;
