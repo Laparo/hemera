@@ -82,6 +82,9 @@ jobs:
           npx prisma generate
           npx prisma db push --force-reset
           npx prisma db seed
+          # Verify seed data
+          echo "Verifying seed data..."
+          npx prisma db execute --stdin <<< "SELECT COUNT(*) as count FROM Course WHERE isPublished = 1" || echo "Query failed"
         env:
           DATABASE_URL: file:./test.db
 
