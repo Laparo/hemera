@@ -108,7 +108,7 @@ jobs:
         run: npm run e2e:dev
 
       - name: Debug - Check course data
-        if: failure()
+        if: always()
         run: |
           echo "=== Course Debug Information ==="
           if [ -f /tmp/course-debug.json ]; then
@@ -116,6 +116,7 @@ jobs:
           else
             echo "Debug file not found"
           fi
+          echo "=== E2E Test Result: ${{ steps.e2e.outcome }} ==="
 
       - name: Upload Playwright HTML report
         if: always()
