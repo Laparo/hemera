@@ -51,8 +51,26 @@ export async function getPublishedCourses(): Promise<Course[]> {
       },
     });
 
+    // eslint-disable-next-line no-console
+    console.log('[DEBUG getPublishedCourses] Total courses:', allCourses.length);
+    // eslint-disable-next-line no-console
+    console.log(
+      '[DEBUG getPublishedCourses] First course:',
+      allCourses[0]
+        ? {
+            id: allCourses[0].id,
+            title: allCourses[0].title,
+            isPublished: allCourses[0].isPublished,
+            type: typeof allCourses[0].isPublished,
+          }
+        : 'No courses'
+    );
+
     // Filter published courses in JavaScript to ensure compatibility with SQLite
     const courses = allCourses.filter(course => course.isPublished === true);
+
+    // eslint-disable-next-line no-console
+    console.log('[DEBUG getPublishedCourses] Published courses:', courses.length);
 
     return courses;
   } catch (error) {
