@@ -9,6 +9,21 @@
   "MD003": { "style": "atx" },
   // Require blank lines around headings
   "MD022": true,
+  // Allow fenced code blocks without language (needed for pseudo-code examples)
+  "MD040": false,
+  // Allow duplicate headings (common in structured docs)
+  "MD024": false,
+  // Allow bare URLs (sometimes needed for references)
+  "MD034": false,
+  // Allow spaces in emphasis markers
+  "MD037": false,
+  // Allow emphasis as heading (used for callouts)
+  "MD036": false,
+  // Allow trailing punctuation in headings
+  "MD026": false,
+  // Allow fenced code blocks without blank lines around them
+  "MD031": false,
   // Consistent bullet list markers
   "default": true
 }
+
