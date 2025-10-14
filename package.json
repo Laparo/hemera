@@ -93,5 +93,8 @@
   },
   "engines": {
     "node": "22.x"
+  },
+  "prisma": {
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
   }
 }
