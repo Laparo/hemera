@@ -52,6 +52,14 @@ export async function getPublishedCourses(): Promise<Course[]> {
       },
     });
 
+    // Debug: Log course count and throw if empty to see in CI logs
+    if (courses.length === 0) {
+      const allCourses = await prisma.course.findMany();
+      throw new Error(
+        `No published courses found! Total courses in DB: ${allCourses.length}, Published filter result: ${courses.length}`
+      );
+    }
+
     return courses;
   } catch (error) {
     logError(error, { operation: 'getPublishedCourses' });
