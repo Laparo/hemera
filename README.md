@@ -64,3 +64,12 @@ See `.github/workflows/deploy.yml` for complete pipeline configuration.
 - Use Material Design (MUI) when UI work begins.
 - Stripe integration for secure payment processing and course enrollment.
 - All payment flows must use Stripe test mode during development.
+
+## Local Development Tips
+
+- Ensure valid Clerk keys are set in your local env file for authentication flows. Example for
+  `.env.local`:
+  - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY`
+  - `CLERK_SECRET_KEY=YOUR_SECRET_KEY`
+
+  Do not commit real keys. `.gitignore` already excludes `.env*` files.

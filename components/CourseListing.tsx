@@ -286,7 +286,7 @@ const CourseListing: React.FC<CourseListingProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Course Grid */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+      <div className='grid grid-cols-1 gap-6'>
         {courses.map(course => (
           <CourseCard
             key={course.id}
@@ -298,7 +298,7 @@ const CourseListing: React.FC<CourseListingProps> = ({
         {/* Loading cards */}
         {loading && (
           <>
-            {Array.from({ length: 3 }).map((_, index) => (
+            {Array.from({ length: 1 }).map((_, index) => (
               <LoadingCard key={`loading-${index}`} />
             ))}
           </>
