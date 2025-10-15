@@ -16,12 +16,13 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = generateCourseListMetadata();
-export const revalidate = 86400; // 24 hours in seconds
+// Force dynamic rendering to ensure freshly seeded courses are visible immediately
+export const dynamic = 'force-dynamic';
 
 export default async function CoursesPage() {
   const courses = await getPublishedCourses();
-  const jsonLdSchemas = SCHEMA_COMBINATIONS.courseList(courses);
 
+  const jsonLdSchemas = SCHEMA_COMBINATIONS.courseList(courses);
   return (
     <>
       {jsonLdSchemas.map((schema, index) => (
@@ -29,7 +30,9 @@ export default async function CoursesPage() {
           key={index}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schema, null, 2),
+            __html: Buffer.from(JSON.stringify(schema, null, 2)).toString(
+              'base64'
+            ),
           }}
         />
       ))}

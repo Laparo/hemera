@@ -133,8 +133,8 @@ jobs:
               IDS=$(api_get_envs "$TARGET" | jq -r \
                 --arg key "$KEY" \
                 --arg target "$TARGET" \
-                '(.envs // .) 
-                 | map(select(.key == $key and (((.target // []) | index($target)) != null or ((.target // []) | length) == 0))) 
+                '(.envs // .)
+                 | map(select(.key == $key and (((.target // []) | index($target)) != null or ((.target // []) | length) == 0)))
                  | .[].id // empty')
               if [ -n "${IDS:-}" ]; then
                 printf '%s\n' "${IDS}" | while IFS= read -r ID; do

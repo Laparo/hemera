@@ -339,6 +339,117 @@ async function main() {
       date: new Date('2026-03-18T09:00:00Z'),
       isPublished: true,
     },
+    // === Additional courses added ===
+    {
+      title: 'Persönliche Wirkung verbessern',
+      description:
+        'Lernen Sie, wie Sie mit Stimme, Körpersprache und Klarheit überzeugen.',
+      slug: 'persoenliche-wirkung-verbessern',
+      price: 120,
+      currency: 'EUR',
+      capacity: 20,
+      date: new Date('2026-03-22T10:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Produktivität mit Notion & Co.',
+      description:
+        'Systeme aufbauen, die wirklich tragen – Templates, Workflows und Automationen.',
+      slug: 'produktivitaet-mit-notion',
+      price: 150,
+      currency: 'EUR',
+      capacity: 24,
+      date: new Date('2026-03-25T14:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Storyselling für Solopreneure',
+      description:
+        'Verkaufen mit Geschichten – Angebote elegant und authentisch platzieren.',
+      slug: 'storyselling-solopreneure',
+      price: 135,
+      currency: 'EUR',
+      capacity: 16,
+      date: new Date('2026-03-28T16:30:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Zeit für Fokus: Deep Work',
+      description:
+        'Ablenkungen reduzieren, Konzentration trainieren und echte Resultate erzielen.',
+      slug: 'deep-work-fokus',
+      price: 110,
+      currency: 'EUR',
+      capacity: 22,
+      date: new Date('2026-04-02T08:30:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Pitch-Training kompakt',
+      description:
+        'In 90 Minuten zum überzeugenden Pitch – Struktur, Hook und Delivery.',
+      slug: 'pitch-training-kompakt',
+      price: 9900,
+      currency: 'EUR',
+      capacity: 12,
+      date: new Date('2026-04-05T12:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Content-Strategie in 1 Tag',
+      description:
+        'Von Themenplan bis Distribution – ein praxisnaher Fahrplan für 3 Monate.',
+      slug: 'content-strategie-ein-tag',
+      price: 19900,
+      currency: 'EUR',
+      capacity: 14,
+      date: new Date('2026-04-08T09:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Verhandlungskompetenz Essentials',
+      description:
+        'Ziele definieren, Spielräume nutzen, Einwände behandeln – souverän verhandeln.',
+      slug: 'verhandlungskompetenz-essentials',
+      price: 14900,
+      currency: 'EUR',
+      capacity: 18,
+      date: new Date('2026-04-12T15:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Design Thinking Crashkurs',
+      description:
+        'Kundenzentriert Probleme lösen – von Research bis Prototyping.',
+      slug: 'design-thinking-crashkurs',
+      price: 12900,
+      currency: 'EUR',
+      capacity: 20,
+      date: new Date('2026-04-16T10:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'SEO für Einsteiger:innen',
+      description:
+        'Suchmaschinen verstehen, Keywords finden, Inhalte strukturieren.',
+      slug: 'seo-fuer-einsteiger',
+      price: 11900,
+      currency: 'EUR',
+      capacity: 26,
+      date: new Date('2026-04-20T13:00:00Z'),
+      isPublished: true,
+    },
+    {
+      title: 'Newsletter, der konvertiert',
+      description:
+        'E-Mail-Marketing von Welcome-Serie bis Launch – mit Beispielen und Vorlagen.',
+      slug: 'newsletter-der-konvertiert',
+      price: 13900,
+      currency: 'EUR',
+      capacity: 28,
+      date: new Date('2026-04-24T17:00:00Z'),
+      isPublished: true,
+    },
   ];
 
   const courses = await Promise.all(
@@ -364,7 +475,13 @@ async function main() {
 }
 
 main()
+  .then(() => {
+    // eslint-disable-next-line no-console
+    console.log('✅ Seed completed successfully');
+  })
   .catch(e => {
+    // eslint-disable-next-line no-console
+    console.error('❌ Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {

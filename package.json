@@ -22,10 +22,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "format:staged": "prettier --write",
-    "db:status": "dotenv -e .env.development.local -- npx prisma migrate status",
-    "db:migrate": "dotenv -e .env.development.local -- npx prisma migrate dev",
-    "db:deploy": "dotenv -e .env.development.local -- npx prisma migrate deploy",
-    "db:seed": "dotenv -e .env.development.local -- node prisma/seed.ts",
+    "db:status": "dotenv -e .env.local -- npx prisma migrate status",
+    "db:migrate": "dotenv -e .env.local -- npx prisma migrate dev",
+    "db:deploy": "dotenv -e .env.local -- npx prisma migrate deploy",
+    "db:seed": "dotenv -e .env.local -- node --loader ts-node/esm prisma/seed.ts",
+    "db:list:courses": "dotenv -e .env.local -- node scripts/debug/list-courses.mjs",
     "e2e": "npm run build && PW_WEB_SERVER_COMMAND='npm run start' playwright test",
     "e2e:dev": "PW_WEB_SERVER_COMMAND='npm run dev' playwright test",
     "e2e:install": "playwright install chromium",
@@ -92,5 +93,8 @@
   },
   "engines": {
     "node": "22.x"
+  },
+  "prisma": {
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
   }
 }

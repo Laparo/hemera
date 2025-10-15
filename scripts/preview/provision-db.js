@@ -50,8 +50,8 @@ async function main() {
     stdio: 'inherit',
     env: { ...process.env, DATABASE_URL: urlWithSchema },
   });
-  // Seed
-  execSync('node prisma/seed.ts', {
+  // Seed (TypeScript) via ts-node ESM loader
+  execSync('node --loader ts-node/esm prisma/seed.ts', {
     stdio: 'inherit',
     env: { ...process.env, DATABASE_URL: urlWithSchema },
   });

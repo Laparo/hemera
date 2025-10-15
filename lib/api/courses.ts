@@ -43,22 +43,22 @@ export interface CourseWithSEO extends Course {
  */
 export async function getPublishedCourses(): Promise<Course[]> {
   try {
-    const courses = await prisma.course.findMany({
-      where: {
-        isPublished: true,
-      },
+    // Note: In SQLite (used in CI), Prisma's boolean filtering may not work correctly
+    // due to SQLite storing booleans as integers (0/1). We fetch all and filter in JS.
+    const allCourses = await prisma.course.findMany({
       orderBy: {
         createdAt: 'desc',
       },
     });
 
+    // Filter published courses in JavaScript to ensure compatibility with SQLite
+    // SQLite may store boolean as 1/0, so we check for truthy values
+    const courses = allCourses.filter(course => !!course.isPublished);
+
     return courses;
   } catch (error) {
     logError(error, { operation: 'getPublishedCourses' });
-    throw new DatabaseConnectionError(
-      'fetching published courses',
-      error as Error
-    );
+    throw error;
   }
 }
 

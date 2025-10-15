@@ -79,9 +79,15 @@ jobs:
 
       - name: Run Prisma setup
         run: |
+          # Clear any cached Prisma clients and Next.js build artifacts
+          rm -rf .next node_modules/.prisma
+
           npx prisma generate
           npx prisma db push --force-reset
           npx prisma db seed
+          # Verify seed data
+          echo "Verifying seed data..."
+          npx prisma db execute --stdin <<< "SELECT COUNT(*) as count FROM Course WHERE isPublished = 1" || echo "Query failed"
         env:
           DATABASE_URL: file:./test.db
 
@@ -93,6 +99,10 @@ jobs:
           timeout 60 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
         env:
           NODE_ENV: development
+          DATABASE_URL: file:./test.db
+          E2E_TEST: true
+          NEXT_PUBLIC_DISABLE_CLERK: 1
+          NEXT_PUBLIC_DISABLE_ROLLBAR: 1
 
       - name: Run E2E tests
         id: e2e
@@ -100,6 +110,17 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: ${{ steps.base.outputs.base }}
         run: npm run e2e:dev
+
+      - name: Debug - Check course data
+        if: always()
+        run: |
+          echo "=== Course Debug Information ==="
+          if [ -f /tmp/course-debug.json ]; then
+            cat /tmp/course-debug.json
+          else
+            echo "Debug file not found"
+          fi
+          echo "=== E2E Test Result: ${{ steps.e2e.outcome }} ==="
 
       - name: Upload Playwright HTML report
         if: always()

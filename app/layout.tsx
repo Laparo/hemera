@@ -2,7 +2,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
 import StripeProvider from '@/components/payment/StripeProvider';
-import { PublicNavigation } from '@/components/navigation/PublicNavigation';
+import ConditionalPublicNavigation from '@/components/navigation/ConditionalPublicNavigation';
 import { RollbarProviderWrapper } from '@/lib/monitoring/rollbar-react-official';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
@@ -33,7 +33,7 @@ export default function RootLayout({
             <ThemeRegistry>
               <StripeProvider>
                 <ErrorBoundary>
-                  <PublicNavigation />
+                  <ConditionalPublicNavigation />
                   {children}
                 </ErrorBoundary>
               </StripeProvider>

@@ -26,7 +26,9 @@ function fail(message, details) {
   console.error('\n❌ Environment verification failed');
   if (message) console.error(`   ${message}`);
   if (details) console.error(details);
-  console.error('\n💡 Fix: Set the missing variables in Vercel → Project Settings → Environment Variables');
+  console.error(
+    '\n💡 Fix: Set the missing variables in Vercel → Project Settings → Environment Variables'
+  );
   console.error('   Required (Stripe):');
   console.error('   - STRIPE_SECRET_KEY                (Server)');
   console.error('   - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY (Client)');
@@ -35,11 +37,14 @@ function fail(message, details) {
 }
 
 // Only enforce in Vercel preview/production builds
-const enforce = isVercel && (vercelEnv === 'preview' || vercelEnv === 'production');
+const enforce =
+  isVercel && (vercelEnv === 'preview' || vercelEnv === 'production');
 
 if (!enforce) {
   // Provide a short log so developers see what's happening in CI logs
-  console.log('ℹ️  verify-env: enforcement disabled (not a Vercel preview/production build)');
+  console.log(
+    'ℹ️  verify-env: enforcement disabled (not a Vercel preview/production build)'
+  );
   console.log(envSummary);
   process.exit(0);
 }
@@ -50,7 +55,10 @@ if (!requireVar('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'))
   missing.push('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY');
 
 if (missing.length) {
-  fail('Missing required Stripe environment variables:', `   Missing: ${missing.join(', ')}`);
+  fail(
+    'Missing required Stripe environment variables:',
+    `   Missing: ${missing.join(', ')}`
+  );
 }
 
 console.log('✅ verify-env: Required Stripe environment variables are present');

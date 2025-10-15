@@ -90,6 +90,11 @@ wrongpassword
 userpassword
 adminpassword
 Fcourses
+Storyselling
+Solopreneure
+storyselling
+solopreneure
+Kundenzentriert
 Zeilenendenungen
 Qualitätsgates
 Entwicklerfreundliche
@@ -120,3 +125,7 @@ CCPA
 Runbooks
 tracken
 Chakra
+Ausgewählte
+Kurse
+postgresql
+timeframe

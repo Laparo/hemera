@@ -16,5 +16,11 @@ interface RollbarProviderWrapperProps {
 export function RollbarProviderWrapper({
   children,
 }: RollbarProviderWrapperProps) {
+  if (
+    process.env.NEXT_PUBLIC_DISABLE_ROLLBAR === '1' ||
+    process.env.E2E_TEST === 'true'
+  ) {
+    return <>{children}</>; // Disable rollbar during E2E
+  }
   return <RollbarProvider config={clientConfig}>{children}</RollbarProvider>;
 }
