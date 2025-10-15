@@ -25,13 +25,18 @@ export default async function CoursesPage() {
   // eslint-disable-next-line no-console
   console.log('[COURSES PAGE] DATABASE_URL:', process.env.DATABASE_URL);
 
-  const courses = await getPublishedCourses();
-
-  // eslint-disable-next-line no-console
-  console.log('[COURSES PAGE] Got courses:', courses.length);
+  let courses;
+  try {
+    courses = await getPublishedCourses();
+    // eslint-disable-next-line no-console
+    console.log('[COURSES PAGE] Got courses:', courses.length);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('[COURSES PAGE] ERROR:', error);
+    throw error;
+  }
 
   const jsonLdSchemas = SCHEMA_COMBINATIONS.courseList(courses);
-
   return (
     <>
       {jsonLdSchemas.map((schema, index) => (

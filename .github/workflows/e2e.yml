@@ -79,6 +79,9 @@ jobs:
 
       - name: Run Prisma setup
         run: |
+          # Clear any cached Prisma clients and Next.js build artifacts
+          rm -rf .next node_modules/.prisma
+
           npx prisma generate
           npx prisma db push --force-reset
           npx prisma db seed
