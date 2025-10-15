@@ -52,7 +52,10 @@ export async function getPublishedCourses(): Promise<Course[]> {
     });
 
     // eslint-disable-next-line no-console
-    console.log('[DEBUG getPublishedCourses] Total courses:', allCourses.length);
+    console.log(
+      '[DEBUG getPublishedCourses] Total courses:',
+      allCourses.length
+    );
     // eslint-disable-next-line no-console
     console.log(
       '[DEBUG getPublishedCourses] First course:',
@@ -70,7 +73,10 @@ export async function getPublishedCourses(): Promise<Course[]> {
     const courses = allCourses.filter(course => course.isPublished === true);
 
     // eslint-disable-next-line no-console
-    console.log('[DEBUG getPublishedCourses] Published courses:', courses.length);
+    console.log(
+      '[DEBUG getPublishedCourses] Published courses:',
+      courses.length
+    );
 
     return courses;
   } catch (error) {
