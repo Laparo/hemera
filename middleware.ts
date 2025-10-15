@@ -10,6 +10,8 @@ const isE2EMode =
 // Minimal Clerk middleware per current Quickstart (App Router)
 export default isE2EMode
   ? function middleware(request: NextRequest) {
+      // eslint-disable-next-line no-console
+      console.log('[MIDDLEWARE E2E] Request to:', request.nextUrl.pathname);
       return NextResponse.next();
     }
   : clerkMiddleware();
