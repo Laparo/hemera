@@ -2,10 +2,15 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Courses Page', () => {
   test('zeigt veröffentlichte Kurse an', async ({ page }) => {
-    await page.goto('/courses');
+    // Increase timeout for this test as page may be slow to load in CI
+    test.setTimeout(90000);
 
-    // Warten bis Section vorhanden ist
-    await expect(page.getByTestId('course-overview')).toBeVisible();
+    await page.goto('/courses', { waitUntil: 'networkidle' });
+
+    // Warten bis Section vorhanden ist (with longer timeout)
+    await expect(page.getByTestId('course-overview')).toBeVisible({
+      timeout: 30000,
+    });
 
     // Mindestens eine Kurskarte ODER E2E-Fallback sichtbar
     const cards = page.getByTestId('course-card');
