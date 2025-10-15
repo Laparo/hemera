@@ -5,7 +5,11 @@ test.describe('Courses Page', () => {
     // Increase timeout for this test as page may be slow to load in CI
     test.setTimeout(90000);
 
-    await page.goto('/courses', { waitUntil: 'networkidle' });
+    // Log navigation attempt
+    console.log('Navigating to /courses...');
+    const response = await page.goto('/courses', { waitUntil: 'networkidle' });
+    console.log('Navigation response status:', response?.status());
+    console.log('Navigation response URL:', response?.url());
 
     // Warten bis Section vorhanden ist (with longer timeout)
     await expect(page.getByTestId('course-overview')).toBeVisible({
