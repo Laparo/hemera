@@ -36,7 +36,9 @@ export default async function HomePage() {
           key={index}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(schema, null, 2),
+            __html: Buffer.from(JSON.stringify(schema, null, 2)).toString(
+              'base64'
+            ),
           }}
         />
       ))}
