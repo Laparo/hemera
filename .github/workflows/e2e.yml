@@ -88,10 +88,6 @@ jobs:
           # Verify seed data
           echo "Verifying seed data..."
           npx prisma db execute --stdin <<< "SELECT COUNT(*) as count FROM Course WHERE isPublished = 1" || echo "Query failed"
-
-          # Test Prisma Client directly
-          echo "Testing Prisma Client..."
-          node scripts/test-prisma.mjs || echo "Prisma client test failed"
         env:
           DATABASE_URL: file:./test.db
 

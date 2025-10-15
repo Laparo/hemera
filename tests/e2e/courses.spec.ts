@@ -5,16 +5,7 @@ test.describe('Courses Page', () => {
     // Increase timeout for this test as page may be slow to load in CI
     test.setTimeout(90000);
 
-    // TEMPORARY: Test minimal page first
-    console.log('Navigating to /courses-minimal...');
-    let response = await page.goto('/courses-minimal');
-    console.log('Minimal page status:', response?.status());
-
-    // Log navigation attempt
-    console.log('Navigating to /courses...');
-    response = await page.goto('/courses', { waitUntil: 'networkidle' });
-    console.log('Navigation response status:', response?.status());
-    console.log('Navigation response URL:', response?.url());
+    await page.goto('/courses', { waitUntil: 'networkidle' });
 
     // Warten bis Section vorhanden ist (with longer timeout)
     await expect(page.getByTestId('course-overview')).toBeVisible({
