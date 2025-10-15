@@ -10,9 +10,9 @@ import {
   Typography,
 } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, Suspense, useMemo, useState } from 'react';
 
-export default function CustomSignUpPage() {
+function SignUpForm() {
   const { isLoaded, signUp, setActive } = useSignUp();
   const router = useRouter();
   const params = useSearchParams();
@@ -151,5 +151,28 @@ export default function CustomSignUpPage() {
         </Button>
       </Box>
     </Container>
+  );
+}
+
+export default function CustomSignUpPage() {
+  return (
+    <Suspense
+      fallback={
+        <Container maxWidth='sm'>
+          <Box
+            sx={{
+              minHeight: '100vh',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography>Lädt...</Typography>
+          </Box>
+        </Container>
+      }
+    >
+      <SignUpForm />
+    </Suspense>
   );
 }

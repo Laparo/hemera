@@ -10,9 +10,9 @@ import {
   Typography,
 } from '@mui/material';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, Suspense, useMemo, useState } from 'react';
 
-export default function CustomSignInPage() {
+function SignInForm() {
   const { isLoaded, signIn, setActive } = useSignIn();
   const router = useRouter();
   const params = useSearchParams();
@@ -108,5 +108,28 @@ export default function CustomSignInPage() {
         </Typography>
       </Box>
     </Container>
+  );
+}
+
+export default function CustomSignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <Container maxWidth='sm'>
+          <Box
+            sx={{
+              minHeight: '100vh',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography>Lädt...</Typography>
+          </Box>
+        </Container>
+      }
+    >
+      <SignInForm />
+    </Suspense>
   );
 }
