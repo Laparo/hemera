@@ -21,10 +21,14 @@ export function PublicNavigation({
 }: {
   hideMyCourses?: boolean;
 }) {
-  // Render Clerk UI only when configured; otherwise use simple links
+  // Check if Clerk is configured AND not disabled for E2E
   const isClerkConfigured = Boolean(
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   );
+  const isE2E =
+    process.env.E2E_TEST === 'true' ||
+    process.env.NEXT_PUBLIC_DISABLE_CLERK === '1';
+  const useClerk = isClerkConfigured && !isE2E;
   return (
     <AppBar
       position='fixed'
@@ -55,7 +59,7 @@ export function PublicNavigation({
           {/* Navigation Links */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {/* Authentication Buttons */}
-            {isClerkConfigured ? (
+            {useClerk ? (
               <>
                 <SignedOut>
                   <Button
@@ -118,7 +122,7 @@ export function PublicNavigation({
                 </SignedIn>
               </>
             ) : (
-              /* Fallback buttons when Clerk is not configured */
+              /* Fallback buttons when Clerk is not configured or E2E */
               <>
                 <Button
                   variant='outlined'
