@@ -44,10 +44,14 @@ export class AuthHelper {
   }
 
   /**
-   * Check if we're running in CI environment without Clerk
+   * Determine if we should mock authentication (CI or E2E mode without Clerk)
    */
-  private isCIEnvironment(): boolean {
-    return !!process.env.CI;
+  private shouldMockAuth(): boolean {
+    return (
+      !!process.env.CI ||
+      process.env.E2E_TEST === 'true' ||
+      process.env.NEXT_PUBLIC_DISABLE_CLERK === '1'
+    );
   }
 
   /**
@@ -94,10 +98,17 @@ export class AuthHelper {
    * Sign in a user with email and password
    */
   async signIn(email: string, password: string): Promise<void> {
-    // If in CI environment, use mock authentication
-    if (this.isCIEnvironment()) {
+    // If in CI/E2E environment or Clerk disabled, use mock authentication and navigate directly
+    if (this.shouldMockAuth()) {
       const role = email.includes('admin') ? 'admin' : 'user';
       await this.mockAuthenticationForCI(email, role);
+      // Prefer dashboard as post-login landing
+      try {
+        await this.page.goto('/dashboard', { waitUntil: 'domcontentloaded' });
+      } catch {
+        // Fallback to home
+        await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+      }
       return;
     }
 

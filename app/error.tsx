@@ -2,7 +2,6 @@
 
 import { ErrorOutline, Refresh } from '@mui/icons-material';
 import { Box, Button, Container, Typography } from '@mui/material';
-import { useRollbar } from '@rollbar/react';
 import React from 'react';
 
 interface ErrorPageProps {
@@ -11,14 +10,38 @@ interface ErrorPageProps {
 }
 
 export default function Error({ error, reset }: ErrorPageProps) {
-  const rollbar = useRollbar();
+  const isRollbarDisabled =
+    process.env.E2E_TEST === 'true' ||
+    process.env.NEXT_PUBLIC_DISABLE_ROLLBAR === '1' ||
+    process.env.NEXT_PUBLIC_ROLLBAR_ENABLED === '0';
 
   React.useEffect(() => {
     // Log the error to your error reporting service
 
     // Report error to Rollbar following official Next.js documentation
-    rollbar.error(error);
-  }, [error, rollbar]);
+    if (!isRollbarDisabled) {
+      import('rollbar')
+        .then(Rollbar =>
+          import('@/lib/monitoring/rollbar-official').then(
+            ({ clientConfig }) => {
+              try {
+                const rb = new Rollbar.default(clientConfig);
+                rb.error(error);
+              } catch {
+                // ignore reporting errors
+              }
+            }
+          )
+        )
+        .catch(() => {
+          // ignore if Rollbar cannot be loaded (e.g., tests)
+        });
+    } else if (process.env.NODE_ENV !== 'production') {
+      // Fallback: console.error in test/E2E or development mode
+      // eslint-disable-next-line no-console
+      console.error(error);
+    }
+  }, [error, isRollbarDisabled]);
 
   return (
     <Container maxWidth='md' sx={{ py: 8 }}>
@@ -36,8 +59,8 @@ export default function Error({ error, reset }: ErrorPageProps) {
         </Typography>
 
         <Typography variant='body1' color='text.secondary' maxWidth='sm'>
-          Es tut uns leid, aber beim Laden der Seite ist ein Problem
-          aufgetreten. Bitte versuchen Sie es erneut.
+          Beim Laden der Seite ist ein Problem aufgetreten. Bitte versuche es
+          erneut.
         </Typography>
 
         {process.env.NODE_ENV === 'development' && (

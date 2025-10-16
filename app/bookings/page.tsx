@@ -36,6 +36,9 @@ export const metadata: Metadata = {
   robots: 'noindex,nofollow',
 };
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export default async function BookingsPage() {
   const user = await requireAuthenticatedUser();
   const [bookings, stats] = await Promise.all([
@@ -52,7 +55,6 @@ export default async function BookingsPage() {
         View and manage your course bookings and enrollment status.
       </Typography>
 
-      {/* Booking Stats */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card>
@@ -104,7 +106,6 @@ export default async function BookingsPage() {
         </Grid>
       </Grid>
 
-      {/* Bookings List */}
       <Card>
         <CardContent>
           <Stack

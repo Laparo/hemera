@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 import BookingForm from '@/components/booking/BookingForm';
 import { hasUserBookedCourse } from '@/lib/api/bookings';
 import { getPublishedCourses } from '@/lib/api/courses';
@@ -22,9 +24,7 @@ export const metadata: Metadata = {
 };
 
 interface BookingNewPageProps {
-  searchParams: Promise<{
-    courseId?: string;
-  }>;
+  searchParams: Promise<{ courseId?: string }>;
 }
 
 export default async function BookingNewPage({
@@ -34,18 +34,17 @@ export default async function BookingNewPage({
   const courses = await getPublishedCourses();
   const params = await searchParams;
 
-  // If a specific course is selected, check if already booked
-  let selectedCourse = null;
+  let selectedCourse = null as { id: string } | null;
   let alreadyBooked = false;
 
   if (params.courseId) {
-    selectedCourse = courses.find(course => course.id === params.courseId);
+    selectedCourse =
+      courses.find(course => course.id === params.courseId) || null;
     if (selectedCourse) {
       alreadyBooked = await hasUserBookedCourse(user.id, selectedCourse.id);
     }
   }
 
-  // If already booked, redirect to bookings page
   if (alreadyBooked) {
     redirect('/bookings?message=already-booked');
   }
@@ -60,7 +59,6 @@ export default async function BookingNewPage({
       </Typography>
 
       <Grid container spacing={4}>
-        {/* Course Selection */}
         <Grid item xs={12} md={8}>
           <Card>
             <CardContent>
@@ -91,7 +89,6 @@ export default async function BookingNewPage({
           </Card>
         </Grid>
 
-        {/* Booking Information */}
         <Grid item xs={12} md={4}>
           <Card>
             <CardContent>
@@ -136,16 +133,6 @@ export default async function BookingNewPage({
                       Ready to start
                     </Typography>
                   </Stack>
-                </Box>
-
-                <Box>
-                  <Typography variant='subtitle2' gutterBottom>
-                    Need Help?
-                  </Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    Contact our support team if you have questions about course
-                    selection or booking.
-                  </Typography>
                 </Box>
               </Stack>
             </CardContent>

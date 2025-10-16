@@ -1,68 +1,61 @@
 version: "0.2"
-language: de,de-DE,en,en-US
-useGitignore: true
+language: en,en-US,de,de-DE
 import:
   - "@cspell/dict-de-de/cspell-ext.json"
+useGitignore: true
 dictionaryDefinitions:
-  - name: de-de-local
-    path: "node_modules/@cspell/dict-de-de/de_DE.trie.gz"
-    description: "German (de-DE) local dictionary"
   - name: project-words
     path: "./cspell.words.txt"
     description: "Project-specific terms"
     type: S
 dictionaries:
-  - de-DE
-  - de-de
-  - de-de-local
   - en_US
   - node
   - softwareTerms
   - project-words
+  - de-de
 languageSettings:
   - languageId: "*"
     dictionaries:
-      - de-DE
+      - en_US
+      - node
+      - softwareTerms
       - de-de
-      - de-de-local
-      - en_US
-      - node
-      - softwareTerms
   - languageId: "typescriptreact"
-    locale: de,de-DE,en,en-US
+    locale: en,en-US,de,de-DE
     dictionaries:
-      - de-de-local
       - en_US
       - node
       - softwareTerms
+      - de-de
   - languageId: "typescript"
-    locale: de,de-DE,en,en-US
+    locale: en,en-US,de,de-DE
     dictionaries:
-      - de-de-local
       - en_US
       - node
       - softwareTerms
+      - de-de
   - languageId: "javascriptreact"
-    locale: de,de-DE,en,en-US
+    locale: en,en-US,de,de-DE
     dictionaries:
-      - de-de-local
       - en_US
       - node
       - softwareTerms
+      - de-de
   - languageId: "markdown"
-    locale: de,de-DE,en,en-US
+    locale: en,en-US,de,de-DE
     dictionaries:
-      - de-de-local
       - en_US
       - node
       - softwareTerms
+      - de-de
   - languageId: "mdx"
-    locale: de,de-DE,en,en-US
+    locale: en,en-US,de,de-DE
     dictionaries:
-      - de-de-local
       - en_US
       - node
       - softwareTerms
+      - de-de
 
 ignorePaths:
   - "**/node_modules/**"

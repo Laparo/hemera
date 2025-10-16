@@ -30,6 +30,13 @@ Note: Tests first; respect Node runtime for server checks.
        Behavior: redirect unauthenticated; allow authenticated; avoid loops.
 - [ ] T012 Implement noindex helper and integrate with protected layouts/pages  
        Files: `app/lib/robots.ts`, `app/(protected)/layout.tsx`
+- [ ] T013 Admin API guard audit and fixes  
+       Files: `app/api/admin/**/route.ts`  
+       Scope: Ensure admin guard present. Suspects:  
+       - `app/api/admin/users/route.ts` (currently no auth/admin check)  
+       - `app/api/admin/courses/route.ts` (currently no auth/admin check)  
+       - `app/api/admin/analytics/route.ts` (review/guard)  
+       - `app/api/admin/errors/route.ts` (wrap with admin guard on GET/POST)
 
 ## Quality gates & docs
 

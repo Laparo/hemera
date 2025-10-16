@@ -36,10 +36,14 @@ PASS (v1.7.0): Implements Principle XI and Node-only SSR for auth-related checks
 - Add helper to set `noindex` meta/headers server-side
 - Tests: unauth redirect, auth pass-through, public unaffected; avoid redirect loops; verify headers
   present
+- Admin APIs: Audit all `/api/admin/*` routes and ensure server-side admin guards are enforced
+  consistently (add guards/tests where missing).
 
 ## Progress Tracking
 
+- [x] Phase 0 — Research present (`research.md`)
+- [x] Phase 1 — Specs/contracts scaffolded (`contracts/`, `quickstart.md`)
+- [x] Phase 2 — Tasks generated (`tasks.md`)
 - [ ] Design finalized
-- [x] Tasks generated (see `/specs/005-access-segmentation-middleware/tasks.md`)
 - [ ] Implementation complete
 - [ ] Validation passed

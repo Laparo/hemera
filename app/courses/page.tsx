@@ -72,7 +72,7 @@ export default async function CoursesPage() {
                 lineHeight: 1.1,
               }}
             >
-              All Courses
+              Alle Kurse
             </Typography>
             <Typography
               variant='h2'
@@ -85,7 +85,7 @@ export default async function CoursesPage() {
                 mx: 'auto',
               }}
             >
-              Explore our complete catalog of expert-led courses
+              Entdecke unser komplettes Angebot an praxisnahen Kursen
             </Typography>
           </Container>
         </Box>
@@ -150,7 +150,7 @@ export default async function CoursesPage() {
                           color='text.secondary'
                           sx={{ mb: 2, fontSize: '0.875rem' }}
                         >
-                          Instructor: Expert Teacher
+                          Dozent: Expert:in
                         </Typography>
 
                         {/* Rating */}
@@ -189,7 +189,7 @@ export default async function CoursesPage() {
                           }}
                           data-testid='course-level'
                         >
-                          Beginner
+                          Einsteiger
                         </Typography>
                         <Box
                           sx={{
@@ -209,7 +209,7 @@ export default async function CoursesPage() {
                           >
                             {course.price && Number(course.price) > 0
                               ? '€' + (Number(course.price) / 100).toFixed(2)
-                              : 'Kostenlos'}
+                              : 'Free'}
                           </Typography>
                         </Box>
                         <Button
@@ -224,7 +224,7 @@ export default async function CoursesPage() {
                             textTransform: 'none',
                           }}
                         >
-                          Book course
+                          Kurs buchen
                         </Button>
                       </CardContent>
                     </Card>
@@ -235,13 +235,13 @@ export default async function CoursesPage() {
               <Box
                 textAlign='center'
                 sx={{ py: 8 }}
-                data-testid='course-fallback-message'
+                data-testid='e2e-courses-empty'
               >
                 <Typography variant='h6' color='text.secondary' gutterBottom>
                   Bald verfügbar!
                 </Typography>
                 <Typography variant='body1' color='text.secondary'>
-                  Neue Kurse kommen bald. Bleiben Sie dran für spannende
+                  Neue Kurse kommen bald. Bleib dran für spannende
                   Lernmöglichkeiten.
                 </Typography>
               </Box>

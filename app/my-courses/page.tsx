@@ -1,4 +1,6 @@
 import { requireAuthenticatedUser } from '@/lib/auth/helpers';
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 import {
   Box,
   Card,

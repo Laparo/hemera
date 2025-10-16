@@ -8,9 +8,9 @@ interface ProtectedNavigationProps {
 }
 
 const baseNavigation = [
-  { label: 'Dashboard', route: '/dashboard' },
-  { label: 'My Courses', route: '/my-courses' },
-  { label: 'Admin', route: '/admin' }, // Will be filtered by role
+  { label: 'Dashboard', route: '/dashboard', testId: 'nav-dashboard' },
+  { label: 'Courses', route: '/courses', testId: 'nav-courses' },
+  { label: 'Admin', route: '/admin', testId: 'nav-admin' }, // Filtered by role
 ];
 
 /**
@@ -60,7 +60,7 @@ export function ProtectedNavigation({
             component={Link}
             href={navItem.route}
             sx={{ minHeight: 48 }}
-            data-testid={`nav-${navItem.label.toLowerCase()}`}
+            data-testid={navItem.testId}
           />
         ))}
       </Tabs>

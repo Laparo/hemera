@@ -10,6 +10,7 @@ import {
   Typography,
 } from '@mui/material';
 import Link from 'next/link';
+import { useEffect, useLayoutEffect, useState } from 'react';
 
 /**
  * Public navigation component for non-protected pages
@@ -29,6 +30,36 @@ export function PublicNavigation({
     process.env.E2E_TEST === 'true' ||
     process.env.NEXT_PUBLIC_DISABLE_CLERK === '1';
   const useClerk = isClerkConfigured && !isE2E;
+
+  // In E2E mode, pick up mocked role from localStorage (set by tests/auth-helper)
+  const [e2eRole, setE2eRole] = useState<'user' | 'admin' | 'unknown'>('user');
+  useLayoutEffect(() => {
+    if (!isE2E) return;
+    const readRole = () => {
+      try {
+        const raw = window.localStorage.getItem('clerk-session');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const role = (parsed?.user?.role as string) || 'user';
+          setE2eRole(
+            role === 'admin' ? 'admin' : role === 'user' ? 'user' : 'unknown'
+          );
+          return;
+        }
+      } catch {
+        // ignore
+      }
+      setE2eRole('user');
+    };
+    // initial read pre-paint
+    readRole();
+    // subscribe to storage events so role changes reflect without reload
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'clerk-session') readRole();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [isE2E]);
   return (
     <AppBar
       position='fixed'
@@ -58,6 +89,42 @@ export function PublicNavigation({
 
           {/* Navigation Links */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {/* Primary nav links (always available) */}
+            <Button
+              variant='text'
+              color='inherit'
+              component={Link}
+              href='/dashboard'
+              data-testid='nav-dashboard'
+              sx={{ textTransform: 'none' }}
+            >
+              Dashboard
+            </Button>
+            {!hideMyCourses && (
+              <Button
+                variant='text'
+                color='inherit'
+                component={Link}
+                href='/courses'
+                data-testid='nav-courses'
+                sx={{ textTransform: 'none' }}
+              >
+                Kurse
+              </Button>
+            )}
+            {/* Admin link visible in E2E mode when mocked as admin */}
+            {isE2E && e2eRole === 'admin' && (
+              <Button
+                variant='text'
+                color='inherit'
+                component={Link}
+                href='/admin'
+                data-testid='nav-admin'
+                sx={{ textTransform: 'none' }}
+              >
+                Admin
+              </Button>
+            )}
             {/* Authentication Buttons */}
             {useClerk ? (
               <>
@@ -73,7 +140,7 @@ export function PublicNavigation({
                       px: 3,
                     }}
                   >
-                    Login
+                    Anmelden
                   </Button>
                   <Button
                     variant='contained'
@@ -86,7 +153,7 @@ export function PublicNavigation({
                       px: 3,
                     }}
                   >
-                    Sign Up
+                    Registrieren
                   </Button>
                 </SignedOut>
 
@@ -135,7 +202,7 @@ export function PublicNavigation({
                     px: 3,
                   }}
                 >
-                  Login
+                  Anmelden
                 </Button>
                 <Button
                   variant='contained'
@@ -148,9 +215,16 @@ export function PublicNavigation({
                     px: 3,
                   }}
                 >
-                  Sign Up
+                  Registrieren
                 </Button>
               </>
+            )}
+
+            {/* Role indicator for tests in E2E mode */}
+            {isE2E && (
+              <span style={{ display: 'none' }} data-testid='user-role'>
+                {e2eRole === 'unknown' ? 'user' : e2eRole}
+              </span>
             )}
           </Box>
         </Toolbar>

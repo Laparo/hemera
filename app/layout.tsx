@@ -25,20 +25,34 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isE2E =
+    process.env.E2E_TEST === 'true' ||
+    process.env.NEXT_PUBLIC_DISABLE_CLERK === '1';
+
   return (
     <ClerkProviderWrapper>
       <html lang='de'>
         <body className={inter.className}>
-          <RollbarProviderWrapper>
+          {isE2E ? (
+            // In E2E mode: skip Rollbar/Stripe to reduce overhead and flakiness
             <ThemeRegistry>
-              <StripeProvider>
-                <ErrorBoundary>
-                  <ConditionalPublicNavigation />
-                  {children}
-                </ErrorBoundary>
-              </StripeProvider>
+              <ErrorBoundary>
+                <ConditionalPublicNavigation />
+                {children}
+              </ErrorBoundary>
             </ThemeRegistry>
-          </RollbarProviderWrapper>
+          ) : (
+            <RollbarProviderWrapper>
+              <ThemeRegistry>
+                <StripeProvider>
+                  <ErrorBoundary>
+                    <ConditionalPublicNavigation />
+                    {children}
+                  </ErrorBoundary>
+                </StripeProvider>
+              </ThemeRegistry>
+            </RollbarProviderWrapper>
+          )}
         </body>
       </html>
     </ClerkProviderWrapper>

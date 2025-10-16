@@ -7,8 +7,12 @@ import { AuthHelper, TEST_USERS } from './auth-helper';
  */
 
 test.describe('Authentication Flow', () => {
+  const isMockMode =
+    !!process.env.CI ||
+    process.env.E2E_TEST === 'true' ||
+    process.env.NEXT_PUBLIC_DISABLE_CLERK === '1';
   test('should redirect unauthenticated users to sign-in', async ({ page }) => {
-    if (process.env.CI) {
+    if (isMockMode) {
       await renderMockSignIn(page);
 
       await expect(page.locator('[data-testid="mock-sign-in"]')).toBeVisible();
@@ -30,7 +34,7 @@ test.describe('Authentication Flow', () => {
   test('should allow authenticated users to access protected area', async ({
     page,
   }) => {
-    if (process.env.CI) {
+    if (isMockMode) {
       await renderMockDashboard(page, { role: 'user' });
       await expect(
         page.locator('[data-testid="dashboard-title"]')
@@ -70,7 +74,7 @@ test.describe('Authentication Flow', () => {
   });
 
   test('should handle authentication errors gracefully', async ({ page }) => {
-    if (process.env.CI) {
+    if (isMockMode) {
       await renderMockSignIn(page, { withError: true });
       await expect(
         page.locator('[data-testid="mock-sign-in-error"]')
@@ -99,7 +103,7 @@ test.describe('Authentication Flow', () => {
   });
 
   test('should handle sign-out functionality', async ({ page }) => {
-    if (process.env.CI) {
+    if (isMockMode) {
       await renderMockSignIn(page);
       await expect(page.locator('[data-testid="mock-sign-in"]')).toContainText(
         'Sign In'
@@ -140,7 +144,7 @@ test.describe('Authentication Flow', () => {
   });
 
   test('should maintain session across page refreshes', async ({ page }) => {
-    if (process.env.CI) {
+    if (isMockMode) {
       await renderMockDashboard(page, { role: 'user' });
       await expect(
         page.locator('[data-testid="dashboard-title"]')
@@ -176,7 +180,7 @@ test.describe('Authentication Flow', () => {
   test('should handle Clerk service unavailable gracefully', async ({
     page,
   }) => {
-    if (process.env.CI) {
+    if (isMockMode) {
       await renderMockClerkOutage(page);
       await expect(
         page.locator('[data-testid="auth-service-error"]')
