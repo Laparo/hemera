@@ -25,7 +25,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   }, [error, rollbar]);
 
   return (
-    <html>
+    <html lang='de'>
       <body>
         <Container maxWidth='md' sx={{ py: 8 }}>
           <Box
