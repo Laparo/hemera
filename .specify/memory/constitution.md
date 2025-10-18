@@ -2,6 +2,25 @@
 
 <!--
 SYNC IMPACT REPORT - Constitution Amendment
+Version Change: 1.8.0 → 1.9.0
+Amendment Date: 2025-10-18
+Amendment Type: MINOR (Mandatory live monitoring of Deploy workflow via GitHub Actions VS Code extension)
+
+Modified Sections:
+- Enhanced: GitHub Actions Workflow Requirements (added live monitoring mandate via VS Code extension)
+- Enhanced: Governance → Constitution Enforcement (implicit monitoring enforcement)
+
+Key Changes:
+- Mandatory live monitoring of the Deploy workflows (Preview/Production) using the GitHub Actions VS Code extension
+- Engineers must keep the run view open, follow logs until completion, and verify artifacts
+- Monitoring is part of the deployment acceptance and audit trail
+
+Rationale: Ensures proactive oversight of deployments, faster incident response, and complete
+traceability directly from the development environment.
+-->
+
+<!--
+SYNC IMPACT REPORT - Constitution Amendment
 Version Change: 1.7.0 → 1.8.0
 Amendment Date: 2025-10-12
 Amendment Type: MINOR (Mandatory Rollbar Error Logging requirement added)
@@ -479,6 +498,12 @@ the EXCLUSIVE deployment mechanism:
 - **Deployment Verification**: Every deployment includes automated health checks and error
   monitoring validation
 - **Failure Handling**: Automated rollback procedures triggered by workflow failure detection
+
+- **Live Monitoring (MANDATORY)**: All Deploy workflows (Preview and Production) MUST be actively
+  monitored using the official GitHub Actions VS Code extension. The responsible engineer keeps the
+  workflow run view open, follows logs until completion, verifies the final status, reviews
+  artifacts (e.g., Playwright report), and captures the deployment URL when applicable. Failure to
+  monitor constitutes a process violation.
 
 ## Governance
 
