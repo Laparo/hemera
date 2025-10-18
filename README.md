@@ -63,6 +63,7 @@ Failure to monitor constitutes a process violation per the constitution
 
 - Branch Hygiene: `docs/ops/branch-hygiene.md`
 - Route Cleanup & Redirects: `docs/ops/route-cleanup-redirects.md`
+- Linear MCP Server: `docs/ops/linear-mcp.md`
 
 ## Structure
 
