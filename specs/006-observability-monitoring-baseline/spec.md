@@ -23,6 +23,7 @@ by extending those parts rather than introducing parallel implementations.
 - Q: What request-id strategy should we use at the trust boundary? → A: Generate canonical; log
   incoming only
 - Q: What is the PII/consent model for telemetry? → A: PII off by default; consent required
+- Q: How should Web Vitals be gated? → A: Public-only, Prod-gated, 100% sample, no PII
 
 ## In Scope
 
@@ -67,8 +68,9 @@ by extending those parts rather than introducing parallel implementations.
   server logs and Rollbar scope for correlation. The server MUST always generate a canonical
   `requestId` (UUID) per request; if an inbound `x-request-id` exists, record it as
   `externalRequestId` for reference only. The response MUST include the canonical `x-request-id`.
-- FR-004: System SHOULD record Web Vitals and basic page performance metrics on public pages without
-  storing PII.
+- FR-004: System SHOULD record Web Vitals and basic page performance metrics on public pages only,
+  with 100% sampling in production when enabled via env flag (e.g., `NEXT_PUBLIC_ENABLE_WEB_VITALS`)
+  and MUST NOT include PII.
 - FR-005: System MUST allow opt-out in non-production environments by default (no network telemetry
   unless explicitly enabled).
 - FR-006: System MUST NOT include user-identifying information in logs/telemetry unless explicit
@@ -85,6 +87,8 @@ by extending those parts rather than introducing parallel implementations.
 - NFR-002: Privacy-first: defaults avoid PII. PII MAY only be attached when explicit and revocable
   consent has been recorded; behavior MUST be configurable via environment flags and documented.
 - NFR-003: Compatibility with Next.js App Router and our Node-only constraints for Prisma/auth.
+- NFR-005: Web Vitals collection MUST be disabled by default and enabled explicitly in production
+  via environment configuration; private routes MUST NOT collect Web Vitals.
 
 ## Acceptance Criteria
 
@@ -100,6 +104,9 @@ by extending those parts rather than introducing parallel implementations.
 - AC-005: Without recorded consent, telemetry/log payloads MUST NOT include user-identifying fields
   (e.g., email, name, userId). With recorded consent, including a pseudonymous user key is
   permitted; removing consent MUST prevent further inclusion immediately.
+- AC-006: With `NEXT_PUBLIC_ENABLE_WEB_VITALS=true` in production, Web Vitals events are emitted
+  only for public pages, contain no PII, and appear at 100% sample rate; with the flag unset they
+  are not emitted.
 
 ## Dependencies & Constraints
 
