@@ -14,6 +14,15 @@ Note: The repository already contains key pieces of this baseline (Rollbar integ
 propagation middleware, deployment monitoring endpoints and dashboard). This spec should be applied
 by extending those parts rather than introducing parallel implementations.
 
+## Clarifications
+
+### Session 2025-10-19
+
+- Q: How should telemetry sampling be standardized in production? → A: Error-first: 100% Errors,
+  5% Non-Errors
+- Q: What request-id strategy should we use at the trust boundary? → A: Generate canonical; log
+  incoming only
+
 ## In Scope
 
 - Error tracking with Rollbar SDK for Next.js (browser + Node) with environment gating and sampling.
@@ -54,7 +63,9 @@ by extending those parts rather than introducing parallel implementations.
 - FR-002: System MUST provide a structured logging API with levels (debug, info, warn, error) and
   JSON output including timestamp and requestId when available.
 - FR-003: System MUST propagate a `x-request-id` header through middleware and make it accessible in
-  server logs and Rollbar scope for correlation.
+  server logs and Rollbar scope for correlation. The server MUST always generate a canonical
+  `requestId` (UUID) per request; if an inbound `x-request-id` exists, record it as
+  `externalRequestId` for reference only. The response MUST include the canonical `x-request-id`.
 - FR-004: System SHOULD record Web Vitals and basic page performance metrics on public pages without
   storing PII.
 - FR-005: System MUST allow opt-out in non-production environments by default (no network telemetry
@@ -65,7 +76,10 @@ by extending those parts rather than introducing parallel implementations.
 ## Non-Functional Requirements
 
 - NFR-001: Overhead minimal: added latency and bundle impact within reasonable bounds (SDK loaded
-  conditionally; sampling configured).
+  conditionally; sampling configured). Default production sampling: 100% errors; ~5% non-errors;
+  overridable via environment configuration.
+- NFR-004: Trust boundary protection: inbound `x-request-id` MUST NOT override the canonical server
+  `requestId`; it is treated as untrusted metadata (`externalRequestId`).
 - NFR-002: Privacy-first: defaults avoid PII; configurable via env; clear documentation.
 - NFR-003: Compatibility with Next.js App Router and our Node-only constraints for Prisma/auth.
 
