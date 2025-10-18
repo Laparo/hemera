@@ -47,6 +47,18 @@ All deployments must pass:
 
 See `.github/workflows/deploy.yml` for complete pipeline configuration.
 
+### Live Monitoring (Constitutional Requirement)
+
+All Deploy workflows (Preview and Production) MUST be actively monitored using the official GitHub
+Actions VS Code extension:
+
+- Keep the workflow run view open and follow logs until completion
+- Verify final status and collect the deployment URL
+- Review artifacts (e.g., Playwright report) when present
+
+Failure to monitor constitutes a process violation per the constitution
+(`.specify/memory/constitution.md`).
+
 ## Structure
 
 - `specs/001-...` – Database/Auth/UI baseline (plan-only enforced)

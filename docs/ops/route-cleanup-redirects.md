@@ -28,6 +28,13 @@ verwalten.
   anpassen.
 - Monitoring: 4xx/5xx-Spitzen im Zeitraum nach Release beobachten.
 
+### Live-Monitoring (konstitutionell verpflichtend)
+
+- Deploy-Workflow in GitHub Actions mit der VS Code Extension live überwachen
+- Logs bis zum Abschluss verfolgen; finalen Status protokollieren
+- Preview-/Production-URL notieren und in PR/Run-Doku verlinken
+- Bei Fehlern: Playwright-Report-Artifact prüfen, ggf. Rollback einleiten
+
 ## Rollback
 
 - Falls Probleme auftreten, Redirect-Eintrag in `next.config.mjs` vorübergehend entfernen oder Ziel
