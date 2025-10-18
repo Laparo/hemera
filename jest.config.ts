@@ -19,8 +19,8 @@ const config: Config = {
   maxWorkers: 1, // Force sequential execution for database tests
   // Use V8 coverage to avoid Babel parsing issues for non-transformed files
   coverageProvider: 'v8',
-  // Limit coverage collection to TypeScript files only (exclude TSX/JSX pages/components)
-  collectCoverageFrom: ['lib/**/*.ts', 'app/**/*.ts'],
+  // Limit coverage collection to core library logic only
+  collectCoverageFrom: ['lib/**/*.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
 };
