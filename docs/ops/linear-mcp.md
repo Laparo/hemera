@@ -10,7 +10,7 @@ gängigen Clients (Cursor, Claude Desktop/VS Code) zu verwenden.
 
 ### Linear API Key erstellen
 
-1. In Linear anmelden: https://linear.app
+1. In Linear anmelden: <https://linear.app>
 2. Avatar (oben links) → Settings
 3. Security & access → Personal API Keys → „New API Key“
 4. Key benennen (z. B. „MCP Linear Integration“) und sicher kopieren.
@@ -40,7 +40,7 @@ mcp-linear --token YOUR_LINEAR_API_TOKEN
 - Oder via Umgebungsvariable:
 
 ```bash
-1. In Linear anmelden: <https://linear.app>
+export LINEAR_API_TOKEN=YOUR_LINEAR_API_TOKEN
 mcp-linear
 ```
 
@@ -100,6 +100,41 @@ Datei:
 }
 ```
 
+### GoMCP (CLI)
+
+Konfigurationsdatei: `~/.config/gomcp/config.yaml`
+
+Einfache Variante (Env im File – nur lokal):
+
+```yaml
+servers:
+  linear:
+    command: npx
+    args:
+      - -y
+      - @tacticlaunch/mcp-linear
+    env:
+      LINEAR_API_TOKEN: YOUR_LINEAR_API_TOKEN
+```
+
+Sichere Variante (macOS Keychain, kein Klartext im File):
+
+```yaml
+servers:
+  linear:
+    command: bash
+    args:
+      - -lc
+      - |
+        TOKEN=$(security find-generic-password -a 'abb@laparo.bizR' -s 'LINEAR_API_TOKEN' -w 2>/dev/null); STATUS=$?; if [ $STATUS -ne 0 ] || [ -z "$TOKEN" ]; then echo 'LINEAR_API_TOKEN not accessible in Keychain for account abb@laparo.bizR' >&2; exit 1; fi; LINEAR_API_TOKEN="$TOKEN" npx -y @tacticlaunch/mcp-linear
+```
+
+Start:
+
+```bash
+gomcp linear
+```
+
 ## Troubleshooting
 
 - „Linear API token not found“: Token als `--token` oder `LINEAR_API_TOKEN` setzen.
@@ -113,5 +148,5 @@ Datei:
 
 ## Quellen
 
-- Paket: https://www.npmjs.com/package/@tacticlaunch/mcp-linear
-- Repo: https://github.com/tacticlaunch/mcp-linear
+- Paket: <https://www.npmjs.com/package/@tacticlaunch/mcp-linear>
+- Repo: <https://github.com/tacticlaunch/mcp-linear>
