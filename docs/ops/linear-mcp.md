@@ -150,3 +150,33 @@ gomcp linear
 
 - Paket: <https://www.npmjs.com/package/@tacticlaunch/mcp-linear>
 - Repo: <https://github.com/tacticlaunch/mcp-linear>
+
+## Try it
+
+### CLI (ohne Client)
+
+```bash
+# Variante 1: Env-Var
+export LINEAR_API_TOKEN=YOUR_LINEAR_API_TOKEN
+mcp-linear --version
+
+# Variante 2: Keychain (macOS)
+bash -lc 'TOKEN=$(security find-generic-password -a "abb@laparo.bizR" -s "LINEAR_API_TOKEN" -w 2>/dev/null); [ -n "$TOKEN" ] && LINEAR_API_TOKEN="$TOKEN" npx -y @tacticlaunch/mcp-linear --version'
+```
+
+### VS Code (Claude Dev)
+
+- Öffne VS Code, starte Claude. Rufe eine Linear-Aktion auf (z. B. "Liste meine offenen Linear
+  Issues").
+- Falls nötig, prüfe die MCP-Serverliste der Extension – "linear" sollte sichtbar sein.
+
+### Cursor
+
+- Cursor neu starten, dann eine Linear-Aktion im Prompt ausführen.
+- Prüfe bei Bedarf `~/.cursor/mcp.json` – Server "linear" ist konfiguriert.
+
+### GoMCP
+
+```bash
+gomcp linear
+```
