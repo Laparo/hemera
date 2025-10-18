@@ -22,6 +22,7 @@ by extending those parts rather than introducing parallel implementations.
   5% Non-Errors
 - Q: What request-id strategy should we use at the trust boundary? → A: Generate canonical; log
   incoming only
+- Q: What is the PII/consent model for telemetry? → A: PII off by default; consent required
 
 ## In Scope
 
@@ -70,8 +71,9 @@ by extending those parts rather than introducing parallel implementations.
   storing PII.
 - FR-005: System MUST allow opt-out in non-production environments by default (no network telemetry
   unless explicitly enabled).
-- FR-006: System MUST not include user-identifying information in logs/telemetry unless explicit
-  consent has been recorded (future extension; default is OFF).
+- FR-006: System MUST NOT include user-identifying information in logs/telemetry unless explicit
+  consent has been recorded; default is OFF. Consent MUST be checked at emission time and revocation
+  MUST take effect immediately for subsequent events.
 
 ## Non-Functional Requirements
 
@@ -80,7 +82,8 @@ by extending those parts rather than introducing parallel implementations.
   overridable via environment configuration.
 - NFR-004: Trust boundary protection: inbound `x-request-id` MUST NOT override the canonical server
   `requestId`; it is treated as untrusted metadata (`externalRequestId`).
-- NFR-002: Privacy-first: defaults avoid PII; configurable via env; clear documentation.
+- NFR-002: Privacy-first: defaults avoid PII. PII MAY only be attached when explicit and revocable
+  consent has been recorded; behavior MUST be configurable via environment flags and documented.
 - NFR-003: Compatibility with Next.js App Router and our Node-only constraints for Prisma/auth.
 
 ## Acceptance Criteria
@@ -94,6 +97,9 @@ by extending those parts rather than introducing parallel implementations.
   defaults.
 - AC-004: When `ROLLBAR_SERVER_ACCESS_TOKEN` is not set, the app builds and runs with telemetry
   disabled; no external calls performed.
+- AC-005: Without recorded consent, telemetry/log payloads MUST NOT include user-identifying fields
+  (e.g., email, name, userId). With recorded consent, including a pseudonymous user key is
+  permitted; removing consent MUST prevent further inclusion immediately.
 
 ## Dependencies & Constraints
 
