@@ -59,6 +59,11 @@ Actions VS Code extension:
 Failure to monitor constitutes a process violation per the constitution
 (`.specify/memory/constitution.md`).
 
+## Ops / Runbooks
+
+- Branch Hygiene: `docs/ops/branch-hygiene.md`
+- Route Cleanup & Redirects: `docs/ops/route-cleanup-redirects.md`
+
 ## Structure
 
 - `specs/001-...` – Database/Auth/UI baseline (plan-only enforced)
