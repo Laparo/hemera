@@ -3,6 +3,7 @@ import ThemeRegistry from '@/components/ThemeRegistry';
 import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
 import StripeProvider from '@/components/payment/StripeProvider';
 import ConditionalPublicNavigation from '@/components/navigation/ConditionalPublicNavigation';
+import BuildInfo from '@/components/BuildInfo';
 import { RollbarProviderWrapper } from '@/lib/monitoring/rollbar-react-official';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
@@ -53,6 +54,7 @@ export default function RootLayout({
               </ThemeRegistry>
             </RollbarProviderWrapper>
           )}
+          {!isE2E && <BuildInfo />}
         </body>
       </html>
     </ClerkProviderWrapper>

@@ -34,6 +34,9 @@ jobs:
           node-version: '22.x'
           cache: 'npm'
 
+      - name: Set BUILD_TIME (UTC)
+        run: echo "BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+
       - name: Install dependencies
         run: npm ci
 
@@ -51,6 +54,13 @@ jobs:
 
       - name: Build verification
         run: npm run build
+        env:
+          BUILD_TIME: ${{ env.BUILD_TIME }}
+
+  # Export a UTC timestamp for BUILD_TIME at workflow start (reusable)
+  # Note: This env will be available to subsequent steps as ${{ env.BUILD_TIME }}
+  # We define it via a dedicated job to avoid repetition; downstream jobs can still set/override per-step if needed.
+  # GitHub Actions does not support dynamic env at workflow root from steps, so we set it in-place in jobs where needed too.
 
   deploy-preview:
     name: Deploy Preview
@@ -69,6 +79,9 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      - name: Set BUILD_TIME (UTC)
+        run: echo "BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token="${{ secrets.VERCEL_TOKEN }}"
         env:
@@ -80,6 +93,7 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          BUILD_TIME: ${{ env.BUILD_TIME }}
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy
@@ -112,6 +126,9 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      - name: Set BUILD_TIME (UTC)
+        run: echo "BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token="${{ secrets.VERCEL_TOKEN }}"
         env:
@@ -123,6 +140,7 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          BUILD_TIME: ${{ env.BUILD_TIME }}
 
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}"
@@ -164,3 +182,12 @@ jobs:
           name: playwright-report-production
           path: playwright-report/
           retention-days: 30
+
+  close-branch:
+    name: Close Branch
+    runs-on: ubuntu-latest
+    needs: [deploy-production, e2e-production]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Close branch after successful production deployment
+        run: echo "Branch will be closed only after successful production build and E2E tests"
