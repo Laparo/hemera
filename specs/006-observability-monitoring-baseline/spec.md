@@ -10,13 +10,19 @@ and request correlation. This enables actionable diagnostics in production and n
 telemetry in development, while respecting privacy and the public vs. non-public domain
 segmentation.
 
+Note: The repository already contains key pieces of this baseline (Rollbar integration, request-id
+propagation middleware, deployment monitoring endpoints and dashboard). This spec should be applied
+by extending those parts rather than introducing parallel implementations.
+
 ## In Scope
 
 - Error tracking with Rollbar SDK for Next.js (browser + Node) with environment gating and sampling.
+  Existing wrappers are under `lib/monitoring/rollbar*.ts`.
 - Structured, JSON-formatted logging utility with severity levels and PII redaction helpers.
 - Request correlation via `x-request-id` propagation (middleware + logger + Rollbar scope/trace
-  context).
-- Basic Web Vitals export and optional Vercel Analytics for public pages (no PII).
+  context). Existing helpers: `middleware.ts`, `lib/utils/request-id.ts`.
+- Basic Web Vitals export and optional Vercel Analytics for public pages (no PII). If added, must be
+  disabled by default via env gating.
 - Minimal runbook and environment variable documentation.
 
 ## Out of Scope
@@ -43,7 +49,8 @@ segmentation.
 
 - FR-001: System MUST capture unhandled exceptions and promise rejections on server and client when
   enabled via env (e.g., `ROLLBAR_SERVER_ACCESS_TOKEN` and
-  `NEXT_PUBLIC_ROLLBAR_CLIENT_ACCESS_TOKEN`).
+  `NEXT_PUBLIC_ROLLBAR_CLIENT_ACCESS_TOKEN`). Existing code should be verified rather than
+  reimplemented.
 - FR-002: System MUST provide a structured logging API with levels (debug, info, warn, error) and
   JSON output including timestamp and requestId when available.
 - FR-003: System MUST propagate a `x-request-id` header through middleware and make it accessible in

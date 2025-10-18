@@ -21,14 +21,14 @@ Legend: [P] can be done in parallel
 - [x] T007 Create `middleware.ts` request-id propagation (respect existing `x-request-id`)
 - [x] T008 Create `lib/observability/request-context.ts` to read headers() and expose
       `getRequestId()`
-- [x] T009 Sentry init wrappers: `sentry.client.config.ts`, `sentry.server.config.ts` (guarded by
-      env and sampling)
+- [x] T009 Rollbar init wrappers present: see `lib/monitoring/rollbar*.ts` (guarded by env and
+      sampling)
 - [x] T010 Add minimal Web Vitals handler hook in `app/layout.tsx` (no-op by default)
 
 ## Docs
 
-- [x] T011 Add `docs/observability.md` with env vars, sampling, privacy safeguards, and runbook (how
-      to find errors by requestId)
+- [x] T011 Add/align `docs/monitoring/deployment-monitoring-setup.md` with env vars, sampling,
+      privacy safeguards, and runbook (how to find errors by requestId)
 - [ ] T012 Update `README.md` badges/section with observability notes
 
 ## Quality Gates
