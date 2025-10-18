@@ -17,14 +17,10 @@ const config: Config = {
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 90000, // Increase timeout for database + container operations
   maxWorkers: 1, // Force sequential execution for database tests
-  collectCoverageFrom: [
-    'lib/**/*.{ts,tsx}',
-    'app/**/*.{ts,tsx}',
-    '!app/**/layout.tsx',
-    '!app/**/loading.tsx',
-    '!app/**/error.tsx',
-    '!app/**/not-found.tsx',
-  ],
+  // Use V8 coverage to avoid Babel parsing issues for non-transformed files
+  coverageProvider: 'v8',
+  // Limit coverage collection to TypeScript files only (exclude TSX/JSX pages/components)
+  collectCoverageFrom: ['lib/**/*.ts', 'app/**/*.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
 };
