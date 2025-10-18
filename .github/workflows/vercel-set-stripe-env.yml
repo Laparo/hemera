@@ -70,9 +70,9 @@ jobs:
             echo "::error::Set VERCEL_ORG_ID as a repository secret"; exit 1
           fi
           if [ -n "${VERCEL_PROJECT_ID:-}" ]; then
-            echo "project=$VERCEL_PROJECT_ID" >> $GITHUB_OUTPUT
+            echo "project=$VERCEL_PROJECT_ID" >> "$GITHUB_OUTPUT"
           elif [ -n "${VERCEL_PROJECT_NAME:-}" ]; then
-            echo "project=$VERCEL_PROJECT_NAME" >> $GITHUB_OUTPUT
+            echo "project=$VERCEL_PROJECT_NAME" >> "$GITHUB_OUTPUT"
           else
             echo "::error::Set VERCEL_PROJECT_ID or VERCEL_PROJECT_NAME as a repository secret"; exit 1
           fi
