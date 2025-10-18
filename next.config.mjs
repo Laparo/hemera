@@ -17,6 +17,17 @@ const nextConfig = {
     }
     return config;
   },
+  async redirects() {
+    // Backward compatibility: consolidate protected routes
+    // All legacy /protected/* paths should land on the client-guarded dashboard
+    return [
+      {
+        source: '/protected/:path*',
+        destination: '/dashboard',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
