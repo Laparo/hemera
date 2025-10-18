@@ -9,10 +9,7 @@ import { expect, test } from '@playwright/test';
  */
 
 test('build info badge is present on home', async ({ page }) => {
-  // In E2E/dev mode, the app hides the BuildInfo to reduce flakiness.
-  if (process.env.E2E_TEST === 'true') {
-    test.skip(true, 'BuildInfo is hidden in E2E mode');
-  }
+  // In E2E/dev mode, die App zeigt das BuildInfo-Badge immer an.
   await page.goto('/');
   // The badge may render asynchronously after hydration
   const badge = page.getByTestId('build-info');

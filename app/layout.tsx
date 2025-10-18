@@ -54,7 +54,7 @@ export default function RootLayout({
               </ThemeRegistry>
             </RollbarProviderWrapper>
           )}
-          {!isE2E && <BuildInfo />}
+          <BuildInfo />
         </body>
       </html>
     </ClerkProviderWrapper>

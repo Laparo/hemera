@@ -40,9 +40,6 @@ test.describe('Stripe React Elements Payment Flow E2E - Simplified', () => {
         page.locator('[data-testid="payment-action"]')
       ).toContainText('Confirm');
       return;
-    } else {
-      // Local development - skip complex payment tests for now
-      test.skip();
     }
   });
 
@@ -53,9 +50,6 @@ test.describe('Stripe React Elements Payment Flow E2E - Simplified', () => {
         page.locator('[data-testid="duplicate-warning"]')
       ).toContainText('Duplicate booking');
       return;
-    } else {
-      // Local development - skip complex payment tests for now
-      test.skip();
     }
   });
 });

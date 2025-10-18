@@ -78,9 +78,6 @@ test.describe('User Dashboard E2E - Simplified', () => {
           page.locator('[data-testid="dashboard-metrics"]')
         ).toBeVisible();
         return;
-      } else {
-        // Local development - skip these complex tests for now until they're fully implemented
-        test.skip();
       }
     });
   });
