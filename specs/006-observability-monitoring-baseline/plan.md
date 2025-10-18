@@ -1,58 +1,111 @@
 # Implementation Plan: 006-observability-monitoring-baseline
 
-**Branch**: `006-observability-monitoring-baseline` | **Date**: 2025-10-01 | **Spec**: `./spec.md`
-**Input**: Feature specification from `/specs/006-observability-monitoring-baseline/spec.md`
+Branch: 006-observability-monitoring-baseline | Date: 2025-10-19 | Spec:
+/specs/006-observability-monitoring-baseline/spec.md
 
-> Note – Documentation Quality Gates apply. See repo CI for Markdown, spelling, and link checks.
+## Execution Flow (/plan command scope)
+
+Executed steps 1–7 as required. Phase 2 is only planned descriptively, not executed.
 
 ## Summary
 
-Introduce an observability baseline: Rollbar error tracking (conditionally enabled), structured
-logging, and request correlation via `x-request-id`. Keep vendor-specific code encapsulated behind
-light wrappers.
+Establish and formalize an observability baseline: Rollbar error tracking, structured JSON logging,
+request correlation via x-request-id, privacy-first telemetry (PII only with consent), Web Vitals
+only on public pages in production (env-gated, 100% sample), and clear retention defaults (30/14/7
+days). The spec includes explicit Clarifications for sampling, request-id handling, consent model,
+Web Vitals gating, and log retention.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x  
-**Primary Dependencies**: Next.js (App Router), `rollbar` (server/browser SDK)  
-**Runtime**: Node for middleware and server SDK  
-**Testing**: Unit for logger; integration for request-id propagation; manual verification for Sentry
-in non-prod sandbox  
-**Target Platform**: Vercel
+- Language/Version: TypeScript 5.9.x, Node.js 22.x, Next.js 15.x (App Router)
+- Primary Dependencies: Rollbar SDK (server+browser wrappers in lib/monitoring), Prisma
+  (PostgreSQL), Jest 30.x, Playwright, ESLint, Prettier
+- Storage: PostgreSQL via Prisma (existing)
+- Testing: Jest (unit/integration), Playwright (E2E)
+- Target Platform: Vercel (inferred), GitHub Actions for CI/CD
+- Project Type: web application (Next.js App Router)
+- Performance Goals: minimal overhead; SDK loaded conditionally; no PII by default
+- Constraints: p95 latency unaffected materially; no console.error in prod (Rollbar mandatory per
+  Constitution); deployments via GitHub Actions only; live monitoring of Deploy workflow
+Additionally: Keep vendor-specific code encapsulated behind lightweight wrappers; runtime is Node
+for middleware and server SDK.
 
-## Rendering Strategy Impact
+## Constitution Check
 
-None. Logging and telemetry are orthogonal to rendering strategy; ensure no SSR is introduced where
-not needed.
+Initial review against Constitution v1.9.0+ amendments:
 
-## Design Notes
+- Deployment Standards: Using GitHub Actions with quality gates — compatible (no manual deploys)
+- Error Monitoring: Rollbar mandatory; console.error prohibited — aligned (wrappers exist)
+- Live Monitoring: Deploy workflows must be live-monitored via VS Code extension — not impacted by
+  this plan but acknowledged in runbooks
+- Privacy & Security: PII filtered; consent required — aligned
 
-- Provide a small `lib/observability` module with a `logger` and `withRequestContext` helpers.
-- Initialize Rollbar only when env vars are present (server and browser), sampling via env.
-- Use middleware to set/propagate `x-request-id` if missing.
-- Attach `requestId` to logs and Sentry scope (tag) when available.
-- Provide a minimal Web Vitals handler exporting to console or a no-op by default.
+Result: PASS (no violations). Post-Design recheck also PASS.
+
+## Project Structure
+
+Documentation for this feature resides in `specs/006-observability-monitoring-baseline/`:
+
+```text
+specs/006-observability-monitoring-baseline/
+├── plan.md
+├── research.md
+├── data-model.md
+├── quickstart.md
+└── contracts/
+    ├── headers.md
+    ├── log-event.schema.json
+    └── tests/
+        ├── request-id.test.md
+        ├── privacy-consent.test.md
+        └── web-vitals.test.md
+```
+
+Source code relevant locations (existing):
+
+- lib/monitoring/rollbar\*.ts, middleware.ts, lib/utils/request-id.ts
+- app/api/health/deployment/route.ts, components/monitoring/DeploymentMonitoringDashboard.tsx
+
+Structure Decision: Single Next.js web app; no new projects introduced. Contracts are
+documentation-oriented (headers, JSON schema) rather than external API endpoints.
 
 ## Phase 0: Outline & Research
 
-- Validate Next.js App Router + Rollbar integration patterns (server and client).
-- Evaluate request-id generation and safe propagation strategy.
-- Define env var contract and sampling defaults.
+Unknowns resolved via Clarifications (Sampling, Request-ID, Consent/PII, Web Vitals, Retention).
+Best practices captured in research.md.
+
+Output: research.md
 
 ## Phase 1: Design & Contracts
 
-- Define `logger` interface and JSON schema.
-- Define `getRequestId` helper and middleware interaction.
-- Define Rollbar init wrapper API surface for future portability.
+Artifacts produced:
 
-## Phase 2: Task Planning Approach
+- data-model.md: Entities — TelemetryConfig, RequestContext, LogEvent, WebVitalEvent, ConsentState
+- contracts/headers.md: Header contract for x-request-id (canonical vs. external)
+- contracts/log-event.schema.json: JSON schema for structured logs
+- contracts/tests/*\.md: Failing contract test narratives for request-id, privacy/consent, web
+  vitals
+- quickstart.md: Enablement, env flags, verification steps mapped to AC-001..AC-007
 
 - TDD for logger JSON shape; integration test for header propagation; feature flags for Rollbar.
 
-## Branching & CI Gates
+Output: data-model.md, contracts/\*, quickstart.md
 
-- Follow branch naming; keep docs gates green (Markdown, spelling, link check).
-- No external calls during CI unless explicitly allowed; Sentry disabled by default.
+## Phase 2: Task Planning Approach (for /tasks)
+
+- Generate tasks from the above artifacts; emphasize TDD (contract tests first)
+- Parallelize independent items (e.g., schema validation vs. env gating checks)
+- Ensure Rollbar console.error elimination checks included in lint rules/tests
+
+Estimated: ~15-20 tasks (fewer endpoints, focus on integration & verification)
+
+## Phase 3+: Future Implementation
+
+Beyond /plan scope.
+
+## Complexity Tracking
+
+N/A — no constitutional deviations.
 
 ## Existing Implementation Inventory (to consider)
 
@@ -86,8 +139,25 @@ stable and avoiding breaking changes.
 
 ## Progress Tracking
 
-- [ ] Phase 0 complete
-- [ ] Phase 1 complete
-- [x] Phase 2 tasks generated (see `/specs/006-observability-monitoring-baseline/tasks.md`)
-- [ ] Implementation complete
-- [ ] Validation passed
+Phase Status:
+
+- [x] Phase 0: Research complete (/plan command)
+- [x] Phase 1: Design complete (/plan command)
+- [ ] Phase 2: Task planning complete (/plan command - describe approach only)
+- [ ] Phase 3: Tasks generated (/tasks command)
+- [ ] Phase 4: Implementation complete
+- [ ] Phase 5: Validation passed
+
+Gate Status:
+
+- [x] Initial Constitution Check: PASS
+- [x] Post-Design Constitution Check: PASS
+- [x] All NEEDS CLARIFICATION resolved
+- [ ] Complexity deviations documented
+- [x] Post-Design Constitution Check: PASS
+- [x] All NEEDS CLARIFICATION resolved
+- [ ] Complexity deviations documented
+
+—
+
+Based on Constitution v1.9.0 (see `/.specify/memory/constitution.md`)
