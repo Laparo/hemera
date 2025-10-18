@@ -24,6 +24,7 @@ export default function BuildInfo() {
   return (
     <div
       aria-hidden
+      data-testid='build-info'
       title={tooltip || 'Build-Informationen'}
       style={{
         position: 'fixed',
