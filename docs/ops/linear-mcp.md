@@ -180,3 +180,15 @@ bash -lc 'TOKEN=$(security find-generic-password -a "abb@laparo.bizR" -s "LINEAR
 ```bash
 gomcp linear
 ```
+
+## Beispiel-Prompts
+
+Diese Eingaben kannst du in deinem MCP-Client (Claude, Cursor, GoMCP) verwenden:
+
+- „Zeig mir alle offenen Linear-Issues in meinem Team.“
+- „Erstelle ein neues Issue mit Titel ‚Checkout schlägt fehl‘ in Team ‚Frontend‘, Priorität hoch.“
+- „Setze den Status von Issue FE-123 auf ‚In Arbeit‘.“
+- „Weise Issue FE-123 der Nutzerin Anna Müller zu.“
+- „Füge zu Issue FE-123 einen Kommentar hinzu: ‚Bitte bis Freitag fixen.‘“
+- „Liste alle Projekte auf und zeige deren Status.“
+- „Erstelle ein neues Projekt ‚Onboarding Optimierung‘ und verknüpfe Issue FE-123.“
