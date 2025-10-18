@@ -26,8 +26,6 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: hemera_test
-        ports:
-          - 5432:5432
         options: >-
           --health-cmd "pg_isready -U postgres -d hemera_test" 
           --health-interval 10s 
@@ -37,8 +35,8 @@ jobs:
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-      # Use local Postgres service for unit tests to avoid reliance on secrets or Docker-in-Docker
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/hemera_test
+      # Use Postgres service hostname inside the Actions network for unit tests
+      DATABASE_URL: 'postgresql://postgres:postgres@postgres:5432/hemera_test'
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
       NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
@@ -65,7 +63,7 @@ jobs:
 
       - name: Wait for Postgres to be ready
         run: >-
-          until pg_isready -h localhost -p 5432 -U postgres -d hemera_test; do
+          until pg_isready -h postgres -p 5432 -U postgres -d hemera_test; do
             echo "Waiting for Postgres..."; sleep 2;
           done
 
