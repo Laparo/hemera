@@ -14,9 +14,17 @@ export default function BuildInfo() {
     .filter(Boolean)
     .join(' ');
 
+  const tooltip = [
+    info.buildTime ? `Build: ${info.buildTime}` : undefined,
+    info.commitSha ? `Commit: ${info.commitSha}` : undefined,
+  ]
+    .filter(Boolean)
+    .join(' | ');
+
   return (
     <div
       aria-hidden
+      title={tooltip || 'Build-Informationen'}
       style={{
         position: 'fixed',
         right: 8,
