@@ -24,6 +24,7 @@ by extending those parts rather than introducing parallel implementations.
   incoming only
 - Q: What is the PII/consent model for telemetry? → A: PII off by default; consent required
 - Q: How should Web Vitals be gated? → A: Public-only, Prod-gated, 100% sample, no PII
+- Q: What log retention policy should we use? → A: Prod 30d, Staging 14d, Dev 7d
 
 ## In Scope
 
@@ -87,6 +88,8 @@ by extending those parts rather than introducing parallel implementations.
 - NFR-002: Privacy-first: defaults avoid PII. PII MAY only be attached when explicit and revocable
   consent has been recorded; behavior MUST be configurable via environment flags and documented.
 - NFR-003: Compatibility with Next.js App Router and our Node-only constraints for Prisma/auth.
+- NFR-006: Log retention policy: Production 30 days, Staging 14 days, Development 7 days. These
+  defaults SHOULD be configurable via environment or provider settings and documented.
 - NFR-005: Web Vitals collection MUST be disabled by default and enabled explicitly in production
   via environment configuration; private routes MUST NOT collect Web Vitals.
 
@@ -107,6 +110,8 @@ by extending those parts rather than introducing parallel implementations.
 - AC-006: With `NEXT_PUBLIC_ENABLE_WEB_VITALS=true` in production, Web Vitals events are emitted
   only for public pages, contain no PII, and appear at 100% sample rate; with the flag unset they
   are not emitted.
+- AC-007: Retention settings are configurable and effective: setting provider/environment overrides
+  to 30/14/7 days yields expected deletion or expiry behavior.
 
 ## Dependencies & Constraints
 
