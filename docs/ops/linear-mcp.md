@@ -100,40 +100,91 @@ Datei:
 }
 ```
 
-### GoMCP (CLI)
+### GoMCP (Go-Bibliothek)
 
-Konfigurationsdatei: `~/.config/gomcp/config.yaml`
+Hinweis: GoMCP ist eine Go-Bibliothek und bringt keinen eigenständigen `gomcp`-CLI-Binary mit. Du
+nutzt sie in einem kleinen Go-Programm, das den MCP-Server (z. B. `@tacticlaunch/mcp-linear`)
+automatisch startet und über stdio verbindet.
 
-Einfache Variante (Env im File – nur lokal):
+Voraussetzung: Go (macOS) – Installation und Check
 
-```yaml
-servers:
-  linear:
-    command: npx
-    args:
-      - -y
-      - @tacticlaunch/mcp-linear
-    env:
-      LINEAR_API_TOKEN: YOUR_LINEAR_API_TOKEN
-```
+- Installiere Go mit Homebrew oder vom offiziellen Download: <https://go.dev/dl/>
+- Überprüfe: `go version` (erwartet: Ausgabe mit 1.xx)
 
-Sichere Variante (macOS Keychain, kein Klartext im File):
+Minimal-Beispiel (Client mit automatischem Server-Start):
 
-```yaml
-servers:
-  linear:
-    command: bash
-    args:
-      - -lc
-      - |
-        TOKEN=$(security find-generic-password -a 'abb@laparo.bizR' -s 'LINEAR_API_TOKEN' -w 2>/dev/null); STATUS=$?; if [ $STATUS -ne 0 ] || [ -z "$TOKEN" ]; then echo 'LINEAR_API_TOKEN not accessible in Keychain for account abb@laparo.bizR' >&2; exit 1; fi; LINEAR_API_TOKEN="$TOKEN" npx -y @tacticlaunch/mcp-linear
-```
+1. Neues Verzeichnis für ein Testprojekt anlegen, dann initialisieren:
+   - `go mod init example.com/gomcp-linear`
+   - `go get github.com/localrivet/gomcp@latest`
 
-Start:
+2. Datei `main.go` mit folgendem Inhalt erstellen:
 
-```bash
-gomcp linear
-```
+   ```go
+   package main
+
+   import (
+     "fmt"
+     "log"
+     "os"
+
+     "github.com/localrivet/gomcp/client"
+   )
+
+   func main() {
+     // Optional: LINEAR_API_TOKEN aus der Umgebung lesen (Keychain-Injektion siehe unten)
+     token := os.Getenv("LINEAR_API_TOKEN")
+     if token == "" {
+       log.Println("WARN: LINEAR_API_TOKEN ist leer – setze es per Env oder Keychain-Wrapper.")
+     }
+
+     // Server-Definition: Startet den Linear MCP Server via npx und injiziert das Token per Env
+     cfg := client.ServerConfig{
+       MCPServers: map[string]client.ServerDefinition{
+         "linear": {
+           Command: "npx",
+           Args:    []string{"-y", "@tacticlaunch/mcp-linear"},
+           Env: map[string]string{
+             "LINEAR_API_TOKEN": "${LINEAR_API_TOKEN}",
+           },
+         },
+       },
+     }
+
+     // Client mit automatischem Server-Management erstellen (wählt den Server "linear")
+     c, err := client.NewClient(
+       "gomcp-linear-example",
+       client.WithServers(cfg, "linear"),
+     )
+     if err != nil {
+       log.Fatalf("Client-Erstellung fehlgeschlagen: %v", err)
+     }
+     defer c.Close()
+
+     // Beispiel: Ein Tool auf dem Linear-Server aufrufen (je nach Server-Tools anpassen)
+     res, err := c.CallTool("list_issues", map[string]any{
+       "team": "Frontend",
+     })
+     if err != nil {
+       log.Fatalf("Tool-Aufruf fehlgeschlagen: %v", err)
+     }
+     fmt.Printf("Result: %v\n", res)
+   }
+   ```
+
+3. Ausführen:
+   - Variante A (Env-Var): `export LINEAR_API_TOKEN=...` und danach `go run .`
+   - Variante B (macOS Keychain): Token beim Start injizieren, z. B. über einen Wrapper:
+
+   ```bash
+   bash -lc 'TOKEN=$(security find-generic-password -a "abb@laparo.bizR" -s "LINEAR_API_TOKEN" -w 2>/dev/null); [ -n "$TOKEN" ] && LINEAR_API_TOKEN="$TOKEN" go run .'
+   ```
+
+Wichtig
+
+- Es existiert kein offizielles `gomcp`-Kommando (CLI). Du arbeitest mit einem kleinen Go-Programm,
+  das GoMCP nutzt.
+- GoMCP-Repo und Doku: <https://github.com/localrivet/gomcp>
+- Lokales Beispielprojekt: `scripts/gomcp-linear-example/` (siehe README im Ordner)
 
 ## Troubleshooting
 
@@ -175,10 +226,19 @@ bash -lc 'TOKEN=$(security find-generic-password -a "abb@laparo.bizR" -s "LINEAR
 - Cursor neu starten, dann eine Linear-Aktion im Prompt ausführen.
 - Prüfe bei Bedarf `~/.cursor/mcp.json` – Server "linear" ist konfiguriert.
 
-### GoMCP
+### GoMCP (lokales Beispiel)
 
 ```bash
-gomcp linear
+# ins Beispiel wechseln und Abhängigkeiten auflösen
+cd scripts/gomcp-linear-example
+go mod tidy
+
+# Variante A: Env-Var
+export LINEAR_API_TOKEN=YOUR_LINEAR_API_TOKEN
+go run .
+
+# Variante B: macOS Keychain
+bash -lc 'TOKEN=$(security find-generic-password -a "abb@laparo.bizR" -s "LINEAR_API_TOKEN" -w 2>/dev/null); [ -n "$TOKEN" ] && LINEAR_API_TOKEN="$TOKEN" go run .'
 ```
 
 ## Beispiel-Prompts
@@ -192,3 +252,37 @@ Diese Eingaben kannst du in deinem MCP-Client (Claude, Cursor, GoMCP) verwenden:
 - „Füge zu Issue FE-123 einen Kommentar hinzu: ‚Bitte bis Freitag fixen.‘“
 - „Liste alle Projekte auf und zeige deren Status.“
 - „Erstelle ein neues Projekt ‚Onboarding Optimierung‘ und verknüpfe Issue FE-123.“
+
+## Tools-Referenz
+
+Eine vollständige Liste der verfügbaren Tools findest du in der Paket-Repo unter TOOLS.md:
+
+- <https://github.com/tacticlaunch/mcp-linear/blob/main/TOOLS.md>
+
+## Fehlerbilder & Fixes
+
+- 401 Unauthorized / „token invalid“:
+  - Token in Linear neu generieren und in Keychain/Env aktualisieren.
+  - In Clients neu starten, damit die Env übernommen wird.
+- „Linear API token not found“:
+  - VS Code/Cursor: Prüfe die MCP-Config-Datei; Keychain-Account/Service korrekt?
+  - CLI: Nutze `--token` oder setze `LINEAR_API_TOKEN` (oder Keychain-Wrapper aus der Notiz).
+- Netzwerk/Proxy-Fehler:
+  - Exportiere `HTTPS_PROXY`/`HTTP_PROXY` falls nötig und teste erneut.
+- Node-Version inkonsistent:
+  - Sicherstellen, dass `node -v` ≥ 18 ist (Repo nutzt 22.x; NVM verwenden falls mehrere Versionen).
+
+## Mini-Workflow: From 0 to Done
+
+1. Issue anlegen: „Erstelle ein neues Issue ‚Checkout schlägt fehl‘ im Team Frontend, Priorität
+   hoch.“
+
+1. Zuweisen & Status setzen: „Weise das neue Issue Anna Müller zu und setze den Status auf ‚In
+   Arbeit‘.“
+
+1. Kontext ergänzen: „Füge einen Kommentar hinzu: ‚Fehler tritt bei Gast-Checkout auf; Payment
+   Schritt 2.‘“
+
+1. Verlinken/Projektbezug: „Verknüpfe das Issue mit dem Projekt ‚Onboarding Optimierung‘.“
+
+1. Abschluss: „Setze den Status auf ‚Erledigt‘ und poste eine Abschlussnotiz.“

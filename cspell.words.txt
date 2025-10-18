@@ -139,3 +139,7 @@ saoudrizwan
 tacticlaunch
 gomcp
 GoMCP
+localrivet
+Getenv
+Println
+Fatalf

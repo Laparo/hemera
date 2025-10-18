@@ -15,7 +15,7 @@ const config: Config = {
     '<rootDir>/tests/contracts/**/*.spec.ts',
   ],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-  testTimeout: 30000, // Increase timeout for database operations
+  testTimeout: 90000, // Increase timeout for database + container operations
   maxWorkers: 1, // Force sequential execution for database tests
   collectCoverageFrom: [
     'lib/**/*.{ts,tsx}',
