@@ -132,3 +132,5 @@ timeframe
 Rollbar
 rollbar
 ROLLBAR
+Validierungsregeln
+Unauthentifizierte
