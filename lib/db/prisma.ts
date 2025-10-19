@@ -1,12 +1,34 @@
 import { PrismaClient } from '@prisma/client';
 
-function withSchemaParam(url: string, schema?: string): string {
-  if (!schema) return url;
-  const hasQuery = url.includes('?');
-  const sep = hasQuery ? '&' : '?';
-  const ensureSSL = url.includes('sslmode=') ? '' : `${sep}sslmode=require`;
-  const sep2 = url.includes('?') || ensureSSL ? '&' : '?';
-  return `${url}${ensureSSL}${sep2}schema=${encodeURIComponent(schema)}`;
+function withSchemaParam(urlStr: string, schema?: string): string {
+  try {
+    const url = new URL(urlStr);
+
+    // Decide whether to enforce SSL: only for remote hosts (Neon/Vercel/etc.)
+    const host = url.hostname?.toLowerCase();
+    const isLocalHost =
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host === '::1' ||
+      host === 'postgres' || // GitHub Actions service hostname
+      host.endsWith('.local');
+
+    if (!url.searchParams.has('sslmode') && !isLocalHost) {
+      url.searchParams.set('sslmode', 'require');
+    }
+
+    if (schema) {
+      url.searchParams.set('schema', schema);
+    }
+
+    return url.toString();
+  } catch {
+    // Fallback to previous behavior if URL parsing fails
+    if (!schema) return urlStr;
+    const hasQuery = urlStr.includes('?');
+    const sep = hasQuery ? '&' : '?';
+    return `${urlStr}${sep}schema=${encodeURIComponent(schema)}`;
+  }
 }
 
 // Resolve schema in the following order:
