@@ -60,16 +60,20 @@ jobs:
           RAW_BASE="${{ steps.base.outputs.base }}"
           # Normalize trailing slash
           RAW_BASE=${RAW_BASE%/}
-          CHECK_URL="$RAW_BASE/api/health"
-          echo "Checking reachability: $CHECK_URL"
-          # Get final effective URL after redirects and the HTTP status
-          EFFECTIVE=$(curl -s -L -o /dev/null -w "%{url_effective}" "$CHECK_URL") || true
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$CHECK_URL") || STATUS=000
-          echo "Effective URL: ${EFFECTIVE:-$CHECK_URL} (status: $STATUS)"
+          CHECK_URL_API="$RAW_BASE/api/health"
+          CHECK_URL_ROOT="$RAW_BASE/"
+          echo "Checking reachability: $CHECK_URL_API and $CHECK_URL_ROOT"
+          # Get final effective URL after redirects and the HTTP status for both
+          EFFECTIVE_API=$(curl -s -L -o /dev/null -w "%{url_effective}" "$CHECK_URL_API") || true
+          STATUS_API=$(curl -s -o /dev/null -w "%{http_code}" "$CHECK_URL_API") || STATUS_API=000
+          EFFECTIVE_ROOT=$(curl -s -L -o /dev/null -w "%{url_effective}" "$CHECK_URL_ROOT") || true
+          STATUS_ROOT=$(curl -s -o /dev/null -w "%{http_code}" "$CHECK_URL_ROOT") || STATUS_ROOT=000
+          echo "API Effective: ${EFFECTIVE_API:-$CHECK_URL_API} (status: $STATUS_API)"
+          echo "ROOT Effective: ${EFFECTIVE_ROOT:-$CHECK_URL_ROOT} (status: $STATUS_ROOT)"
           USE_LOCAL=0
           FINAL_BASE="$RAW_BASE"
           # If the URL redirects to Vercel login/SSO or non-2xx, fall back to localhost
-          if echo "$EFFECTIVE" | grep -qi "vercel.com/login" || echo "$EFFECTIVE" | grep -qi "/sso-api" || [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 400 ]; then
+          if echo "$EFFECTIVE_API $EFFECTIVE_ROOT" | grep -qi "vercel.com/login" || echo "$EFFECTIVE_API $EFFECTIVE_ROOT" | grep -qi "/sso-api" || [ "$STATUS_API" -lt 200 ] || [ "$STATUS_API" -ge 400 ] || [ "$STATUS_ROOT" -lt 200 ] || [ "$STATUS_ROOT" -ge 400 ]; then
             echo "Preview appears protected by Vercel SSO or unreachable. Falling back to local server."
             USE_LOCAL=1
             FINAL_BASE="http://localhost:3000"
