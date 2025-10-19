@@ -228,6 +228,11 @@ jobs:
               body: '🚀 Preview deployment: ${{ steps.deploy.outputs.url }}'
             })
 
+      - name: Output Preview URL (non-PR)
+        if: github.event_name != 'pull_request' && steps.deploy.outputs.url != ''
+        run: |
+          echo "Preview URL=${{ steps.deploy.outputs.url }}" | tee -a "$GITHUB_STEP_SUMMARY"
+
   deploy-production:
     name: Deploy Production
     runs-on: ubuntu-latest
