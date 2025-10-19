@@ -54,6 +54,33 @@ jobs:
             echo "base=http://localhost:3000" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Check base reachability and SSO redirect
+        id: basecheck
+        run: |
+          RAW_BASE="${{ steps.base.outputs.base }}"
+          # Normalize trailing slash
+          RAW_BASE=${RAW_BASE%/}
+          CHECK_URL="$RAW_BASE/api/health"
+          echo "Checking reachability: $CHECK_URL"
+          # Get final effective URL after redirects and the HTTP status
+          EFFECTIVE=$(curl -s -L -o /dev/null -w "%{url_effective}" "$CHECK_URL") || true
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$CHECK_URL") || STATUS=000
+          echo "Effective URL: ${EFFECTIVE:-$CHECK_URL} (status: $STATUS)"
+          USE_LOCAL=0
+          FINAL_BASE="$RAW_BASE"
+          # If the URL redirects to Vercel login/SSO or non-2xx, fall back to localhost
+          if echo "$EFFECTIVE" | grep -qi "vercel.com/login" || echo "$EFFECTIVE" | grep -qi "/sso-api" || [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 400 ]; then
+            echo "Preview appears protected by Vercel SSO or unreachable. Falling back to local server."
+            USE_LOCAL=1
+            FINAL_BASE="http://localhost:3000"
+          fi
+          echo "use_local=$USE_LOCAL" >> "$GITHUB_OUTPUT"
+          echo "final_base=$FINAL_BASE" >> "$GITHUB_OUTPUT"
+
+      - name: Selected base URL
+        run: |
+          echo "Using base URL: ${{ steps.basecheck.outputs.final_base }} (use_local=${{ steps.basecheck.outputs.use_local }})"
+
       - name: Setup test database and environment
         run: |
           # Create a minimal .env.local for tests with mock Clerk keys
@@ -92,7 +119,7 @@ jobs:
           DATABASE_URL: file:./test.db
 
       - name: Start Next.js server in background
-        if: steps.base.outputs.base == 'http://localhost:3000'
+        if: steps.basecheck.outputs.use_local == '1'
         run: |
           npm run dev &
           # Wait for server to be ready
@@ -108,7 +135,7 @@ jobs:
         id: e2e
         continue-on-error: true
         env:
-          PLAYWRIGHT_BASE_URL: ${{ steps.base.outputs.base }}
+          PLAYWRIGHT_BASE_URL: ${{ steps.basecheck.outputs.final_base }}
         run: npm run e2e:dev
 
       - name: Debug - Check course data
@@ -135,7 +162,7 @@ jobs:
         continue-on-error: true
         uses: actions/github-script@v7
         env:
-          BASE_URL: ${{ steps.base.outputs.base }}
+          BASE_URL: ${{ steps.basecheck.outputs.final_base }}
           OUTCOME: ${{ steps.e2e.outcome }}
         with:
           script: |
