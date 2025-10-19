@@ -1,17 +1,5 @@
-import ErrorBoundary from '@/components/ErrorBoundary';
-import ThemeRegistry from '@/components/ThemeRegistry';
-import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
-import dynamic from 'next/dynamic';
-
-// Avoid rendering Clerk on the server during build/prerender to prevent failures when keys are missing/invalid
-const ClerkProviderNoSSR = dynamic(
-  () => import('@/components/auth/ClerkProviderWrapper'),
-  { ssr: false }
-);
-import StripeProvider from '@/components/payment/StripeProvider';
-import ConditionalPublicNavigation from '@/components/navigation/ConditionalPublicNavigation';
+import Providers from '@/components/Providers';
 import BuildInfo from '@/components/BuildInfo';
-import { RollbarProviderWrapper } from '@/lib/monitoring/rollbar-react-official';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import * as React from 'react';
@@ -40,28 +28,7 @@ export default function RootLayout({
   return (
     <html lang='de'>
       <body className={inter.className}>
-        <ClerkProviderNoSSR>
-          {isE2E ? (
-            // In E2E mode: skip Rollbar/Stripe to reduce overhead and flakiness
-            <ThemeRegistry>
-              <ErrorBoundary>
-                <ConditionalPublicNavigation />
-                {children}
-              </ErrorBoundary>
-            </ThemeRegistry>
-          ) : (
-            <RollbarProviderWrapper>
-              <ThemeRegistry>
-                <StripeProvider>
-                  <ErrorBoundary>
-                    <ConditionalPublicNavigation />
-                    {children}
-                  </ErrorBoundary>
-                </StripeProvider>
-              </ThemeRegistry>
-            </RollbarProviderWrapper>
-          )}
-        </ClerkProviderNoSSR>
+        <Providers isE2E={isE2E}>{children}</Providers>
         <BuildInfo />
       </body>
     </html>
