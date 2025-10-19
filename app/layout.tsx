@@ -1,6 +1,13 @@
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
+import dynamic from 'next/dynamic';
+
+// Avoid rendering Clerk on the server during build/prerender to prevent failures when keys are missing/invalid
+const ClerkProviderNoSSR = dynamic(
+  () => import('@/components/auth/ClerkProviderWrapper'),
+  { ssr: false }
+);
 import StripeProvider from '@/components/payment/StripeProvider';
 import ConditionalPublicNavigation from '@/components/navigation/ConditionalPublicNavigation';
 import BuildInfo from '@/components/BuildInfo';
@@ -31,9 +38,9 @@ export default function RootLayout({
     process.env.NEXT_PUBLIC_DISABLE_CLERK === '1';
 
   return (
-    <ClerkProviderWrapper>
-      <html lang='de'>
-        <body className={inter.className}>
+    <html lang='de'>
+      <body className={inter.className}>
+        <ClerkProviderNoSSR>
           {isE2E ? (
             // In E2E mode: skip Rollbar/Stripe to reduce overhead and flakiness
             <ThemeRegistry>
@@ -54,9 +61,9 @@ export default function RootLayout({
               </ThemeRegistry>
             </RollbarProviderWrapper>
           )}
-          <BuildInfo />
-        </body>
-      </html>
-    </ClerkProviderWrapper>
+        </ClerkProviderNoSSR>
+        <BuildInfo />
+      </body>
+    </html>
   );
 }
