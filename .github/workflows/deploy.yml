@@ -38,6 +38,8 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: hemera_test
+        ports:
+          - 5432/tcp
         options: >-
           --health-cmd "pg_isready -U postgres -d hemera_test"
           --health-interval 5s
@@ -48,8 +50,13 @@ jobs:
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+<<<<<<< HEAD
       # Use localhost to reach the Postgres service from the runner
       DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/hemera_test'
+=======
+      # Use the mapped localhost port for the Postgres service
+      DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}/hemera_test
+>>>>>>> d78f0ef (ci: map Postgres service port to localhost and use job.services port; robust pg_isready/psql on localhost)
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
       NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
@@ -78,19 +85,30 @@ jobs:
         env:
           PGPASSWORD: postgres
 <<<<<<< HEAD
+<<<<<<< HEAD
         run: >-
           until pg_isready -h localhost -p 5432 -U postgres -d hemera_test; do
             echo "Waiting for Postgres..."; sleep 5;
 =======
+=======
+          PGUSER: postgres
+          PGDATABASE: hemera_test
+          PGHOST: localhost
+          PGPORT: ${{ job.services.postgres.ports[5432] }}
+>>>>>>> d78f0ef (ci: map Postgres service port to localhost and use job.services port; robust pg_isready/psql on localhost)
         shell: bash
         run: |
-          echo "Waiting for Postgres service health and connectivity..."
+          echo "Waiting for Postgres service health and connectivity on $PGHOST:$PGPORT..."
           attempts=0
           max_attempts=60 # 60 * 5s = 5 minutes
-          until pg_isready -h postgres -p 5432 -U postgres -d hemera_test; do
+          until pg_isready -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE"; do
             attempts=$((attempts+1))
             if [[ $attempts -ge $max_attempts ]]; then
               echo "Postgres not ready after $((max_attempts*5)) seconds (pg_isready)." >&2
+              echo "\n==== docker ps ===="
+              docker ps -a || true
+              echo "\n==== postgres logs (best-effort) ===="
+              docker logs $(docker ps -aq --filter name=postgres --filter ancestor=postgres:16 | head -n1) 2>/dev/null || true
               exit 1
             fi
             echo "Waiting for Postgres (pg_isready) attempt ${attempts}/${max_attempts} ...";
@@ -99,8 +117,8 @@ jobs:
           echo "pg_isready reports ready. Verifying SQL connection..."
           # Verify authentication and database availability
           for i in {1..10}; do
-            if psql -h postgres -U postgres -d hemera_test -c "SELECT 1;" >/dev/null 2>&1; then
-              echo "Successfully connected to hemera_test via psql."; break
+            if psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -c "SELECT 1;" >/dev/null 2>&1; then
+              echo "Successfully connected to $PGDATABASE via psql."; break
             fi
             echo "psql connection attempt $i/10 failed, retrying in 3s..."; sleep 3;
             if [[ $i -eq 10 ]]; then
