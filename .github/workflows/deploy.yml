@@ -133,15 +133,20 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           BUILD_TIME: ${{ env.BUILD_TIME }}
+          # Temporary safeguard: disable Clerk during preview build to avoid prerender failures
+          NEXT_PUBLIC_DISABLE_CLERK: 1
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy
-        run: echo "url=$(vercel deploy --prebuilt --token=\"${{ secrets.VERCEL_TOKEN }}\" --yes)" >> "$GITHUB_OUTPUT"
+        run: |
+          url=$(vercel deploy --prebuilt --token="${{ secrets.VERCEL_TOKEN }}" --yes)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Comment PR with Preview URL
+        if: github.event_name == 'pull_request' && steps.deploy.outputs.url != ''
         uses: actions/github-script@v7
         with:
           script: |
@@ -184,7 +189,9 @@ jobs:
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy
-        run: echo "url=$(vercel deploy --prebuilt --prod --token=\"${{ secrets.VERCEL_TOKEN }}\" --yes)" >> "$GITHUB_OUTPUT"
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}" --yes)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
