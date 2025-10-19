@@ -63,6 +63,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
       - name: Wait for Postgres to be ready
+        env:
+          PGPASSWORD: postgres
         run: >-
           until pg_isready -h postgres -p 5432 -U postgres -d hemera_test; do
             echo "Waiting for Postgres..."; sleep 5;
