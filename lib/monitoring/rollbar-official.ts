@@ -17,11 +17,21 @@ const isExplicitlyDisabled =
   process.env.NEXT_PUBLIC_ROLLBAR_ENABLED === '0' ||
   process.env.ROLLBAR_ENABLED === '0';
 
+function readNumberEnv(name: string, fallback: number): number {
+  const v = process.env[name];
+  if (!v) return fallback;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 const baseConfig = {
   captureUncaught: true,
   captureUnhandledRejections: true,
   environment: process.env.NODE_ENV,
   enabled: !isE2EMode && !isExplicitlyDisabled,
+  // Sampling defaults: 100% errors, ~5% non-errors (overridable)
+  // Rollbar's server SDK supports 'reportLevel' and custom filtering via payload handlers,
+  // we emulate simple sampling by filtering in our helpers (see below).
 };
 
 // Client-side configuration (for React components)
@@ -122,6 +132,16 @@ export function reportError(
   if (!baseConfig.enabled) return;
 
   try {
+    // Simple sampling: allow configuring rate per severity (0..1)
+    const rateAll = readNumberEnv('ROLLBAR_SAMPLE_RATE_ALL', 1);
+    const rateInfo = readNumberEnv('ROLLBAR_SAMPLE_RATE_INFO', 0.05);
+    const rateWarn = readNumberEnv('ROLLBAR_SAMPLE_RATE_WARN', 0.05);
+    const rateError = readNumberEnv('ROLLBAR_SAMPLE_RATE_ERROR', 1);
+    const rateCritical = readNumberEnv('ROLLBAR_SAMPLE_RATE_CRITICAL', 1);
+
+    const pick = (rate: number) =>
+      Math.random() < Math.max(0, Math.min(1, rate)) && Math.random() < rateAll;
+
     const includePII = isTelemetryConsentGranted();
     const rollbarContext = {
       person:
@@ -143,22 +163,25 @@ export function reportError(
 
     switch (severity) {
       case ErrorSeverity.CRITICAL:
-        serverInstance.critical(error as any, rollbarContext);
+        if (pick(rateCritical))
+          serverInstance.critical(error as any, rollbarContext);
         break;
       case ErrorSeverity.ERROR:
-        serverInstance.error(error as any, rollbarContext);
+        if (pick(rateError)) serverInstance.error(error as any, rollbarContext);
         break;
       case ErrorSeverity.WARNING:
-        serverInstance.warning(error as any, rollbarContext);
+        if (pick(rateWarn))
+          serverInstance.warning(error as any, rollbarContext);
         break;
       case ErrorSeverity.INFO:
-        serverInstance.info(error as any, rollbarContext);
+        if (pick(rateInfo)) serverInstance.info(error as any, rollbarContext);
         break;
       case ErrorSeverity.DEBUG:
-        serverInstance.debug?.(error as any, rollbarContext);
+        if (pick(rateInfo))
+          serverInstance.debug?.(error as any, rollbarContext);
         break;
       default:
-        serverInstance.error(error as any, rollbarContext);
+        if (pick(rateError)) serverInstance.error(error as any, rollbarContext);
     }
   } catch {
     // Suppress any reporting failures

@@ -14,6 +14,7 @@ const config: Config = {
   testMatch: [
     '<rootDir>/tests/unit/*.spec.ts',
     '<rootDir>/tests/contracts/**/*.spec.ts',
+    '<rootDir>/tests/integration/**/*.spec.ts',
   ],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 90000, // Increase timeout for database + container operations
