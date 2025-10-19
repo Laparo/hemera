@@ -8,7 +8,7 @@ import {
   ErrorSeverity,
   reportError,
   type ErrorSeverityType,
-} from '../monitoring/rollbar';
+} from '../monitoring/rollbar-official';
 
 export abstract class BaseError extends Error {
   abstract readonly statusCode: number;

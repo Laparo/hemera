@@ -12,7 +12,7 @@ import {
   createErrorContext,
   recordUserAction,
   reportError,
-} from '../monitoring/rollbar';
+} from '../monitoring/rollbar-official';
 
 export interface ApiRouteContext {
   request: NextRequest;

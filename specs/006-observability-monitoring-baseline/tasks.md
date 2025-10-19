@@ -37,12 +37,12 @@ exist yet → create tests/contracts directly in repo under `tests/`.
 
 ## Phase 3.2 – Tests first (TDD) — MUST FAIL before Phase 3.3
 
-- [ ] T003 [P] Contract: Request-ID propagation and response headers • Create
+- [x] T003 [P] Contract: Request-ID propagation and response headers • Create
       `tests/contracts/request-id.contract.spec.ts` • Assert: server always returns canonical
       `X-Request-ID`; inbound `x-request-id` is preserved as `externalRequestId` only; header
       present on responses (e.g., `/api/health`).
 
-- [ ] T004 [P] Contract: Privacy/Consent default OFF (no PII) • Create
+- [x] T004 [P] Contract: Privacy/Consent default OFF (no PII) • Create
       `tests/contracts/privacy-consent.contract.spec.ts` • Assert: without explicit consent, no
       user-identifying fields (email, name, userId) appear in structured logs or Rollbar payload
       contexts.
@@ -146,3 +146,13 @@ npm run test -- tests/integration/rollbar-enabled-disabled.spec.ts
 - [P] tasks must not touch the same file concurrently.
 - Keep changes minimal and commit after each task.
 - Use environment gating to avoid network telemetry in development by default.
+
+## Additional follow-ups
+
+- [ ] T018 [P] Contract: ErrorBoundary + unhandled rejections • Create tests to assert React error
+      boundary and unhandled promise rejections are captured without PII when consent is off.
+- [ ] T019 Align env flags (client/provider) tests • Add unit tests to verify consistent behavior of
+      `ROLLBAR_ENABLED`/`NEXT_PUBLIC_DISABLE_ROLLBAR` and consent flags across server/client
+      providers.
+- [ ] T020 Public-route heuristic for vitals/analytics • Add tests and implementation notes to
+      ensure vitals/analytics only on public pages.
