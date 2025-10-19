@@ -48,9 +48,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS "bookings_userId_courseId_key" ON "bookings" (
 
 -- Foreign keys for bookings
 ALTER TABLE "bookings"
-  ADD CONSTRAINT IF NOT EXISTS "bookings_userId_fkey"
+  ADD CONSTRAINT "bookings_userId_fkey"
   FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE "bookings"
-  ADD CONSTRAINT IF NOT EXISTS "bookings_courseId_fkey"
+  ADD CONSTRAINT "bookings_courseId_fkey"
   FOREIGN KEY ("courseId") REFERENCES "courses"("id") ON DELETE CASCADE ON UPDATE CASCADE;
