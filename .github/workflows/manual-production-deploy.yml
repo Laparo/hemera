@@ -33,6 +33,12 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      - name: Verify Vercel Auth
+        run: |
+          set -euo pipefail
+          vercel --version
+          vercel whoami --token "$SANITIZED_VERCEL_TOKEN" || true
+
       - name: Sanitize Vercel Token
         run: |
           set -euo pipefail
@@ -43,10 +49,30 @@ jobs:
         run: echo "BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
 
       - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=production --token="$SANITIZED_VERCEL_TOKEN"
+        run: |
+          set -euo pipefail
+          attempts=0
+          rc=1
+          : > /tmp/vercel_pull.log
+          while [ $attempts -lt 3 ]; do
+            attempts=$((attempts+1))
+            echo "Attempt $attempts: vercel pull --yes --environment=production --debug"
+            set +e
+            vercel pull --yes --environment=production --debug --token="$SANITIZED_VERCEL_TOKEN" 2>&1 | tee /tmp/vercel_pull.log
+            rc=$?
+            set -e
+            [ $rc -eq 0 ] && break
+            echo "vercel pull attempt $attempts failed (exit $rc). Retrying in 10s..."
+            sleep 10
+          done
+          if [ "$rc" -ne 0 ]; then
+            echo "::warning::vercel pull failed repeatedly. Showing last 120 lines:"
+            tail -n 120 /tmp/vercel_pull.log || true
+            exit 1
+          fi
 
       - name: Build Project Artifacts
-        run: vercel build --prod --token="$SANITIZED_VERCEL_TOKEN"
+        run: vercel build --prod --debug --token="$SANITIZED_VERCEL_TOKEN"
         env:
           BUILD_TIME: ${{ env.BUILD_TIME }}
 
