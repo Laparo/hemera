@@ -17,5 +17,7 @@ test('build info badge is present on home', async ({ page }) => {
 
   // Optionally check title attribute contains sensible info
   const title = await badge.getAttribute('title');
-  expect(title || '').toContain('Build');
+  // Title kann je nach verfügbarer Build-Umgebung entweder "Build: ..." oder nur
+  // "Commit: ..." enthalten. Akzeptiere beides, um Stabilität in CI zu gewährleisten.
+  expect(title || '').toMatch(/Build|Commit/);
 });

@@ -55,6 +55,25 @@ export async function getPublishedCourses(): Promise<Course[]> {
     // SQLite may store boolean as 1/0, so we check for truthy values
     const courses = allCourses.filter(course => !!course.isPublished);
 
+    if (process.env.NODE_ENV !== 'production') {
+      try {
+        const samplePreview = courses.slice(0, 3).map(course => ({
+          id: course.id,
+          slug: course.slug,
+          published: course.isPublished,
+        }));
+        console.info('[getPublishedCourses]', {
+          count: courses.length,
+          sample: samplePreview,
+        });
+      } catch (logError) {
+        console.warn(
+          '[getPublishedCourses] failed to log debug info',
+          logError
+        );
+      }
+    }
+
     return courses;
   } catch (error) {
     logError(error, { operation: 'getPublishedCourses' });

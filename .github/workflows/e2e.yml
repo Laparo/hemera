@@ -54,6 +54,37 @@ jobs:
             echo "base=http://localhost:3000" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Check base reachability and SSO redirect
+        id: basecheck
+        run: |
+          RAW_BASE="${{ steps.base.outputs.base }}"
+          # Normalize trailing slash
+          RAW_BASE=${RAW_BASE%/}
+          CHECK_URL_API="$RAW_BASE/api/health"
+          CHECK_URL_ROOT="$RAW_BASE/"
+          echo "Checking reachability: $CHECK_URL_API and $CHECK_URL_ROOT"
+          # Get final effective URL after redirects and the HTTP status for both
+          EFFECTIVE_API=$(curl -s -L -o /dev/null -w "%{url_effective}" "$CHECK_URL_API") || true
+          STATUS_API=$(curl -s -o /dev/null -w "%{http_code}" "$CHECK_URL_API") || STATUS_API=000
+          EFFECTIVE_ROOT=$(curl -s -L -o /dev/null -w "%{url_effective}" "$CHECK_URL_ROOT") || true
+          STATUS_ROOT=$(curl -s -o /dev/null -w "%{http_code}" "$CHECK_URL_ROOT") || STATUS_ROOT=000
+          echo "API Effective: ${EFFECTIVE_API:-$CHECK_URL_API} (status: $STATUS_API)"
+          echo "ROOT Effective: ${EFFECTIVE_ROOT:-$CHECK_URL_ROOT} (status: $STATUS_ROOT)"
+          USE_LOCAL=0
+          FINAL_BASE="$RAW_BASE"
+          # If the URL redirects to Vercel login/SSO or non-2xx, fall back to localhost
+          if echo "$EFFECTIVE_API $EFFECTIVE_ROOT" | grep -qi "vercel.com/login" || echo "$EFFECTIVE_API $EFFECTIVE_ROOT" | grep -qi "/sso-api" || [ "$STATUS_API" -lt 200 ] || [ "$STATUS_API" -ge 400 ] || [ "$STATUS_ROOT" -lt 200 ] || [ "$STATUS_ROOT" -ge 400 ]; then
+            echo "Preview appears protected by Vercel SSO or unreachable. Falling back to local server."
+            USE_LOCAL=1
+            FINAL_BASE="http://localhost:3000"
+          fi
+          echo "use_local=$USE_LOCAL" >> "$GITHUB_OUTPUT"
+          echo "final_base=$FINAL_BASE" >> "$GITHUB_OUTPUT"
+
+      - name: Selected base URL
+        run: |
+          echo "Using base URL: ${{ steps.basecheck.outputs.final_base }} (use_local=${{ steps.basecheck.outputs.use_local }})"
+
       - name: Setup test database and environment
         run: |
           # Create a minimal .env.local for tests with mock Clerk keys
@@ -87,12 +118,49 @@ jobs:
           npx prisma db seed
           # Verify seed data
           echo "Verifying seed data..."
-          npx prisma db execute --stdin <<< "SELECT COUNT(*) as count FROM Course WHERE isPublished = 1" || echo "Query failed"
+          npx prisma db execute --schema prisma/schema.prisma --stdin <<'SQL'
+          SELECT
+            COUNT(*) AS published_count
+          FROM courses
+          WHERE isPublished = 1;
+          SQL
+          # Export lightweight debug context for later troubleshooting
+          node <<'NODE'
+          const fs = require('fs');
+          const path = '/tmp/course-debug.json';
+          const { PrismaClient } = require('@prisma/client');
+          const prisma = new PrismaClient();
+          (async () => {
+            const [publishedCount, sampleCourses] = await Promise.all([
+              prisma.course.count({ where: { isPublished: true } }),
+              prisma.course.findMany({
+              where: { isPublished: true },
+              select: { id: true, title: true, slug: true },
+              orderBy: { createdAt: 'desc' },
+                take: 5,
+              }),
+            ]);
+            const payload = {
+              generatedAt: new Date().toISOString(),
+              publishedCount,
+              sample: sampleCourses,
+            };
+            fs.writeFileSync(path, JSON.stringify(payload, null, 2));
+            console.log('Saved course debug snapshot to', path);
+            console.log('Seed verification - published courses:', publishedCount);
+          })()
+            .catch(error => {
+              console.error('Failed to write course debug snapshot:', error);
+            })
+            .finally(async () => {
+              await prisma.$disconnect();
+            });
+          NODE
         env:
           DATABASE_URL: file:./test.db
 
       - name: Start Next.js server in background
-        if: steps.base.outputs.base == 'http://localhost:3000'
+        if: steps.basecheck.outputs.use_local == '1'
         run: |
           npm run dev &
           # Wait for server to be ready
@@ -108,7 +176,7 @@ jobs:
         id: e2e
         continue-on-error: true
         env:
-          PLAYWRIGHT_BASE_URL: ${{ steps.base.outputs.base }}
+          PLAYWRIGHT_BASE_URL: ${{ steps.basecheck.outputs.final_base }}
         run: npm run e2e:dev
 
       - name: Debug - Check course data
@@ -135,7 +203,7 @@ jobs:
         continue-on-error: true
         uses: actions/github-script@v7
         env:
-          BASE_URL: ${{ steps.base.outputs.base }}
+          BASE_URL: ${{ steps.basecheck.outputs.final_base }}
           OUTCOME: ${{ steps.e2e.outcome }}
         with:
           script: |
