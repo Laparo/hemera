@@ -36,7 +36,7 @@ jobs:
       - name: Sanitize Vercel Token
         run: |
           set -euo pipefail
-          token=$(printf %s "$VERCEL_TOKEN" | tr -d '"')
+          token=$(printf %s "$VERCEL_TOKEN" | tr -d '"' | tr -d '\n' | tr -d '\r' | tr -d '\t' | sed -e 's/^ *//' -e 's/ *$//')
           echo "SANITIZED_VERCEL_TOKEN=$token" >> "$GITHUB_ENV"
 
       - name: Set BUILD_TIME (UTC)
@@ -78,7 +78,7 @@ jobs:
             echo "::error::Vercel deploy failed (exit $rc)."
             exit 1
           fi
-          echo "Resolved deployment URL: ${url}"
+                echo "Vercel deploy attempt $attempts failed with exit $rc. Retrying in 10s..."
           echo "url=${url}" >> "$GITHUB_OUTPUT"
 
       - name: Print Deployment URL
