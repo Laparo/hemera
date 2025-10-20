@@ -1,15 +1,55 @@
 /**
  * Request ID utilities for tracking requests across the application
  */
-
-import { nanoid } from 'nanoid';
 import { NextRequest } from 'next/server';
 
 /**
- * Generate a unique request ID
+ * Generate a unique request ID (RFC4122 v4 UUID preferred)
  */
 export function generateRequestId(): string {
-  return nanoid(10);
+  try {
+    if (
+      typeof globalThis !== 'undefined' &&
+      (globalThis as any).crypto &&
+      typeof (globalThis as any).crypto.randomUUID === 'function'
+    ) {
+      return (globalThis as any).crypto.randomUUID();
+    }
+  } catch (_) {
+    // fall through to fallback
+  }
+  // Fallback: RFC4122 v4-ish using crypto.getRandomValues if available, else Math.random (last resort)
+  const getBytes = (): Uint8Array => {
+    if (
+      typeof globalThis !== 'undefined' &&
+      (globalThis as any).crypto &&
+      typeof (globalThis as any).crypto.getRandomValues === 'function'
+    ) {
+      const buf = new Uint8Array(16);
+      (globalThis as any).crypto.getRandomValues(buf);
+      return buf;
+    }
+    const buf = new Uint8Array(16);
+    for (let i = 0; i < 16; i++) buf[i] = (Math.random() * 256) & 0xff; // non-crypto fallback
+    return buf;
+  };
+  const b = getBytes();
+  // Per RFC4122 section 4.4
+  b[6] = (b[6] & 0x0f) | 0x40; // version 4
+  b[8] = (b[8] & 0x3f) | 0x80; // variant 10xxxxxx
+  const toHex = (n: number) => n.toString(16).padStart(2, '0');
+  const hex = Array.from(b).map(toHex).join('');
+  return (
+    hex.slice(0, 8) +
+    '-' +
+    hex.slice(8, 12) +
+    '-' +
+    hex.slice(12, 16) +
+    '-' +
+    hex.slice(16, 20) +
+    '-' +
+    hex.slice(20)
+  );
 }
 
 /**

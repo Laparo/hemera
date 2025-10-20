@@ -4,7 +4,7 @@
  */
 
 import { headers } from 'next/headers';
-import { v4 as uuidv4 } from 'uuid';
+import { generateRequestId } from '@/lib/utils/request-id';
 
 export interface RequestContext {
   id: string;
@@ -20,7 +20,7 @@ export interface RequestContext {
  */
 export async function getRequestId(): Promise<string> {
   // Always generate a new canonical ID; inbound IDs are treated as external correlation only.
-  return uuidv4();
+  return generateRequestId();
 }
 
 /**
