@@ -55,10 +55,20 @@ jobs:
         run: |
           set -euo pipefail
           # Deploy and capture output; avoid clipboard noise for cleaner parsing
-          set +e
-          vercel deploy --prebuilt --prod --yes --no-clipboard --token="$SANITIZED_VERCEL_TOKEN" 2>&1 | tee /tmp/vercel_deploy.log
-          rc=$?
-          set -e
+          attempts=0
+          rc=1
+          : > /tmp/vercel_deploy.log
+          while [ $attempts -lt 2 ]; do
+            attempts=$((attempts+1))
+            echo "Attempt $attempts: vercel deploy --prebuilt --prod --yes --token=*** --debug"
+            set +e
+            vercel deploy --prebuilt --prod --yes --debug --token="$SANITIZED_VERCEL_TOKEN" 2>&1 | tee /tmp/vercel_deploy.log
+            rc=$?
+            set -e
+            [ $rc -eq 0 ] && break
+            echo "Vercel deploy attempt $attempts failed with exit $rc. Retrying in 5s..."
+            sleep 5
+          done
           url=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel_deploy.log | tail -n1 || true)
           if [ -z "${url:-}" ]; then
             echo "::warning::No Vercel URL matched in output. Showing last 120 lines of log:"
