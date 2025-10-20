@@ -36,7 +36,7 @@ jobs:
       - name: Sanitize Vercel Token
         run: |
           set -euo pipefail
-          token=$(printf %s "$VERCEL_TOKEN" | tr -d '"' | tr -d '\n' | tr -d '\r' | tr -d '\t' | sed -e 's/^ *//' -e 's/ *$//')
+          token=$(printf %s "$VERCEL_TOKEN" | tr -d '"' | tr -d "\n\r\t" | sed -e 's/^ *//' -e 's/ *$//')
           echo "SANITIZED_VERCEL_TOKEN=$token" >> "$GITHUB_ENV"
 
       - name: Set BUILD_TIME (UTC)
@@ -54,9 +54,10 @@ jobs:
         id: deploy
         run: |
           set -euo pipefail
-          # Deploy and capture output; avoid clipboard noise for cleaner parsing
+          # Try direct production deploy (prebuilt)
           attempts=0
           rc=1
+          url=""
           : > /tmp/vercel_deploy.log
           while [ $attempts -lt 2 ]; do
             attempts=$((attempts+1))
@@ -65,20 +66,60 @@ jobs:
             vercel deploy --prebuilt --prod --yes --debug --token="$SANITIZED_VERCEL_TOKEN" 2>&1 | tee /tmp/vercel_deploy.log
             rc=$?
             set -e
-            [ $rc -eq 0 ] && break
-            echo "Vercel deploy attempt $attempts failed with exit $rc. Retrying in 5s..."
-            sleep 5
+            url=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel_deploy.log | tail -n1 || true)
+            [ $rc -eq 0 ] && [ -n "${url:-}" ] && break
+            echo "Vercel deploy attempt $attempts failed (exit $rc, url='${url:-}'). Retrying in 10s..."
+            sleep 10
           done
-          url=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel_deploy.log | tail -n1 || true)
-          if [ -z "${url:-}" ]; then
-            echo "::warning::No Vercel URL matched in output. Showing last 120 lines of log:"
-            tail -n 120 /tmp/vercel_deploy.log || true
+
+          # Fallback: preview deploy, then promote to prod
+          if [ -z "${url:-}" ] || [ "$rc" -ne 0 ]; then
+            echo "::warning::Production deploy failed or no URL. Falling back to preview deploy and promotion."
+            attempts=0
+            rc=1
+            preview_url=""
+            : > /tmp/vercel_deploy_preview.log
+            while [ $attempts -lt 2 ]; do
+              attempts=$((attempts+1))
+              echo "Attempt $attempts: vercel deploy --prebuilt --yes --token=*** --debug (preview)"
+              set +e
+              vercel deploy --prebuilt --yes --debug --token="$SANITIZED_VERCEL_TOKEN" 2>&1 | tee /tmp/vercel_deploy_preview.log
+              rc=$?
+              set -e
+              preview_url=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel_deploy_preview.log | tail -n1 || true)
+              [ $rc -eq 0 ] && [ -n "${preview_url:-}" ] && break
+              echo "Preview deploy attempt $attempts failed (exit $rc, url='${preview_url:-}'). Retrying in 10s..."
+              sleep 10
+            done
+            if [ -n "${preview_url:-}" ]; then
+              echo "Promoting preview to prod: $preview_url"
+              : > /tmp/vercel_promote.log
+              set +e
+              vercel promote "$preview_url" --prod --yes --debug --token="$SANITIZED_VERCEL_TOKEN" 2>&1 | tee /tmp/vercel_promote.log
+              rc=$?
+              set -e
+              url=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel_promote.log | tail -n1 || true)
+              # Fallback: if promotion didn't print a URL, keep preview URL (not ideal, but provides something to test)
+              if [ -z "${url:-}" ] && [ -n "${preview_url:-}" ]; then
+                url="$preview_url"
+              fi
+            fi
           fi
+
+          # Diagnostics if URL is still missing
+          if [ -z "${url:-}" ]; then
+            echo "::warning::No Vercel URL matched in output. Showing last 200 lines of logs:"
+            tail -n 200 /tmp/vercel_deploy.log || true
+            tail -n 200 /tmp/vercel_deploy_preview.log || true
+            tail -n 200 /tmp/vercel_promote.log || true
+          fi
+
           if [ "$rc" -ne 0 ] || [ -z "${url:-}" ]; then
-            echo "::error::Vercel deploy failed (exit $rc)."
+            echo "::error::Vercel deployment failed (exit $rc) and no URL was captured."
             exit 1
           fi
-                echo "Vercel deploy attempt $attempts failed with exit $rc. Retrying in 10s..."
+
+          echo "Resolved deployment URL: ${url}"
           echo "url=${url}" >> "$GITHUB_OUTPUT"
 
       - name: Print Deployment URL
