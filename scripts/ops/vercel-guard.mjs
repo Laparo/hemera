@@ -97,9 +97,52 @@ function pickProductionBranch(project) {
 
     console.log('📦 Recent deployments by source:', bySource);
 
-    if (bySource.git && bySource.git > 0) {
-      violations.push(
-        `Found ${bySource.git} recent deployment(s) with source = "git". Policy requires CLI-only deployments via GitHub Actions.`
+    const gitGraceHours = Number(
+      process.env.VERCEL_GUARD_GIT_GRACE_HOURS || '24'
+    );
+    const gitGraceMs = gitGraceHours * 60 * 60 * 1000;
+    const now = Date.now();
+    const enforceAfterRaw = process.env.VERCEL_GUARD_GIT_ENFORCE_AFTER;
+    const enforceAfterTs = enforceAfterRaw ? Date.parse(enforceAfterRaw) : NaN;
+    if (enforceAfterRaw && !Number.isFinite(enforceAfterTs)) {
+      console.warn(
+        `⚠️  vercel-guard: could not parse VERCEL_GUARD_GIT_ENFORCE_AFTER="${enforceAfterRaw}". Falling back to grace window.`
+      );
+    }
+    const gitDeployments = list.filter(d => (d.source || 'unknown') === 'git');
+    const recentGitDeployments = gitDeployments.filter(d => {
+      const createdValue =
+        typeof d.createdAt === 'number'
+          ? d.createdAt
+          : typeof d.createdAt === 'string'
+            ? Date.parse(d.createdAt)
+            : typeof d.created === 'number'
+              ? d.created
+              : typeof d.created === 'string'
+                ? Date.parse(d.created)
+                : NaN;
+      if (Number.isFinite(enforceAfterTs)) {
+        if (!Number.isFinite(createdValue)) return true;
+        return createdValue >= enforceAfterTs;
+      }
+      if (!Number.isFinite(createdValue)) return true; // If we cannot determine age, treat as recent.
+      return now - createdValue <= gitGraceMs;
+    });
+
+    if (recentGitDeployments.length > 0) {
+      const violationMessage = Number.isFinite(enforceAfterTs)
+        ? `Found ${recentGitDeployments.length} git-sourced deployment(s) newer than enforcement timestamp ${new Date(
+            enforceAfterTs
+          ).toISOString()}. Policy requires CLI-only deployments via GitHub Actions.`
+        : `Found ${recentGitDeployments.length} git-sourced deployment(s) within the last ${gitGraceHours}h. Policy requires CLI-only deployments via GitHub Actions.`;
+      violations.push(violationMessage);
+    } else if (gitDeployments.length > 0) {
+      console.log(
+        Number.isFinite(enforceAfterTs)
+          ? `ℹ️ Detected ${gitDeployments.length} git-sourced deployment(s) prior to enforcement timestamp ${new Date(
+              enforceAfterTs
+            ).toISOString()}. Marking as informational only.`
+          : `ℹ️ Detected ${gitDeployments.length} historical git-sourced deployment(s) outside the ${gitGraceHours}h window. Marking as informational only.`
       );
     }
 
