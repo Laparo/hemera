@@ -55,12 +55,20 @@ jobs:
         run: |
           set -euo pipefail
           # Deploy and capture output; avoid clipboard noise for cleaner parsing
-          raw=$(vercel deploy --prebuilt --prod --yes --no-clipboard --token="$SANITIZED_VERCEL_TOKEN" 2>&1 | tee /tmp/vercel_deploy.log)
-          url=$(echo "$raw" | grep -Eo 'https://[^[:space:]]+\.vercel\.app' | tail -n1 || true)
+          set +e
+          vercel deploy --prebuilt --prod --yes --no-clipboard --token="$SANITIZED_VERCEL_TOKEN" 2>&1 | tee /tmp/vercel_deploy.log
+          rc=$?
+          set -e
+          url=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel_deploy.log | tail -n1 || true)
           if [ -z "${url:-}" ]; then
-            url=$(grep -Eo 'https://[^[:space:]]+\.vercel\.app' /tmp/vercel_deploy.log | tail -n1 || true)
+            echo "::warning::No Vercel URL matched in output. Showing last 120 lines of log:"
+            tail -n 120 /tmp/vercel_deploy.log || true
           fi
-          echo "Resolved deployment URL: ${url:-<none>}"
+          if [ "$rc" -ne 0 ] || [ -z "${url:-}" ]; then
+            echo "::error::Vercel deploy failed (exit $rc)."
+            exit 1
+          fi
+          echo "Resolved deployment URL: ${url}"
           echo "url=${url}" >> "$GITHUB_OUTPUT"
 
       - name: Print Deployment URL
