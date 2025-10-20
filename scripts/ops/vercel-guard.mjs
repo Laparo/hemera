@@ -16,7 +16,9 @@ const teamId = process.env.VERCEL_ORG_ID;
 const projectId = process.env.VERCEL_PROJECT_ID;
 
 if (!token || !teamId || !projectId) {
-  console.error('❌ vercel-guard: Missing required env (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID)');
+  console.error(
+    '❌ vercel-guard: Missing required env (VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID)'
+  );
   process.exit(2);
 }
 
@@ -50,13 +52,19 @@ async function getRecentDeployments(limit = 20) {
 function pickProductionBranch(project) {
   // Try common shapes seen in Vercel API; be defensive
   const link = project.link || project.gitRepository || {};
-  const branch = link.productionBranch || project.productionBranch || link.branch || link.defaultBranch;
+  const branch =
+    link.productionBranch ||
+    project.productionBranch ||
+    link.branch ||
+    link.defaultBranch;
   return branch || null;
 }
 
 (async () => {
   try {
-    console.log('🔎 vercel-guard: Checking Vercel project and recent deployments…');
+    console.log(
+      '🔎 vercel-guard: Checking Vercel project and recent deployments…'
+    );
 
     const project = await getProject();
     const deployments = await getRecentDeployments(25);
@@ -70,13 +78,17 @@ function pickProductionBranch(project) {
         `Production branch is "${prodBranch}" but policy requires "main" (project: ${project.name || projectId})`
       );
     } else if (!prodBranch) {
-      console.warn('⚠️  Could not determine production branch from project; skipping branch check.');
+      console.warn(
+        '⚠️  Could not determine production branch from project; skipping branch check.'
+      );
     } else {
       console.log(`✅ Production branch OK: ${prodBranch}`);
     }
 
     // 2) Disallow git-sourced deployments (we want CLI-only via GitHub Actions)
-    const list = Array.isArray(deployments.deployments) ? deployments.deployments : deployments;
+    const list = Array.isArray(deployments.deployments)
+      ? deployments.deployments
+      : deployments;
     const bySource = list.reduce((acc, d) => {
       const s = d.source || 'unknown';
       acc[s] = (acc[s] || 0) + 1;
