@@ -1,10 +1,5 @@
-import ErrorBoundary from '@/components/ErrorBoundary';
-import ThemeRegistry from '@/components/ThemeRegistry';
-import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
-import StripeProvider from '@/components/payment/StripeProvider';
-import ConditionalPublicNavigation from '@/components/navigation/ConditionalPublicNavigation';
+import Providers from '@/components/Providers';
 import BuildInfo from '@/components/BuildInfo';
-import { RollbarProviderWrapper } from '@/lib/monitoring/rollbar-react-official';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import * as React from 'react';
@@ -31,32 +26,11 @@ export default function RootLayout({
     process.env.NEXT_PUBLIC_DISABLE_CLERK === '1';
 
   return (
-    <ClerkProviderWrapper>
-      <html lang='de'>
-        <body className={inter.className}>
-          {isE2E ? (
-            // In E2E mode: skip Rollbar/Stripe to reduce overhead and flakiness
-            <ThemeRegistry>
-              <ErrorBoundary>
-                <ConditionalPublicNavigation />
-                {children}
-              </ErrorBoundary>
-            </ThemeRegistry>
-          ) : (
-            <RollbarProviderWrapper>
-              <ThemeRegistry>
-                <StripeProvider>
-                  <ErrorBoundary>
-                    <ConditionalPublicNavigation />
-                    {children}
-                  </ErrorBoundary>
-                </StripeProvider>
-              </ThemeRegistry>
-            </RollbarProviderWrapper>
-          )}
-          <BuildInfo />
-        </body>
-      </html>
-    </ClerkProviderWrapper>
+    <html lang='de'>
+      <body className={inter.className}>
+        <Providers isE2E={isE2E}>{children}</Providers>
+        <BuildInfo />
+      </body>
+    </html>
   );
 }

@@ -9,10 +9,12 @@ const config: Config = {
   },
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@/(.*)$': '<rootDir>/$1',
   },
   testMatch: [
     '<rootDir>/tests/unit/*.spec.ts',
     '<rootDir>/tests/contracts/**/*.spec.ts',
+    '<rootDir>/tests/integration/**/*.spec.ts',
   ],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 90000, // Increase timeout for database + container operations

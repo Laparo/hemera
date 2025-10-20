@@ -6,7 +6,10 @@
 import { mapPrismaError } from '@/lib/errors/prisma-mapping';
 import { getRequestContext } from '@/lib/utils/request-context';
 import { BaseError } from '../errors/base';
-import { createErrorContext, reportError } from '../monitoring/rollbar';
+import {
+  createErrorContext,
+  reportError,
+} from '../monitoring/rollbar-official';
 
 export interface ServerActionResult<T = any> {
   success: boolean;

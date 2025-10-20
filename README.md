@@ -91,3 +91,15 @@ Failure to monitor constitutes a process violation per the constitution
   - `CLERK_SECRET_KEY=YOUR_SECRET_KEY`
 
   Do not commit real keys. `.gitignore` already excludes `.env*` files.
+
+## Tests & Troubleshooting
+
+- Jest not exiting? Check for open handles:
+  - Run tests with `--detectOpenHandles` to identify hanging timers/handles.
+  - This repo had a global auto-cleanup interval in `lib/analytics/request-analytics.ts`. It is
+    disabled in test/E2E environments and can be explicitly stopped via
+    `stopRequestAnalyticsScheduler()`.
+  - If you introduce global timers, ensure they are gated during tests (`NODE_ENV === 'test'` or
+    `JEST_WORKER_ID`) or cleaned up in a teardown.
+  - Database/containers: If you use Testcontainers, ensure proper teardown (`afterAll`) and call
+    `prisma.$disconnect()` after DB tests.

@@ -4,7 +4,7 @@
  */
 
 import { deploymentMonitor } from '@/lib/monitoring/deployment-monitor';
-import { rollbar } from '@/lib/monitoring/rollbar';
+import { rollbar } from '@/lib/monitoring/rollbar-official';
 
 // Initialize Rollbar on app startup
 if (typeof window === 'undefined') {

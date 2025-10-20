@@ -332,12 +332,27 @@ export class RequestAnalytics {
 // Singleton-Instanz exportieren
 export const analytics = RequestAnalytics.getInstance();
 
-// Auto-Cleanup alle 6 Stunden
-if (typeof setInterval !== 'undefined') {
-  setInterval(
+// Auto-Cleanup alle 6 Stunden (nicht in Tests/E2E)
+const isTestEnv =
+  process.env.NODE_ENV === 'test' ||
+  typeof process.env.JEST_WORKER_ID !== 'undefined' ||
+  process.env.E2E_TEST === 'true';
+
+let cleanupTimer: ReturnType<typeof setInterval> | undefined;
+
+if (!isTestEnv && typeof setInterval !== 'undefined') {
+  cleanupTimer = setInterval(
     () => {
       analytics.cleanup(24);
     },
     6 * 60 * 60 * 1000
   );
+}
+
+// Optional: Explizites Stoppen ermöglichen (z.B. für manuelle Teardown-Schritte in Tests)
+export function stopRequestAnalyticsScheduler(): void {
+  if (cleanupTimer) {
+    clearInterval(cleanupTimer);
+    cleanupTimer = undefined;
+  }
 }

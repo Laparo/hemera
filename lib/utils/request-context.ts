@@ -4,10 +4,11 @@
  */
 
 import { headers } from 'next/headers';
-import { v4 as uuidv4 } from 'uuid';
+import { generateRequestId } from '@/lib/utils/request-id';
 
 export interface RequestContext {
   id: string;
+  externalId?: string;
   userAgent?: string;
   ip?: string;
   timestamp: string;
@@ -18,18 +19,8 @@ export interface RequestContext {
  * Generate or retrieve request ID for tracing
  */
 export async function getRequestId(): Promise<string> {
-  const headersList = await headers();
-
-  // Check if request ID already exists in headers
-  const existingId =
-    headersList.get('x-request-id') || headersList.get('x-trace-id');
-
-  if (existingId) {
-    return existingId;
-  }
-
-  // Generate new request ID
-  return uuidv4();
+  // Always generate a new canonical ID; inbound IDs are treated as external correlation only.
+  return generateRequestId();
 }
 
 /**
@@ -37,9 +28,15 @@ export async function getRequestId(): Promise<string> {
  */
 export async function getRequestContext(): Promise<RequestContext> {
   const headersList = await headers();
+  const providedId =
+    headersList.get('x-request-id') ||
+    headersList.get('x-trace-id') ||
+    undefined;
+  const canonicalId = await getRequestId();
 
   return {
-    id: await getRequestId(),
+    id: canonicalId,
+    externalId: providedId,
     userAgent: headersList.get('user-agent') || undefined,
     ip:
       headersList.get('x-forwarded-for') ||
