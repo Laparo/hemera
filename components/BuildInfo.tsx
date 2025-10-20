@@ -14,12 +14,16 @@ export default function BuildInfo() {
     .filter(Boolean)
     .join(' ');
 
-  const tooltip = [
-    info.buildTime ? `Build: ${info.buildTime}` : undefined,
-    info.commitSha ? `Commit: ${info.commitSha}` : undefined,
-  ]
-    .filter(Boolean)
-    .join(' | ');
+  const tooltipParts = [
+    // Always include a Build entry so tooling/tests see an explicit build marker
+    `Build: ${info.buildTime ?? 'unbekannt'}`,
+  ];
+
+  if (info.commitSha) {
+    tooltipParts.push(`Commit: ${info.commitSha}`);
+  }
+
+  const tooltip = tooltipParts.join(' | ');
 
   return (
     <div

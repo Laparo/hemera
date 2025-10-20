@@ -78,13 +78,12 @@ class ErrorBoundary extends React.Component<
             <ErrorOutline sx={{ fontSize: 64, color: 'error.main' }} />
 
             <Typography variant='h4' component='h1' gutterBottom>
-              Etwas ist schiefgelaufen
+              Ein Fehler ist aufgetreten
             </Typography>
 
             <Typography variant='body1' color='text.secondary' maxWidth='sm'>
-              Es tut uns leid, aber es ist ein unerwarteter Fehler aufgetreten.
-              Unsere Entwickler wurden benachrichtigt und arbeiten an einer
-              Lösung.
+              Beim Laden der Seite ist ein Problem aufgetreten. Bitte versuche
+              es erneut.
             </Typography>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
