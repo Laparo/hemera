@@ -1,12 +1,18 @@
--- CreateEnum
-CREATE TYPE "PaymentStatus" AS ENUM (
-    'PENDING',
-    'PAID',
-    'FAILED',
-    'CANCELLED',
-    'REFUNDED',
-    'CONFIRMED'
-);
+-- CreateEnum (idempotent)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'PaymentStatus') THEN
+        CREATE TYPE "PaymentStatus" AS ENUM (
+            'PENDING',
+            'PAID',
+            'FAILED',
+            'CANCELLED',
+            'REFUNDED',
+            'CONFIRMED'
+        );
+    END IF;
+END
+$$;
 
 -- CreateTable
 CREATE TABLE "courses" (
