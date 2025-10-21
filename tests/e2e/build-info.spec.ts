@@ -8,6 +8,11 @@ import { expect, test } from '@playwright/test';
  * so the badge should be visible.
  */
 
+test.skip(
+  !!process.env.PLAYWRIGHT_BASE_URL,
+  'Skip on external BASE_URL (badge may be suppressed by production settings).'
+);
+
 test('build info badge is present on home', async ({ page }) => {
   // In E2E/dev mode, die App zeigt das BuildInfo-Badge immer an.
   await page.goto('/');

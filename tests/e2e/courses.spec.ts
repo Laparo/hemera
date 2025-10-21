@@ -1,11 +1,16 @@
 import { expect, test } from '@playwright/test';
 
+const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
+
 test.describe('Courses Page', () => {
   test('zeigt veröffentlichte Kurse an', async ({ page }) => {
     // Increase timeout for this test as page may be slow to load in CI
     test.setTimeout(90000);
 
-    await page.goto('/courses', { waitUntil: 'networkidle' });
+    // In production (external base), avoid 'networkidle' to reduce flakiness due to long-lived connections
+    await page.goto('/courses', {
+      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
+    });
 
     // Warten bis Section vorhanden ist (with longer timeout)
     await expect(page.getByTestId('course-overview')).toBeVisible({

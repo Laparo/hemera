@@ -34,11 +34,13 @@ export default function BuildInfo() {
         position: 'fixed',
         right: 8,
         bottom: 6,
-        opacity: 0.6,
+        opacity: 0.75,
         fontSize: 11,
         padding: '2px 6px',
         borderRadius: 4,
         background: 'rgba(0,0,0,0.04)',
+        zIndex: 2147483647, // ensure visible above other fixed elements
+        pointerEvents: 'none', // never block user interactions
       }}
     >
       {label}

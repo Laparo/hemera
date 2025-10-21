@@ -4,6 +4,10 @@ import { test, expect } from '@playwright/test';
 // The rule is configured in next.config.mjs
 
 test.describe('legacy /protected redirect', () => {
+  test.skip(
+    !!process.env.PLAYWRIGHT_BASE_URL,
+    'Skip on external BASE_URL where platform caching/edge may bypass app middleware.'
+  );
   test('permanent redirect to /dashboard', async ({ page, baseURL }) => {
     const resp = await page.goto('/protected/foo', {
       waitUntil: 'domcontentloaded',
