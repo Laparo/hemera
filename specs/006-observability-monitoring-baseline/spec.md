@@ -18,8 +18,8 @@ by extending those parts rather than introducing parallel implementations.
 
 ### Session 2025-10-19
 
-- Q: How should telemetry sampling be standardized in production? → A: Error-first: 100% Errors,
-  5% Non-Errors
+- Q: How should telemetry sampling be standardized in production? → A: Error-first: 100% Errors, 5%
+  Non-Errors
 - Q: What request-id strategy should we use at the trust boundary? → A: Generate canonical; log
   incoming only
 - Q: What is the PII/consent model for telemetry? → A: PII off by default; consent required

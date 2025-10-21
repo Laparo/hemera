@@ -27,8 +27,8 @@ Web Vitals gating, and log retention.
 - Performance Goals: minimal overhead; SDK loaded conditionally; no PII by default
 - Constraints: p95 latency unaffected materially; no console.error in prod (Rollbar mandatory per
   Constitution); deployments via GitHub Actions only; live monitoring of Deploy workflow
-Additionally: Keep vendor-specific code encapsulated behind lightweight wrappers; runtime is Node
-for middleware and server SDK.
+  Additionally: Keep vendor-specific code encapsulated behind lightweight wrappers; runtime is Node
+  for middleware and server SDK.
 
 ## Constitution Check
 
@@ -83,7 +83,7 @@ Artifacts produced:
 - data-model.md: Entities — TelemetryConfig, RequestContext, LogEvent, WebVitalEvent, ConsentState
 - contracts/headers.md: Header contract for x-request-id (canonical vs. external)
 - contracts/log-event.schema.json: JSON schema for structured logs
-- contracts/tests/*\.md: Failing contract test narratives for request-id, privacy/consent, web
+- contracts/tests/\*\.md: Failing contract test narratives for request-id, privacy/consent, web
   vitals
 - quickstart.md: Enablement, env flags, verification steps mapped to AC-001..AC-007
 
