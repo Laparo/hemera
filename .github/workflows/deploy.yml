@@ -229,6 +229,12 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      - name: Sanitize Vercel Token
+        run: |
+          set -euo pipefail
+          token=$(printf %s "${{ secrets.VERCEL_TOKEN }}" | tr -d '"' | tr -d "\n\r\t" | sed -e 's/^ *//' -e 's/ *$//')
+          echo "SANITIZED_VERCEL_TOKEN=$token" >> "$GITHUB_ENV"
+
       - name: Set BUILD_TIME (UTC)
         run: echo "BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_ENV"
 
