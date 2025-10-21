@@ -24,11 +24,11 @@ Web Vitals gating, and log retention.
 - Testing: Jest (unit/integration), Playwright (E2E)
 - Target Platform: Vercel (inferred), GitHub Actions for CI/CD
 - Project Type: web application (Next.js App Router)
-- Performance Goals: minimal overhead; SDK loaded conditionally; no PII by default
-- Constraints: p95 latency unaffected materially; no console.error in prod (Rollbar mandatory per
-  Constitution); deployments via GitHub Actions only; live monitoring of Deploy workflow
-Additionally: Keep vendor-specific code encapsulated behind lightweight wrappers; runtime is Node
-for middleware and server SDK.
+- Performance Goals: minimal overhead; SDK loaded conditionally; no PII by default Constraints: p95
+  latency unaffected materially; no console.error in prod (Rollbar mandatory per Constitution);
+  deployments via GitHub Actions only; live monitoring of Deploy workflow Additionally: Keep
+  vendor-specific code encapsulated behind lightweight wrappers; runtime is Node for middleware and
+  server SDK.
 
 ## Constitution Check
 
@@ -83,7 +83,7 @@ Artifacts produced:
 - data-model.md: Entities — TelemetryConfig, RequestContext, LogEvent, WebVitalEvent, ConsentState
 - contracts/headers.md: Header contract for x-request-id (canonical vs. external)
 - contracts/log-event.schema.json: JSON schema for structured logs
-- contracts/tests/*\.md: Failing contract test narratives for request-id, privacy/consent, web
+- contracts/tests/\*\.md: Failing contract test narratives for request-id, privacy/consent, web
   vitals
 - quickstart.md: Enablement, env flags, verification steps mapped to AC-001..AC-007
 
@@ -151,9 +151,6 @@ Phase Status:
 Gate Status:
 
 - [x] Initial Constitution Check: PASS
-- [x] Post-Design Constitution Check: PASS
-- [x] All NEEDS CLARIFICATION resolved
-- [ ] Complexity deviations documented
 - [x] Post-Design Constitution Check: PASS
 - [x] All NEEDS CLARIFICATION resolved
 - [ ] Complexity deviations documented

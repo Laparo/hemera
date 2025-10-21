@@ -6,6 +6,9 @@ on:
       url:
         description: 'Base URL for E2E (e.g., https://hemera-<preview>.vercel.app)'
         required: false
+      ref:
+        description: 'Git ref or branch to checkout (e.g., 006-observability-monitoring-baseline)'
+        required: false
   pull_request:
     types: [opened, synchronize, reopened]
   deployment_status:
@@ -18,13 +21,25 @@ jobs:
       github.event_name != 'deployment_status' ||
       (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success')
     steps:
+      - name: Resolve ref to checkout
+        id: ref
+        run: |
+          if [ -n "${{ inputs.ref }}" ]; then
+            echo "ref=${{ inputs.ref }}" >> "$GITHUB_OUTPUT"
+          else
+            # Fall back to the triggering ref (PR branch, default branch, or push ref)
+            echo "ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.ref.outputs.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies

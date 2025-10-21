@@ -5,6 +5,13 @@ import { test, expect } from '@playwright/test';
 // the German error UI is shown from app/error.tsx or global-error.tsx.
 
 test.describe('Fehlergrenzen (Error Boundaries)', () => {
+  // In production runs against external BASE_URL the /e2e/crash page returns 404
+  // because E2E_TEST is not set on the remote server. Skip in that case.
+  test.skip(
+    !!process.env.PLAYWRIGHT_BASE_URL,
+    'Skip on external BASE_URL (no E2E_TEST)'
+  );
+
   test('zeigt deutsche Fehlermeldung und Buttons', async ({ page }) => {
     await page.goto('/e2e/crash');
 

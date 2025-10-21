@@ -40,6 +40,8 @@ pnpm-debug.log*
 
 # Testing artifacts
 playwright-report/
+playwright-artifact/
+playwright-report-*.zip
 test-results/
 /test-results/
 
