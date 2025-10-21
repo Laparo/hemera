@@ -1,12 +1,5 @@
--- CreateEnum
-CREATE TYPE "PaymentStatus" AS ENUM (
-    'PENDING',
-    'PAID',
-    'FAILED',
-    'CANCELLED',
-    'REFUNDED',
-    'CONFIRMED'
-);
+-- NOTE: PaymentStatus enum is created in an earlier migration (20251019092000_add_courses_and_bookings)
+-- Removing duplicate enum creation to avoid P3018 (type already exists)
 
 -- CreateTable
 CREATE TABLE "courses" (
