@@ -58,6 +58,20 @@ beforeAll(async () => {
       stdio: 'inherit',
       env: { ...process.env, DATABASE_URL: connectionUri },
     });
+    // Seed the database (ensure published courses exist for E2E)
+    try {
+      // Prefer using the project's db:seed script (which uses ts-node), fallback to prisma db seed
+      execSync('npm run db:seed', {
+        stdio: 'inherit',
+        env: { ...process.env, DATABASE_URL: connectionUri },
+      });
+    } catch (err) {
+      // If npm script fails, fallback to direct prisma seed
+      execSync('npx prisma db seed', {
+        stdio: 'inherit',
+        env: { ...process.env, DATABASE_URL: connectionUri },
+      });
+    }
   } catch (err) {
     // Provide a helpful error message and rethrow to fail fast
     console.error(
