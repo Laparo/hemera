@@ -69,6 +69,12 @@ jobs:
             echo "::error::Set VERCEL_PROJECT_ID or VERCEL_PROJECT_NAME as a repository secret"; exit 1
           fi
 
+      - name: Sanitize Vercel Token
+        run: |
+          set -euo pipefail
+          token=$(printf %s "${{ secrets.VERCEL_TOKEN }}" | tr -d '"' | tr -d "\n\r\t" | sed -e 's/^ *//' -e 's/ *$//')
+          echo "SANITIZED_VERCEL_TOKEN=$token" >> "$GITHUB_ENV"
+
       - name: Configure Clerk env (production & preview) via Vercel API
         shell: bash
         env:
@@ -89,13 +95,13 @@ jobs:
 
           api_get_envs() {
             local TARGET="$1"
-            curl -sS -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            curl -sS -H "Authorization: Bearer ${SANITIZED_VERCEL_TOKEN}" \
               "${API_BASE}/v9/projects/${VERCEL_PROJECT}/env?target=${TARGET}&decrypt=false&teamId=${VERCEL_ORG_ID}"
           }
 
           api_delete_env_by_id() {
             local ID="$1"
-            curl -sS -X DELETE -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            curl -sS -X DELETE -H "Authorization: Bearer ${SANITIZED_VERCEL_TOKEN}" \
               "${API_BASE}/v9/projects/${VERCEL_PROJECT}/env/${ID}?teamId=${VERCEL_ORG_ID}" > /dev/null
           }
 
@@ -108,7 +114,7 @@ jobs:
               --arg value "$VALUE" \
               --arg target "$TARGET" \
               '{key:$key, value:$value, type:"encrypted", target:[$target]}')
-            curl -sS -X POST -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            curl -sS -X POST -H "Authorization: Bearer ${SANITIZED_VERCEL_TOKEN}" \
               -H "Content-Type: application/json" \
               -d "${PAYLOAD}" \
               "${API_BASE}/v9/projects/${VERCEL_PROJECT}/env?teamId=${VERCEL_ORG_ID}" > /dev/null
@@ -145,7 +151,7 @@ jobs:
           VERCEL_PROJECT="${{ steps.project.outputs.project }}"
           for TARGET in production preview; do
             echo "Targets: $TARGET"
-            curl -sS -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            curl -sS -H "Authorization: Bearer ${SANITIZED_VERCEL_TOKEN}" \
               "${API_BASE}/v9/projects/${VERCEL_PROJECT}/env?target=${TARGET}&decrypt=false&teamId=${VERCEL_ORG_ID}" \
               | jq -r '(.envs // .) | map("- \(.key) [\(((.target // []) | join(",")))]") | .[]?'
           done
