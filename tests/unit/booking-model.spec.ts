@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { PaymentStatus, PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// Lazy initialization to ensure DATABASE_URL is set by setup.ts
+let prisma: PrismaClient;
 
 describe('Booking Model Validations', () => {
   let testCourse: any;
@@ -9,6 +10,10 @@ describe('Booking Model Validations', () => {
   let testUser2: any;
 
   beforeEach(async () => {
+    // Initialize PrismaClient on first use (after setup.ts has run)
+    if (!prisma) {
+      prisma = new PrismaClient();
+    }
     // Clean up any existing test data first
     await prisma.booking.deleteMany();
     await prisma.course.deleteMany();
