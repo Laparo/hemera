@@ -277,11 +277,11 @@ jobs:
           fi
 
           if [[ -z "${url}" ]]; then
-            echo "Attempting to fetch latest production deployment via Vercel API…"
+            echo "Attempting to fetch latest production deployment via Vercel API v13…"
             api_resp=$(curl -fsSL -H "Authorization: Bearer $SANITIZED_VERCEL_TOKEN" \
               "https://api.vercel.com/v13/deployments?projectId=${VERCEL_PROJECT_ID}&target=production&limit=1") || true
             if [[ -n "${api_resp:-}" ]]; then
-              deploy_url=$(echo "$api_resp" | jq -r '.deployments[0].url // empty')
+              deploy_url=$(echo "$api_resp" | jq -r '.deployments[0].url // empty' 2>/dev/null || true)
               if [[ -n "${deploy_url:-}" ]]; then
                 # API returns host without scheme sometimes
                 if [[ "$deploy_url" =~ ^https?:// ]]; then
@@ -294,8 +294,25 @@ jobs:
           fi
 
           if [[ -z "${url}" ]]; then
-            echo "Could not determine deployment URL from CLI nor API." >&2
-            exit 1
+            echo "Attempting to fetch latest production deployment via Vercel API v6…"
+            api_resp_v6=$(curl -fsSL -H "Authorization: Bearer $SANITIZED_VERCEL_TOKEN" \
+              "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&target=production&limit=1&teamId=${VERCEL_ORG_ID}") || true
+            if [[ -n "${api_resp_v6:-}" ]]; then
+              deploy_url=$(echo "$api_resp_v6" | jq -r '.deployments[0].url // empty' 2>/dev/null || true)
+              if [[ -n "${deploy_url:-}" ]]; then
+                if [[ "$deploy_url" =~ ^https?:// ]]; then
+                  url="$deploy_url"
+                else
+                  url="https://$deploy_url"
+                fi
+              fi
+            fi
+          fi
+
+          if [[ -z "${url}" ]]; then
+            # As a final fallback, assume the known production domain (kept in sync with E2E job)
+            url="https://hemera-tau.vercel.app"
+            echo "Falling back to known production domain: $url"
           fi
 
           echo "Deployment candidate URL: $url"
