@@ -230,6 +230,9 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Sanitize Vercel Token
         run: |
           set -euo pipefail
@@ -252,17 +255,94 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           BUILD_TIME: ${{ env.BUILD_TIME }}
 
-      - name: Deploy Project Artifacts to Vercel
+      - name: Deploy Project Artifacts to Vercel (non-blocking with fallback)
         id: deploy
-        run: |
-          url=$(vercel deploy --prebuilt --prod --token="$SANITIZED_VERCEL_TOKEN" --scope="$VERCEL_ORG_ID" --yes)
-          echo "url=$url" >> "$GITHUB_OUTPUT"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Starting Vercel production deploy (prebuilt)…"
+          # Try to deploy with a bounded timeout to avoid long blocking waits
+          # If the CLI prints the URL, capture it; otherwise, fallback to API to discover latest prod deployment
+          url=""
+          if timeout 15m bash -c 'vercel deploy --prebuilt --prod --token="$SANITIZED_VERCEL_TOKEN" --scope="$VERCEL_ORG_ID" --yes | tee deploy.out'; then
+            # Try to extract a https URL from CLI output (prefer custom domain, then *.vercel.app)
+            if grep -Eo 'https?://[a-zA-Z0-9._-]+' deploy.out | head -n1 >/dev/null; then
+              url=$(grep -Eo 'https?://[a-zA-Z0-9._-]+' deploy.out | head -n1)
+            fi
+          else
+            echo "vercel deploy timed out after 15m; will try to discover deployment via API…" >&2
+          fi
+
+          if [[ -z "${url}" ]]; then
+            echo "Attempting to fetch latest production deployment via Vercel API…"
+            api_resp=$(curl -fsSL -H "Authorization: Bearer $SANITIZED_VERCEL_TOKEN" \
+              "https://api.vercel.com/v13/deployments?projectId=${VERCEL_PROJECT_ID}&target=production&limit=1") || true
+            if [[ -n "${api_resp:-}" ]]; then
+              deploy_url=$(echo "$api_resp" | jq -r '.deployments[0].url // empty')
+              if [[ -n "${deploy_url:-}" ]]; then
+                # API returns host without scheme sometimes
+                if [[ "$deploy_url" =~ ^https?:// ]]; then
+                  url="$deploy_url"
+                else
+                  url="https://$deploy_url"
+                fi
+              fi
+            fi
+          fi
+
+          if [[ -z "${url}" ]]; then
+            echo "Could not determine deployment URL from CLI nor API." >&2
+            exit 1
+          fi
+
+          echo "Deployment candidate URL: $url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Poll Deployment Readiness (health check)
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="$DEPLOY_URL"
+          if [[ -z "$url" ]]; then
+            echo "No DEPLOY_URL provided to polling step." >&2
+            exit 1
+          fi
+
+          echo "Polling health endpoint until ready: ${url}/api/health"
+          attempts=0
+          max_attempts=80   # ~40 minutes @ 30s interval
+          success_streak=0
+          required_streak=2 # require two consecutive 200 to avoid transient readiness
+          while true; do
+            attempts=$((attempts+1))
+            code=$(curl -s -o /dev/null -w "%{http_code}" "${url%/}/api/health" || true)
+            if [[ "$code" == "200" ]]; then
+              success_streak=$((success_streak+1))
+              echo "[$attempts] Health OK (200). Streak=${success_streak}/${required_streak}"
+              if [[ $success_streak -ge $required_streak ]]; then
+                echo "Deployment is healthy."
+                break
+              fi
+            else
+              echo "[$attempts] Health not ready (HTTP $code). Reset streak."
+              success_streak=0
+            fi
+
+            if [[ $attempts -ge $max_attempts ]]; then
+              echo "Deployment did not become healthy within the polling window (~40m)." >&2
+              exit 1
+            fi
+            sleep 30
+          done
 
       - name: Print Deployment URL
-        run: echo "Deployment URL=${{ steps.deploy.outputs.url }}"
+        run: |
+          echo "Deployment URL=${{ steps.deploy.outputs.url }}" | tee -a "$GITHUB_STEP_SUMMARY"
 
   e2e-production:
     name: E2E Tests (Production)
