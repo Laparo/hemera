@@ -220,7 +220,8 @@ jobs:
     needs: quality-gates
     # Run on push to main, or manual dispatch on main targeting production
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.environment == 'production')
-    timeout-minutes: 30
+    # Production deploys on Vercel can take longer (build + finalize). Bump timeout to avoid premature cancellation.
+    timeout-minutes: 60
 
     steps:
       - name: Checkout code
