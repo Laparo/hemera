@@ -23,6 +23,8 @@ concurrency:
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  # Central production alias used for health checks and E2E
+  PRODUCTION_ALIAS: https://hemera-tau.vercel.app
 
 jobs:
   quality-gates:
@@ -310,9 +312,9 @@ jobs:
           fi
 
           if [[ -z "${url}" ]]; then
-            # As a final fallback, assume the known production domain (kept in sync with E2E job)
-            url="https://hemera-tau.vercel.app"
-            echo "Falling back to known production domain: $url"
+            # As a final fallback, assume the known production alias (kept in sync with E2E job)
+            url="${PRODUCTION_ALIAS}"
+            echo "Falling back to known production alias: $url"
           fi
 
           echo "Deployment candidate URL: $url"
@@ -321,45 +323,64 @@ jobs:
       - name: Poll Deployment Readiness (health check)
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          DEPLOY_ALIAS: ${{ env.PRODUCTION_ALIAS }}
         shell: bash
         run: |
           set -euo pipefail
           url="$DEPLOY_URL"
+          alias_url="${DEPLOY_ALIAS:-}"
           if [[ -z "$url" ]]; then
             echo "No DEPLOY_URL provided to polling step." >&2
             exit 1
           fi
 
-          echo "Polling health endpoint until ready: ${url}/api/health"
+          if [[ -z "$alias_url" ]]; then
+            echo "No DEPLOY_ALIAS provided; will poll only discovered URL."
+          fi
+
+          echo "Polling readiness until healthy..."
+          echo "- Discovered URL: ${url}/api/health"
+          if [[ -n "$alias_url" && "$alias_url" != "$url" ]]; then
+            echo "- Production alias: ${alias_url}/api/health"
+          fi
           attempts=0
           max_attempts=80   # ~40 minutes @ 30s interval
           success_streak=0
           required_streak=2 # require two consecutive 200 to avoid transient readiness
           while true; do
             attempts=$((attempts+1))
-            code=$(curl -s -o /dev/null -w "%{http_code}" "${url%/}/api/health" || true)
-            if [[ "$code" == "200" ]]; then
+            code_main=$(curl -s -o /dev/null -w "%{http_code}" "${url%/}/api/health" || true)
+            code_alias=""
+            if [[ -n "$alias_url" && "$alias_url" != "$url" ]]; then
+              code_alias=$(curl -s -o /dev/null -w "%{http_code}" "${alias_url%/}/api/health" || true)
+            fi
+
+            if [[ "$code_main" == "200" || "$code_alias" == "200" ]]; then
               success_streak=$((success_streak+1))
-              echo "[$attempts] Health OK (200). Streak=${success_streak}/${required_streak}"
+              which_ok="$( [[ "$code_main" == "200" ]] && echo main || echo alias )"
+              echo "[$attempts] Health OK on $which_ok (200). Streak=${success_streak}/${required_streak}"
               if [[ $success_streak -ge $required_streak ]]; then
                 echo "Deployment is healthy."
                 break
               fi
             else
-              echo "[$attempts] Health not ready (HTTP $code). Reset streak."
+              echo "[$attempts] Not ready (main=$code_main alias=${code_alias:-n/a}). Reset streak."
               success_streak=0
             fi
 
             if [[ $attempts -ge $max_attempts ]]; then
               echo "Deployment did not become healthy within the polling window (~40m)." >&2
+              echo "Last observed codes: main=$code_main alias=${code_alias:-n/a}" >&2
               exit 1
             fi
             sleep 30
           done
 
       - name: Print Deployment URL
+        if: always()
         run: |
-          echo "Deployment URL=${{ steps.deploy.outputs.url }}" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Discovered URL=${{ steps.deploy.outputs.url }}" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Production alias=${{ env.PRODUCTION_ALIAS }}" | tee -a "$GITHUB_STEP_SUMMARY"
 
   e2e-production:
     name: E2E Tests (Production)
@@ -388,7 +409,7 @@ jobs:
       - name: Run E2E tests against production
         run: npx playwright test --project=chromium
         env:
-          PLAYWRIGHT_BASE_URL: https://hemera-tau.vercel.app
+          PLAYWRIGHT_BASE_URL: ${{ env.PRODUCTION_ALIAS }}
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
