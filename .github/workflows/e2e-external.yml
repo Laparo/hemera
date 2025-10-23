@@ -1,0 +1,124 @@
+name: E2E External (Preview/Prod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to test (e.g., https://hemera-academy-preview.vercel.app)'
+        required: false
+        type: string
+      grep:
+        description: 'Playwright grep for test selection (regex)'
+        required: false
+        default: '(seo|academy|courses|health)'
+        type: string
+      project:
+        description: 'Playwright project name'
+        required: false
+        default: 'chromium'
+        type: string
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: e2e-ext-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (Chromium)
+        run: npx playwright install --with-deps chromium
+
+      - name: Resolve Base URL
+        id: resolve
+        shell: bash
+        run: |
+          # Priority: workflow input > env > secrets
+          BASE_URL_INPUT='${{ github.event.inputs.base_url }}'
+          BASE_URL_ENV='${{ env.PLAYWRIGHT_BASE_URL }}'
+          BASE_URL_SEC='${{ secrets.PLAYWRIGHT_BASE_URL }}'
+          if [ -n "$BASE_URL_INPUT" ]; then BASE_URL="$BASE_URL_INPUT";
+          elif [ -n "$BASE_URL_ENV" ]; then BASE_URL="$BASE_URL_ENV";
+          elif [ -n "$BASE_URL_SEC" ]; then BASE_URL="$BASE_URL_SEC";
+          else BASE_URL=""; fi
+
+          # If still empty, try to resolve from Vercel Deployments API (preview)
+          if [ -z "$BASE_URL" ]; then
+            if [ -z "${{ secrets.VERCEL_TOKEN }}" ] || [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ] || [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
+              echo "No BASE_URL and missing Vercel secrets. Provide 'base_url' input or set PLAYWRIGHT_BASE_URL secret." | tee -a $GITHUB_STEP_SUMMARY
+            else
+              echo "Attempting to resolve preview URL from Vercel..." | tee -a $GITHUB_STEP_SUMMARY
+              export VERCEL_TOKEN='${{ secrets.VERCEL_TOKEN }}'
+              export VERCEL_PROJECT_ID='${{ secrets.VERCEL_PROJECT_ID }}'
+              export VERCEL_ORG_ID='${{ secrets.VERCEL_ORG_ID }}'
+              export SHA='${{ github.event.pull_request.head.sha || github.sha }}'
+              export PR='${{ github.event.pull_request.number || '' }}'
+              curl -sSf -H "Authorization: Bearer $VERCEL_TOKEN" \
+                "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&target=preview&limit=50&state=READY" \
+                -o deployments.json || true
+              RESOLVED_URL=$(node -e '
+                const fs=require("fs");
+                let out="";
+                try {
+                  const data=JSON.parse(fs.readFileSync("deployments.json","utf8"));
+                  const sha=process.env.SHA;
+                  const pr=process.env.PR;
+                  let dep=null;
+                  const list = Array.isArray(data.deployments) ? data.deployments : [];
+                  dep = list.find(d => d?.meta?.githubCommitSha===sha || String(d?.meta?.githubPrId||"")===String(pr));
+                  if (!dep) dep = list.find(d => d?.state==='READY');
+                  if (!dep && list.length) dep = list[0];
+                  if (dep?.url) out = `https://${dep.url}`;
+                } catch {}
+                if (out) process.stdout.write(out);
+              ')
+              if [ -n "$RESOLVED_URL" ]; then
+                BASE_URL="$RESOLVED_URL"
+                echo "Resolved Vercel preview: $BASE_URL" | tee -a $GITHUB_STEP_SUMMARY
+              else
+                echo "Could not resolve preview URL from Vercel." | tee -a $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          fi
+
+          echo "base_url=$BASE_URL" >> $GITHUB_OUTPUT
+          if [ -z "$BASE_URL" ]; then
+            echo "No BASE_URL resolved; skipping tests. Provide 'base_url' via workflow_dispatch or configure PLAYWRIGHT_BASE_URL/VERCEL_* secrets." \
+              | tee -a $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: E2E (external)
+        if: steps.resolve.outputs.base_url != ''
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.resolve.outputs.base_url }}
+          # SSO tolerant mode: tests should only hit public pages by default via grep
+          PLAYWRIGHT_SSO_TOLERANT: '1'
+          NODE_ENV: test
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: |
+          npx playwright test \
+            --project='${{ github.event.inputs.project || 'chromium' }}' \
+            --grep='${{ github.event.inputs.grep || '(seo|academy|courses|health)' }}'
+
+      - name: Upload Playwright report
+        if: always() && steps.resolve.outputs.base_url != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          if-no-files-found: ignore

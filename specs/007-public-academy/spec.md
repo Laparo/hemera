@@ -49,6 +49,23 @@ academy is listed. It includes courses that can be booked."
 
 ---
 
+## Clarifications
+
+### Session 2025-10-22
+
+- Q: How should booking be performed for public course CTAs? → A: Internal booking frontend (own
+  flow)
+- Q: Should prices be displayed publicly and in what form? → A: Public, gross (incl. VAT)
+- Q: How should localization/region for content/prices be handled? → A: Single locale (DE, EUR)
+- Q: How should course availability be determined/displayed? → A: Internal capacities/inventory
+
+### Session 2025-10-23
+
+- Q: Where must booking be initiated? → A: Always on the course details page. The course list CTA
+  links to the course details and MUST NOT start booking directly.
+- Impact on spec: Acceptance scenarios updated; FR-005 refined to specify booking CTA location and
+  to forbid direct booking from the list.
+
 ## User Scenarios & Testing (mandatory)
 
 ### Primary User Story
@@ -58,24 +75,27 @@ and view available courses so that I can choose a suitable course and start a bo
 
 ### Acceptance Scenarios
 
-1. Given I am on the public academy area, When I open the course overview, Then I see a list of
-   current courses with title, short description, duration/scope, start date(s) or availability, and
-   a clear call to action to book.
-2. Given a course has multiple upcoming dates or variants, When I open the course, Then I see a
-   details page with full description, learning objectives, target audience, prerequisites, and a
-   booking CTA.
-3. Given I click “Book now” for a course, When I am redirected to the booking, Then a clear booking
-   process begins (at least selecting date/variant and starting the booking request).
+1. Gegeben ich befinde mich im öffentlichen Akademie-Bereich, Wenn ich die Kursübersicht öffne, Dann
+   sehe ich eine Liste aktueller Kurse mit Titel, Kurzbeschreibung, Dauer/Umfang,
+   Startdatum/Verfügbarkeit, Preis (brutto inkl. MwSt.) und einen klaren CTA zur Kursdetailansicht
+   (keine direkte Buchung).
+2. Gegeben ein Kurs hat mehrere zukünftige Termine/Varianten, Wenn ich die Kursdetailseite öffne,
+   Dann sehe ich eine vollständige Beschreibung, Lernziele, Zielgruppe, Voraussetzungen,
+   Termine/Varianten und eine Buchungs-CTA.
+3. Gegeben ich befinde mich auf der Kursdetailseite, Wenn ich auf „Jetzt buchen“ klicke, Dann werde
+   ich zur Buchung weitergeleitet und ein klarer Buchungsprozess beginnt (mindestens Termin/Variante
+   auswählen und Buchungsanfrage starten).
+4. Gegeben ein Kurs ist ausgebucht, Wenn ich die Kursübersicht und die Kursdetailseite betrachte,
+   Dann sehe ich ein sichtbares Badge „Ausgebucht“, die Buchungs-CTA ist deaktiviert oder nicht
+   vorhanden, und eine direkte Buchung ist auf keiner der Seiten möglich.
 
 ### Edge Cases
 
-- No courses available: An empty state message is shown with a next best alternative.
-- Course sold out: Label “sold out” and no direct booking CTA; potentially a waitlist [NEEDS
-  CLARIFICATION: Is a waitlist desired?]
-- Multiple languages/regions: Content and currency/prices vary [NEEDS CLARIFICATION: Is localization
-  required?]
-- External booking flow: CTA leads to an external platform [NEEDS CLARIFICATION: Internal vs.
-  external booking?]
+- Keine Kurse verfügbar: Es wird ein Empty-State mit einem “Next best alternative”-Hinweis
+  angezeigt.
+- Kurs ausgebucht: Badge „Ausgebucht“ und keine direkte Buchungs-CTA; keine Warteliste unterstützt.
+- Lokalisierung: Einsprachig (Sprache DE, Währung EUR); Multi-Locale vorerst außerhalb des Umfangs.
+- Externer Buchungsflow: Außerhalb des Umfangs — Buchung erfolgt intern.
 
 ---
 
@@ -88,34 +108,54 @@ and view available courses so that I can choose a suitable course and start a bo
 - FR-002: The system MUST display a public course list including at least title, short description,
   duration/scope, and availability/start date(s).
 - FR-003: The system MUST provide a course details view with full description, learning objectives,
-  target audience, prerequisites, dates/variants, and a booking CTA.
+  target audience, prerequisites, dates/variants, and a Buchungs-CTA.
 - FR-004: The system MUST display an appropriate empty state when no courses are available or only
   sold-out courses exist.
-- FR-005: The system MUST provide a booking CTA that initiates a booking process (internal or
-  external flow).
-- FR-006: The system MUST clearly indicate when a course is sold out and prevent booking
-  accordingly.
+- FR-005: The system MUST provide a Buchungs-CTA on the course details page that initiates an
+  internal booking process. The course list MUST NOT start the booking directly; its CTA links to
+  the course details.
+- FR-006: The system MUST clearly indicate when a course is sold out (label “Ausgebucht”) and
+  prevent booking accordingly.
 - FR-007: The system SHOULD offer a selectable option (e.g., date selection) for courses with
   multiple dates/variants before starting the booking.
-- FR-008: The system SHOULD provide search/filter options for the course list (e.g., category,
-  level, date, location/online) [NEEDS CLARIFICATION: Which filters are prioritized?]
+- FR-008: The system MUST NOT include search or filter options in the initial release (out of scope
+  for MVP).
 - FR-009: The system SHOULD cover basic SEO content for the academy and course pages (title, meta
   description, human-readable URLs, structured data) without technical specification.
 - FR-010: The system MUST consider basic accessibility (readable labels, keyboard navigation,
   contrasts).
-- FR-011: The system SHOULD clearly represent course availability (e.g., “seats available”, “few
-  seats”, “sold out”); source of availability data [NEEDS CLARIFICATION].
-- FR-012: The system SHOULD display prices if available, including currency and tax notice [NEEDS
-  CLARIFICATION: Show prices publicly? Gross/Net?]
+- FR-011: The system MUST determine availability from internal capacity inventory and clearly
+  represent at least “Verfügbar” vs. “Ausgebucht” for each date/variant (optionally “Wenige
+  Plätze”).
+- FR-012: The system MUST display prices publicly as gross (incl. VAT), including currency and a tax
+  notice.
+- FR-013: The system MUST operate as single locale in the public area (language: DE, currency: EUR).
 
 ### Key Entities
 
 - Academy info: headline, introduction, sections (e.g., mission, program, contact/FAQ).
 - Course: title, short description, description, learning objectives, target audience,
-  prerequisites, category/level, duration/scope, price [optional], availability/status, media
-  (image), SEO texts.
-- Course date/variant: start date(s)/times, onsite/online, capacity, availability status, language.
-- Booking CTA: target type (internal/external), target URL or process start parameters.
+  prerequisites, category/level, duration/scope, price (gross incl. VAT), currency,
+  availability/status, media (image), SEO texts.
+- Course date/variant: start date(s)/times, onsite/online, capacity_total, capacity_reserved,
+  availability_status (derived from internal inventory), language.
+- Booking CTA: target type: internal booking flow, target URL or process start parameters
+  (internal).
+
+### Defaults / Conventions
+
+- Locale: language = DE, currency = EUR (public pages)
+- Terminology: UI in German; status labels use “Verfügbar”, “Ausgebucht” and optionally “Wenige
+  Plätze”.
+- Frontend-Sprache: Deutsch (DE). Test-Konfigurationsdateien und technische Test-Artefakte dürfen
+  Englisch sein.
+
+---
+
+## Scope Exclusions
+
+- Waitlist for sold-out courses or dates is not supported in the initial scope.
+- Search and filter options for the course list are not supported in the initial scope.
 
 ---
 
@@ -130,7 +170,7 @@ and view available courses so that I can choose a suitable course and start a bo
 
 ### Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers (currently present)
+- [x] No [NEEDS CLARIFICATION] markers
 - [x] Testability/clarity largely ensured
 - [x] Success criteria recognizable (e.g., visible list, detail, booking CTA)
 - [x] Scope clearly bounded (public, discovery + booking start)
@@ -147,3 +187,67 @@ and view available courses so that I can choose a suitable course and start a bo
 - [x] Requirements generated
 - [x] Entities identified
 - [ ] Review checklist passed
+
+---
+
+## Clarify Session Report (2025-10-22)
+
+### Questions asked and resolved
+
+- Q1: Booking flow target for public CTAs? → Internal booking frontend (own flow)
+- Q2: Price visibility and tax model? → Public pricing, gross (incl. VAT)
+- Q3: Locale/region baseline? → Single locale (language DE, currency EUR)
+- Q4: Availability source/model? → Derived from internal capacities/inventory
+- Q5: Waitlist for sold-out courses/dates? → Not supported (no waitlist)
+
+### Sections updated in this session
+
+- Requirements: FR-005, FR-011, FR-012, FR-013
+- User Scenarios: pricing and CTA language
+- Edge Cases: localization note, external booking out-of-scope
+- Key Entities: course price/currency; capacity-derived availability; booking CTA targets internal
+  flow
+
+### Coverage summary (requirements)
+
+| ID     | Status    | Notes                                               |
+| ------ | --------- | --------------------------------------------------- |
+| FR-001 | Covered   | —                                                   |
+| FR-002 | Covered   | —                                                   |
+| FR-003 | Covered   | —                                                   |
+| FR-004 | Covered   | —                                                   |
+| FR-005 | Clarified | Internal booking flow confirmed                     |
+| FR-006 | Covered   | —                                                   |
+| FR-007 | Covered   | Optional pre-booking selection allowed              |
+| FR-008 | Clarified | No filters/search in initial release (out of scope) |
+| FR-009 | Covered   | —                                                   |
+| FR-010 | Covered   | —                                                   |
+| FR-011 | Clarified | Availability from internal capacities               |
+| FR-012 | Clarified | Public prices are gross incl. VAT                   |
+| FR-013 | Clarified | Single locale: DE/EUR                               |
+
+### Open clarifications
+
+None at this time.
+
+## Clarify Session Report (2025-10-23)
+
+### Questions asked and resolved (2025-10-23)
+
+- Q1: Where must booking be initiated? → Always on the course details page. The course list CTA
+  links to the course details and MUST NOT start booking directly.
+
+### Sections updated in this session (2025-10-23)
+
+- Requirements: FR-005 refined (CTA location on detail; list CTA must not start booking)
+- Acceptance Scenarios: 1 updated (CTA points to details), 3 updated (booking starts from detail
+  page)
+
+### Open clarifications (2025-10-23)
+
+None at this time.
+
+### Suggested next question (Q5)
+
+Should we support a waitlist when a course/date is sold out? If yes, what is the minimal viable flow
+(CTA change, user inputs, consent), and how are notifications handled (manual vs. automated)?

@@ -4,6 +4,13 @@ import CourseDetail from '@/components/CourseDetail';
 import { useUser } from '@clerk/nextjs';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import {
+  generateBreadcrumbSchema as genBreadcrumb,
+  generateCourseSchema as genCourseSchema,
+  generateWebPageSchema as genWebPageSchema,
+  generateOrganizationSchema as genOrgSchema,
+} from '@/lib/seo/schemas';
+import { SITE_CONFIG } from '@/lib/seo/constants';
 
 interface Course {
   id: string;
@@ -13,7 +20,9 @@ interface Course {
   price: number;
   currency: string;
   capacity?: number | null;
-  date?: Date | null;
+  date?: string | Date | null;
+  startTime?: string | Date | null;
+  endTime?: string | Date | null;
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -39,7 +48,7 @@ export default function CourseDetailPage() {
       setError(null);
 
       // Fetch course from our courses API
-      const response = await fetch(`/api/courses?courseId=${courseId}`);
+      const response = await fetch(`/api/courses/${courseId}`);
       if (!response.ok) {
         if (response.status === 404) {
           throw new Error('Kurs nicht gefunden');
@@ -48,8 +57,8 @@ export default function CourseDetailPage() {
       }
 
       const data = await response.json();
-      if (data.courses && data.courses.length > 0) {
-        setCourse(data.courses[0]);
+      if (data?.success && data?.data) {
+        setCourse(data.data);
       } else {
         throw new Error('Kurs nicht gefunden');
       }
@@ -71,37 +80,18 @@ export default function CourseDetailPage() {
   }, [courseId, fetchCourse]);
 
   const handleBookCourse = async (courseId: string) => {
+    const target = `/bookings/new?courseId=${encodeURIComponent(courseId)}`;
+
     if (!isSignedIn) {
-      // Redirect to sign in with return URL
-      router.push(
-        `/auth/signin?returnUrl=${encodeURIComponent(window.location.pathname)}`
-      );
+      // Redirect to sign-in, then continue with internal booking flow after login
+      const returnUrl = target;
+      router.push(`/auth/signin?returnUrl=${encodeURIComponent(returnUrl)}`);
       return;
     }
 
+    setBookingLoading(true);
     try {
-      setBookingLoading(true);
-      // Create Stripe checkout session
-      const response = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          courseId,
-          successUrl: `${window.location.origin}/dashboard?payment=success`,
-          cancelUrl: window.location.href,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Fehler beim Erstellen der Zahlungsseite');
-      }
-
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch (err) {
-      alert('Fehler beim Buchen des Kurses. Bitte versuchen Sie es erneut.');
+      router.push(target);
     } finally {
       setBookingLoading(false);
     }
@@ -272,6 +262,93 @@ export default function CourseDetailPage() {
 
   return (
     <div className='min-h-screen bg-gray-50'>
+      {/* JSON-LD Strukturierte Daten */}
+      {(() => {
+        const url = `${SITE_CONFIG.url}/courses/${course.id}`;
+        const startDateISO = course.startTime
+          ? new Date(course.startTime).toISOString()
+          : course.date
+            ? new Date(course.date).toISOString()
+            : undefined;
+        const endDateISO = course.endTime
+          ? new Date(course.endTime).toISOString()
+          : undefined;
+        const inStock =
+          (course.availableSpots ?? null) === null
+            ? true
+            : (course.availableSpots ?? 0) > 0;
+
+        const offer = {
+          '@type': 'Offer',
+          price: (course.price ?? 0) > 0 ? String(course.price / 100) : '0',
+          priceCurrency: 'EUR',
+          availability: `https://schema.org/${inStock ? 'InStock' : 'OutOfStock'}`,
+          url,
+          ...(course.availableSpots !== null &&
+          course.availableSpots !== undefined
+            ? {
+                inventoryLevel: {
+                  '@type': 'QuantitativeValue',
+                  value: course.availableSpots,
+                },
+              }
+            : {}),
+        } as const;
+
+        const courseSchema = {
+          '@context': 'https://schema.org',
+          '@type': 'Course',
+          name: course.title,
+          description:
+            course.description ||
+            'Kursdetails der Hemera Academy: Inhalte, Termine und Buchungsinformationen.',
+          provider: {
+            '@type': 'EducationalOrganization',
+            name: 'Hemera Academy',
+            url: SITE_CONFIG.url,
+          },
+          hasCourseInstance: {
+            '@type': 'CourseInstance',
+            courseMode: 'online',
+            ...(startDateISO ? { startDate: startDateISO } : {}),
+            ...(endDateISO ? { endDate: endDateISO } : {}),
+            location: {
+              '@type': 'VirtualLocation',
+              url,
+            },
+          },
+          offers: offer,
+          url,
+          inLanguage: 'de-DE',
+        } as const;
+
+        const schemas = [
+          genOrgSchema(),
+          genWebPageSchema({
+            title: course.title,
+            description:
+              course.description ||
+              'Kursdetails der Hemera Academy: Inhalte, Termine und Buchungsinformationen.',
+            url,
+            type: 'Course',
+          }),
+          genBreadcrumb([
+            { name: 'Start', url: SITE_CONFIG.url },
+            { name: 'Kurse', url: `${SITE_CONFIG.url}/courses` },
+            { name: course.title, url },
+          ]),
+          courseSchema,
+        ];
+
+        return schemas.map((schema, index) => (
+          <script
+            key={`jsonld-${index}`}
+            type='application/ld+json'
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+        ));
+      })()}
+
       {/* Header */}
       <header className='bg-white border-b border-gray-200'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -329,11 +406,20 @@ export default function CourseDetailPage() {
 
       {/* Main Content */}
       <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-        <CourseDetail
-          course={course}
-          isLoading={false}
-          onBookNow={handleBookCourse}
-        />{' '}
+        {(() => {
+          // Kompatible Props für die Komponente herstellen (Date-Objekte statt ISO-Strings)
+          const courseForComponent = {
+            ...course,
+            date: course.date ? new Date(course.date as any) : null,
+          } as any;
+          return (
+            <CourseDetail
+              course={courseForComponent}
+              isLoading={false}
+              onBookNow={handleBookCourse}
+            />
+          );
+        })()}{' '}
         {/* Related Courses Section */}
         <section className='mt-16'>
           <h2 className='text-2xl font-bold text-gray-900 mb-8'>
