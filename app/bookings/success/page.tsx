@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle, Error } from '@mui/icons-material';
+import { CheckCircle, Error as ErrorIcon } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -25,14 +25,47 @@ function BookingSuccessContent() {
   const bookingId = searchParams.get('booking_id');
 
   useEffect(() => {
-    if (!sessionId || !bookingId) {
-      setError('Fehlende Parameter für die Buchungsbestätigung');
-      setLoading(false);
-      return;
-    }
+    const verify = async () => {
+      if (!sessionId || !bookingId) {
+        setError('Fehlende Parameter für die Buchungsbestätigung');
+        setLoading(false);
+        return;
+      }
 
-    // TODO: Verify booking with API
-    setLoading(false);
+      try {
+        // Minimal verification: check if booking exists for current user
+        const resp = await fetch('/api/bookings?page=1&limit=100', {
+          headers: { Accept: 'application/json' },
+        });
+
+        if (resp.status === 401) {
+          setError('Bitte melde dich an, um deine Buchung zu bestätigen.');
+          setLoading(false);
+          return;
+        }
+
+        if (!resp.ok) {
+          throw new Error('Überprüfung nicht möglich');
+        }
+
+        const data = await resp.json();
+        const exists =
+          Array.isArray(data?.data?.bookings) &&
+          data.data.bookings.some((b: { id: string }) => b.id === bookingId);
+
+        if (!exists) {
+          setError(
+            'Buchung nicht gefunden. Bitte prüfe den Link oder kontaktiere den Support.'
+          );
+        }
+      } catch (e) {
+        setError('Es ist ein Fehler bei der Überprüfung aufgetreten.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    verify();
   }, [sessionId, bookingId]);
 
   if (loading) {
@@ -54,7 +87,7 @@ function BookingSuccessContent() {
         <Card>
           <CardHeader>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Error color='error' sx={{ mr: 1 }} />
+              <ErrorIcon color='error' sx={{ mr: 1 }} />
               <Typography variant='h6' color='error'>
                 Fehler bei der Buchung
               </Typography>

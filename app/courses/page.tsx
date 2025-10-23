@@ -30,9 +30,8 @@ export default async function CoursesPage() {
           key={index}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
-            __html: Buffer.from(JSON.stringify(schema, null, 2)).toString(
-              'base64'
-            ),
+            // JSON-LD muss als Plain-JSON eingebettet werden (nicht base64)
+            __html: JSON.stringify(schema, null, 2),
           }}
         />
       ))}
@@ -119,6 +118,7 @@ export default async function CoursesPage() {
                       {/* Course Image Placeholder */}
                       <Box
                         sx={{
+                          position: 'relative',
                           height: 160,
                           bgcolor: 'primary.light',
                           display: 'flex',
@@ -126,6 +126,31 @@ export default async function CoursesPage() {
                           justifyContent: 'center',
                         }}
                       >
+                        {/* Sold out badge */}
+                        {typeof course.availableSpots === 'number' &&
+                          course.capacity !== null &&
+                          course.capacity !== undefined &&
+                          course.availableSpots === 0 && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: 8,
+                                right: 8,
+                                bgcolor: 'error.main',
+                                color: 'error.contrastText',
+                                px: 1.5,
+                                py: 0.5,
+                                borderRadius: 1,
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                boxShadow: 2,
+                              }}
+                              data-testid='sold-out-badge'
+                            >
+                              Ausgebucht
+                            </Box>
+                          )}
                         <Typography
                           variant='h4'
                           sx={{ color: 'primary.contrastText' }}
@@ -212,20 +237,38 @@ export default async function CoursesPage() {
                               : 'Free'}
                           </Typography>
                         </Box>
-                        <Button
-                          component={Link}
-                          href={'/checkout?courseId=' + course.id}
-                          variant='contained'
-                          fullWidth
-                          startIcon={<BookOnlineOutlined />}
-                          sx={{
-                            mt: 2,
-                            fontWeight: 'bold',
-                            textTransform: 'none',
-                          }}
-                        >
-                          Kurs buchen
-                        </Button>
+                        {typeof course.availableSpots === 'number' &&
+                        course.capacity !== null &&
+                        course.capacity !== undefined &&
+                        course.availableSpots === 0 ? (
+                          <Button
+                            variant='outlined'
+                            fullWidth
+                            disabled
+                            sx={{
+                              mt: 2,
+                              fontWeight: 'bold',
+                              textTransform: 'none',
+                            }}
+                            data-testid='sold-out-cta'
+                          >
+                            Ausgebucht
+                          </Button>
+                        ) : (
+                          <Button
+                            component={Link}
+                            href={'/courses/' + course.id}
+                            variant='contained'
+                            fullWidth
+                            sx={{
+                              mt: 2,
+                              fontWeight: 'bold',
+                              textTransform: 'none',
+                            }}
+                          >
+                            Zum Kurs
+                          </Button>
+                        )}
                       </CardContent>
                     </Card>
                   </Grid>

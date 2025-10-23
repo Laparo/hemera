@@ -72,6 +72,20 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
     );
   };
 
+  const getDisableReason = (): string | null => {
+    if (!isBookingDisabled()) return null;
+    if (course.userBookingStatus === 'PAID')
+      return 'Du hast diesen Kurs bereits gebucht.';
+    if (course.availableSpots !== null && course.availableSpots === 0)
+      return 'Dieser Kurs ist aktuell ausgebucht.';
+    if (!course.isPublished)
+      return 'Dieser Kurs ist noch nicht veröffentlicht.';
+    if (course.date && course.date < new Date())
+      return 'Der Kurstermin liegt in der Vergangenheit.';
+    if (isBooking) return 'Buchung läuft...';
+    return 'Buchung derzeit nicht möglich.';
+  };
+
   if (isLoading) {
     return (
       <div className='animate-pulse'>
@@ -171,6 +185,11 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
 
           {/* Course Status Badges */}
           <div className='flex flex-wrap gap-2 mb-4'>
+            {/* Internal booking indicator */}
+            <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
+              Interne Buchung
+            </span>
+
             {!course.isPublished && (
               <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800'>
                 Nicht veröffentlicht
@@ -190,7 +209,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
             )}
 
             {course.availableSpots === 0 && (
-              <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800'>
+              <span
+                className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800'
+                data-testid='course-detail-sold-out-badge'
+              >
                 Ausgebucht
               </span>
             )}
@@ -259,17 +281,30 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
           </div>
 
           {onBookNow && (
-            <button
-              onClick={handleBookNow}
-              disabled={isBookingDisabled()}
-              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                isBookingDisabled()
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-              }`}
-            >
-              {getBookingButtonText()}
-            </button>
+            <div className='flex flex-col items-end'>
+              <button
+                onClick={handleBookNow}
+                disabled={isBookingDisabled()}
+                title={getDisableReason() || undefined}
+                aria-disabled={isBookingDisabled()}
+                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
+                  isBookingDisabled()
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                }`}
+                data-testid='course-detail-book-cta'
+              >
+                {getBookingButtonText()}
+              </button>
+              {isBookingDisabled() && getDisableReason() && (
+                <span
+                  className='mt-2 text-xs text-gray-500'
+                  data-testid='course-detail-disable-reason'
+                >
+                  {getDisableReason()}
+                </span>
+              )}
+            </div>
           )}
         </div>
       </div>

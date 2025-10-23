@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { PaymentStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -25,6 +26,22 @@ export async function GET(
       );
     }
 
+    // Determine availability from internal bookings (PAID or PENDING count)
+    let totalBookings = 0;
+    if (course.capacity !== null && course.capacity !== undefined) {
+      totalBookings = await prisma.booking.count({
+        where: {
+          courseId: course.id,
+          paymentStatus: { in: [PaymentStatus.PAID, PaymentStatus.PENDING] },
+        },
+      });
+    }
+
+    const availableSpots =
+      course.capacity !== null && course.capacity !== undefined
+        ? Math.max(0, course.capacity - totalBookings)
+        : null;
+
     return NextResponse.json({
       success: true,
       data: {
@@ -39,6 +56,9 @@ export async function GET(
         isPublished: course.isPublished,
         createdAt: course.createdAt,
         updatedAt: course.updatedAt,
+        availableSpots,
+        totalBookings,
+        userBookingStatus: null,
       },
     });
   } catch (error) {

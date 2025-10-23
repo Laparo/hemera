@@ -143,3 +143,9 @@ localrivet
 Getenv
 Println
 Fatalf
+
+soldout
+Kursdetailsseite
+parsebar
+failen
+jsons
