@@ -8,9 +8,9 @@ import { SITE_CONFIG } from '@/lib/seo/constants';
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const id = params.id;
+  const { id } = await params;
 
   try {
     // Use relative fetch to work in both dev and prod, and keep absolute URLs only for canonical

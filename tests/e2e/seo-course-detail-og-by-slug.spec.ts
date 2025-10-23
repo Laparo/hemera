@@ -40,12 +40,10 @@ test.describe('Course detail OG image by slug', () => {
 
     const idMatch = url.match(/\/courses\/([\w-]+)/);
     if (!idMatch) {
-      test
-        .info()
-        .annotations.push({
-          type: 'note',
-          description: 'Kurs-ID konnte nicht aus URL extrahiert werden.',
-        });
+      test.info().annotations.push({
+        type: 'note',
+        description: 'Kurs-ID konnte nicht aus URL extrahiert werden.',
+      });
       return;
     }
     const id = idMatch[1];
@@ -53,12 +51,10 @@ test.describe('Course detail OG image by slug', () => {
     // API abfragen, um den Slug des Kurses zu erhalten
     const res = await request.get(`/api/courses/${id}`);
     if (!res.ok()) {
-      test
-        .info()
-        .annotations.push({
-          type: 'note',
-          description: 'API-Response nicht OK, Test informativ übersprungen.',
-        });
+      test.info().annotations.push({
+        type: 'note',
+        description: 'API-Response nicht OK, Test informativ übersprungen.',
+      });
       return;
     }
     const json = await res.json();
@@ -73,12 +69,10 @@ test.describe('Course detail OG image by slug', () => {
       const expected = `/images/courses/${slug}.jpg`;
       expect(ogImage).toContain(expected);
     } else {
-      test
-        .info()
-        .annotations.push({
-          type: 'note',
-          description: 'Kein Slug vorhanden – Fallback-Bild ist OK.',
-        });
+      test.info().annotations.push({
+        type: 'note',
+        description: 'Kein Slug vorhanden – Fallback-Bild ist OK.',
+      });
     }
   });
 });
