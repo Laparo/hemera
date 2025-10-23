@@ -45,9 +45,8 @@ export default function AcademyPage() {
           key={index}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
-            __html: Buffer.from(JSON.stringify(schema, null, 2)).toString(
-              'base64'
-            ),
+            // JSON-LD muss als Plain-JSON eingebettet werden (nicht base64)
+            __html: JSON.stringify(schema, null, 2),
           }}
         />
       ))}

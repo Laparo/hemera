@@ -80,9 +80,8 @@ jobs:
                   const pr=process.env.PR;
                   let dep=null;
                   const list = Array.isArray(data.deployments) ? data.deployments : [];
-                  dep = list.find(d => d?.meta?.githubCommitSha===sha || String(d?.meta?.githubPrId||"")===String(pr));
-                  if (!dep) dep = list.find(d => d?.state==='READY');
-                  if (!dep && list.length) dep = list[0];
+                  // Nur dann matchen, wenn Commit-SHA ODER PR-ID exakt passt – keine Fallbacks
+                  dep = list.find(d => d?.meta?.githubCommitSha===sha || (pr && String(d?.meta?.githubPrId||"")===String(pr)));
                   if (dep?.url) out = `https://${dep.url}`;
                 } catch {}
                 if (out) process.stdout.write(out);
