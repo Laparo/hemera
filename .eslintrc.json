@@ -31,5 +31,11 @@
       }
     }
   ],
-  "ignorePatterns": ["playwright-report/**/*", "test-results/**/*", ".next/**/*", "node_modules/**/*"]
+  "ignorePatterns": [
+    "playwright-report/**/*",
+    "playwright-report-external/**/*",
+    "test-results/**/*",
+    ".next/**/*",
+    "node_modules/**/*"
+  ]
 }
