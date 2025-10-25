@@ -88,7 +88,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
 
   if (isLoading) {
     return (
-      <div className='animate-pulse'>
+      <div className='animate-pulse' aria-busy='true' aria-live='polite'>
         <div className='h-64 bg-gray-200 rounded-lg mb-6'></div>
         <div className='h-8 bg-gray-200 rounded w-3/4 mb-4'></div>
         <div className='h-4 bg-gray-200 rounded w-full mb-2'></div>
@@ -127,6 +127,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
                   fill='none'
                   stroke='currentColor'
                   viewBox='0 0 24 24'
+                  aria-hidden='true'
                 >
                   <path
                     strokeLinecap='round'
@@ -146,6 +147,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
                   fill='none'
                   stroke='currentColor'
                   viewBox='0 0 24 24'
+                  aria-hidden='true'
                 >
                   <path
                     strokeLinecap='round'
@@ -171,6 +173,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
+                aria-hidden='true'
               >
                 <path
                   strokeLinecap='round'
@@ -242,32 +245,32 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
           <h3 className='font-semibold text-gray-900 mb-3'>
             Buchungsinformationen
           </h3>
-          <div className='space-y-2 text-sm text-gray-600'>
+          <dl className='space-y-2 text-sm text-gray-600'>
             <div className='flex justify-between'>
-              <span>Preis:</span>
-              <span className='font-medium text-gray-900'>
+              <dt>Preis:</dt>
+              <dd className='font-medium text-gray-900'>
                 {formatCurrency(course.price, course.currency)}
-              </span>
+              </dd>
             </div>
 
             {course.capacity && (
               <div className='flex justify-between'>
-                <span>Verfügbare Plätze:</span>
-                <span className='font-medium text-gray-900'>
+                <dt>Verfügbare Plätze:</dt>
+                <dd className='font-medium text-gray-900'>
                   {course.availableSpots ?? course.capacity}
-                </span>
+                </dd>
               </div>
             )}
 
             {course.totalBookings !== undefined && (
               <div className='flex justify-between'>
-                <span>Bereits gebucht:</span>
-                <span className='font-medium text-gray-900'>
+                <dt>Bereits gebucht:</dt>
+                <dd className='font-medium text-gray-900'>
                   {course.totalBookings}
-                </span>
+                </dd>
               </div>
             )}
-          </div>
+          </dl>
         </div>
 
         {/* Booking Button */}
@@ -287,6 +290,8 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
                 disabled={isBookingDisabled()}
                 title={getDisableReason() || undefined}
                 aria-disabled={isBookingDisabled()}
+                aria-busy={isBooking || undefined}
+                type='button'
                 className={`px-6 py-3 rounded-lg font-medium transition-colors ${
                   isBookingDisabled()
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -296,6 +301,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
               >
                 {getBookingButtonText()}
               </button>
+              {/* Screen reader Statusausgabe */}
+              <span className='sr-only' aria-live='polite'>
+                {isBooking ? 'Buchung läuft' : ''}
+              </span>
               {isBookingDisabled() && getDisableReason() && (
                 <span
                   className='mt-2 text-xs text-gray-500'
