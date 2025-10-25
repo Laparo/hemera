@@ -1,6 +1,11 @@
 import { Metadata } from 'next';
 import { SCHEMA_COMBINATIONS } from '@/lib/seo/schemas';
-import { IMAGE_CONFIG, SITE_CONFIG, SOCIAL_CONFIG } from '@/lib/seo/constants';
+import {
+  IMAGE_CONFIG,
+  SITE_CONFIG,
+  SOCIAL_CONFIG,
+  getFullUrl,
+} from '@/lib/seo/constants';
 
 export const metadata: Metadata = {
   title: 'Hemera Academy – Über unsere Kurse',
@@ -14,7 +19,7 @@ export const metadata: Metadata = {
     siteName: SITE_CONFIG.name,
     images: [
       {
-        url: IMAGE_CONFIG.og.default,
+        url: getFullUrl(IMAGE_CONFIG.og.default),
         width: IMAGE_CONFIG.og.width,
         height: IMAGE_CONFIG.og.height,
         alt: IMAGE_CONFIG.og.alt,
@@ -30,7 +35,9 @@ export const metadata: Metadata = {
       'Erfahre mehr über die Hemera Academy: Ziele, Lernformate und wie du mit unseren Kursen durchstartest.',
     site: SOCIAL_CONFIG.twitter.site,
     creator: SOCIAL_CONFIG.twitter.creator,
-    images: [IMAGE_CONFIG.og.default],
+    // Stelle sicher, dass Twitter ebenfalls eine absolute Bild-URL erhält
+    // (Next.js setzt zwar metadataBase um, wir liefern hier aber explizit absolut aus)
+    images: [getFullUrl(IMAGE_CONFIG.og.default)],
   },
 };
 

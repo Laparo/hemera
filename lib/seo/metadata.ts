@@ -1,4 +1,10 @@
 import { Metadata } from 'next';
+import {
+  IMAGE_CONFIG,
+  SITE_CONFIG,
+  SOCIAL_CONFIG,
+  getFullUrl,
+} from '@/lib/seo/constants';
 
 /**
  * SEO metadata utilities for public pages
@@ -11,14 +17,9 @@ import { Metadata } from 'next';
  * - SEO-optimized content
  */
 
-const SITE_CONFIG = {
-  name: 'Hemera Academy',
-  description:
-    'Transform your career with expert-led courses in technology, business, and creative skills.',
-  url: 'https://hemera.academy',
-  ogImage: '/images/og-default.jpg',
-  twitterHandle: '@hemeraacademy',
-} as const;
+// Hinweis: SEO-Basiswerte kommen zentral aus lib/seo/constants.
+// Diese Datei nutzt ausschließlich die dort definierten Konstanten/Helfer,
+// um Konsistenz zwischen Seiten zu garantieren.
 
 export interface SEOMetadata {
   title: string;
@@ -69,7 +70,7 @@ export function generateLandingPageMetadata(): Metadata {
       siteName: SITE_CONFIG.name,
       images: [
         {
-          url: SITE_CONFIG.ogImage,
+          url: getFullUrl(IMAGE_CONFIG.og.default),
           width: 1200,
           height: 630,
           alt: title,
@@ -80,9 +81,9 @@ export function generateLandingPageMetadata(): Metadata {
       card: 'summary_large_image',
       title,
       description,
-      site: SITE_CONFIG.twitterHandle,
-      creator: SITE_CONFIG.twitterHandle,
-      images: [SITE_CONFIG.ogImage],
+      site: SOCIAL_CONFIG.twitter.site,
+      creator: SOCIAL_CONFIG.twitter.creator,
+      images: [getFullUrl(IMAGE_CONFIG.og.default)],
     },
     robots: {
       index: true,
@@ -132,7 +133,7 @@ export function generateCourseListMetadata(): Metadata {
       siteName: SITE_CONFIG.name,
       images: [
         {
-          url: SITE_CONFIG.ogImage,
+          url: getFullUrl(IMAGE_CONFIG.og.default),
           width: 1200,
           height: 630,
           alt: title,
@@ -143,9 +144,9 @@ export function generateCourseListMetadata(): Metadata {
       card: 'summary_large_image',
       title,
       description,
-      site: SITE_CONFIG.twitterHandle,
-      creator: SITE_CONFIG.twitterHandle,
-      images: [SITE_CONFIG.ogImage],
+      site: SOCIAL_CONFIG.twitter.site,
+      creator: SOCIAL_CONFIG.twitter.creator,
+      images: [getFullUrl(IMAGE_CONFIG.og.default)],
     },
     robots: {
       index: true,
@@ -188,7 +189,11 @@ export function generateSEOMetadata(config: SEOMetadata): Metadata {
       siteName: SITE_CONFIG.name,
       images: [
         {
-          url: config.ogImage || SITE_CONFIG.ogImage,
+          url: config.ogImage
+            ? config.ogImage.startsWith('http')
+              ? config.ogImage
+              : getFullUrl(config.ogImage)
+            : getFullUrl(IMAGE_CONFIG.og.default),
           width: 1200,
           height: 630,
           alt: fullTitle,
@@ -199,9 +204,15 @@ export function generateSEOMetadata(config: SEOMetadata): Metadata {
       card: 'summary_large_image',
       title: fullTitle,
       description: config.description,
-      site: SITE_CONFIG.twitterHandle,
-      creator: SITE_CONFIG.twitterHandle,
-      images: [config.ogImage || SITE_CONFIG.ogImage],
+      site: SOCIAL_CONFIG.twitter.site,
+      creator: SOCIAL_CONFIG.twitter.creator,
+      images: [
+        config.ogImage
+          ? config.ogImage.startsWith('http')
+            ? config.ogImage
+            : getFullUrl(config.ogImage)
+          : getFullUrl(IMAGE_CONFIG.og.default),
+      ],
     },
     robots: config.noIndex
       ? {

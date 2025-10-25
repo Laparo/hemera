@@ -49,6 +49,7 @@
     ]
   },
   "dependencies": {
+    "@clerk/localizations": "^3.26.3",
     "@clerk/nextjs": "^6.33.2",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
@@ -69,15 +70,16 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
     "@cspell/dict-de-de": "^4.1.2",
     "@jest/globals": "^30.2.0",
     "@playwright/test": "^1.55.1",
+    "@testcontainers/postgresql": "^10.12.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.14.10",
     "@types/react": "^18.2.74",
     "@types/react-dom": "^18.2.24",
     "@types/uuid": "^10.0.0",
-    "@axe-core/playwright": "^4.10.0",
     "cspell": "^8.19.4",
     "dotenv": "^17.2.3",
     "dotenv-cli": "^10.0.0",
@@ -89,10 +91,9 @@
     "playwright": "^1.55.1",
     "prettier": "^3.6.2",
     "prisma": "^6.16.3",
+    "testcontainers": "^10.12.0",
     "ts-jest": "^29.4.4",
     "ts-node": "^10.9.2",
-    "testcontainers": "^10.12.0",
-    "@testcontainers/postgresql": "^10.12.0",
     "typescript": "^5.9.3"
   },
   "engines": {
