@@ -419,7 +419,7 @@ export default function CourseDetailPage() {
               onBookNow={handleBookCourse}
             />
           );
-        })()}{' '}
+        })()}
         {/* Related Courses Section */}
         <section className='mt-16'>
           <h2 className='text-2xl font-bold text-gray-900 mb-8'>

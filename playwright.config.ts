@@ -14,6 +14,14 @@ export default defineConfig({
   globalSetup: './tests/e2e/global-setup.ts',
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
+    // If Vercel preview is SSO-protected, you can bypass protection by providing
+    // a token via env VERCEL_PROTECTION_BYPASS (or VERCEL_BYPASS). This will be
+    // sent as the required header for all requests, including APIRequestContext.
+    extraHTTPHeaders: (() => {
+      const token =
+        process.env.VERCEL_PROTECTION_BYPASS || process.env.VERCEL_BYPASS;
+      return token ? { 'x-vercel-protection-bypass': token } : undefined;
+    })(),
     trace: 'retain-on-failure',
     video: 'retain-on-failure',
     screenshot: 'only-on-failure',
