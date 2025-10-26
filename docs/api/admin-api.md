@@ -76,7 +76,192 @@ const corsHeaders = {
 };
 ```
 
-## Endpoints
+## Public API Endpoints
+
+These endpoints are publicly accessible and do not require authentication.
+
+### Public Courses Listing
+
+**Endpoint**: `GET /api/courses`
+
+**Description**: Retrieve all published courses with filtering, sorting, and pagination options.
+
+**Authentication**: ❌ Not required (public endpoint)
+
+**Query Parameters**:
+
+- `search` (optional): Search term for course title or description
+- `minPrice` (optional): Minimum price filter
+- `maxPrice` (optional): Maximum price filter
+- `availableOnly` (optional): Filter only courses with available spots (boolean)
+- `sortBy` (optional): Sort by `title`, `price`, or `date`
+- `sortOrder` (optional): Sort order `asc` or `desc`
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 10, max: 100)
+
+**Example Request**:
+
+```bash
+# Get all courses
+curl https://your-app.vercel.app/api/courses
+
+# Search and filter courses
+curl "https://your-app.vercel.app/api/courses?search=react&minPrice=50&sortBy=price&sortOrder=asc&page=1&limit=20"
+```
+
+**Response**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "courses": [
+      {
+        "id": "course_123",
+        "title": "Introduction to React",
+        "description": "Learn React basics",
+        "slug": "intro-to-react",
+        "price": 99.99,
+        "currency": "USD",
+        "capacity": 30,
+        "date": "2025-02-01T10:00:00.000Z",
+        "isPublished": true,
+        "availableSpots": 15,
+        "totalBookings": 15,
+        "createdAt": "2025-01-01T00:00:00.000Z",
+        "updatedAt": "2025-01-15T00:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 25,
+      "totalPages": 3,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  },
+  "meta": {
+    "requestId": "req_abc123",
+    "timestamp": "2025-01-15T10:30:00.000Z"
+  }
+}
+```
+
+## Authenticated User Endpoints
+
+These endpoints require user authentication but do not require admin privileges.
+
+### User's Bookings
+
+**Endpoint**: `GET /api/bookings`
+
+**Description**: Retrieve the authenticated user's course bookings.
+
+**Authentication**: ✅ Required (user must be logged in)
+
+**Query Parameters**:
+
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 20, max: 100)
+- `status` (optional): Filter by payment status (`PENDING`, `PAID`, `FAILED`, `REFUNDED`)
+
+**Example Request**:
+
+```bash
+# Get user's bookings (requires authentication cookie or token)
+curl -X GET "https://your-app.vercel.app/api/bookings" \
+  -H "Cookie: __session=<clerk-session-token>"
+
+# Filter by status
+curl -X GET "https://your-app.vercel.app/api/bookings?status=PAID&page=1&limit=10" \
+  -H "Cookie: __session=<clerk-session-token>"
+```
+
+**Response**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "bookings": [
+      {
+        "id": "booking_123",
+        "courseId": "course_456",
+        "courseTitle": "Introduction to React",
+        "coursePrice": 99.99,
+        "currency": "USD",
+        "paymentStatus": "PAID",
+        "createdAt": "2025-01-10T15:30:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 5,
+      "pages": 1
+    }
+  }
+}
+```
+
+**Error Responses**:
+
+- `401 UNAUTHORIZED`: User is not authenticated
+
+### Create Booking
+
+**Endpoint**: `POST /api/bookings`
+
+**Description**: Create a new course booking for the authenticated user.
+
+**Authentication**: ✅ Required (user must be logged in)
+
+**Request Body**:
+
+```json
+{
+  "courseId": "course_456"
+}
+```
+
+**Example Request**:
+
+```bash
+curl -X POST "https://your-app.vercel.app/api/bookings" \
+  -H "Content-Type: application/json" \
+  -H "Cookie: __session=<clerk-session-token>" \
+  -d '{"courseId": "course_456"}'
+```
+
+**Response**:
+
+```json
+{
+  "success": true,
+  "data": {
+    "booking": {
+      "id": "booking_789",
+      "courseId": "course_456",
+      "courseTitle": "Introduction to React",
+      "price": 99.99,
+      "paymentStatus": "PENDING",
+      "createdAt": "2025-01-15T10:30:00.000Z"
+    }
+  }
+}
+```
+
+**Error Responses**:
+
+- `401 UNAUTHORIZED`: User is not authenticated
+- `404 NOT_FOUND`: Course not found or not available
+- `409 CONFLICT`: User already has a booking for this course
+- `400 VALIDATION_ERROR`: Invalid request data
+
+## Admin API Endpoints
+
+Admin endpoints require both authentication and admin role privileges.
 
 ### 1. Users Management
 
@@ -120,47 +305,41 @@ const corsHeaders = {
 - `403 FORBIDDEN`: Not an admin user
 - `500 INTERNAL_ERROR`: Server error
 
-### 2. Courses Management
+### 2. Courses Management (Admin View)
 
 **Endpoint**: `GET /api/admin/courses`
 
-**Description**: Retrieve all courses with their booking statistics.
+**Description**: Retrieve all courses with their booking statistics (admin endpoint for management
+purposes).
 
-**CORS**: ✅ Enabled
+**Authentication**: ❌ Not required
+
+**Note**: This endpoint is similar to `/api/courses` but includes additional administrative data
+like booking counts. For public course listings, use `/api/courses` instead.
 
 **Response**:
 
 ```json
 {
-  "success": true,
-  "data": {
-    "courses": [
-      {
-        "id": 1,
-        "title": "Introduction to React",
-        "description": "Learn React basics",
-        "price": 99.99,
-        "duration": 8,
-        "createdAt": "2025-01-01T00:00:00.000Z",
-        "_count": {
-          "bookings": 25
-        }
+  "courses": [
+    {
+      "id": 1,
+      "title": "Introduction to React",
+      "description": "Learn React basics",
+      "price": 99.99,
+      "duration": 8,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "_count": {
+        "bookings": 25
       }
-    ],
-    "total": 5
-  },
-  "meta": {
-    "requestId": "req_def456",
-    "timestamp": "2025-01-15T10:30:00.000Z",
-    "version": "1.0"
-  }
+    }
+  ],
+  "total": 5
 }
 ```
 
 **Error Responses**:
 
-- `401 UNAUTHORIZED`: Not authenticated
-- `403 FORBIDDEN`: Not an admin user
 - `500 INTERNAL_ERROR`: Server error
 
 ### 3. Analytics
