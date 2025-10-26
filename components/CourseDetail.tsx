@@ -4,6 +4,29 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
 import Image from 'next/image';
 import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  Divider,
+  Grid,
+  Paper,
+  Typography,
+  Alert,
+} from '@mui/material';
+import {
+  CalendarToday,
+  People,
+  Euro,
+  CheckCircle,
+  HourglassEmpty,
+  EventBusy,
+  PlayCircleOutline,
+  FormatQuote,
+} from '@mui/icons-material';
 
 interface Course {
   id: string;
@@ -88,236 +111,368 @@ const CourseDetail: React.FC<CourseDetailProps> = ({
 
   if (isLoading) {
     return (
-      <div className='animate-pulse' aria-busy='true' aria-live='polite'>
-        <div className='h-64 bg-gray-200 rounded-lg mb-6'></div>
-        <div className='h-8 bg-gray-200 rounded w-3/4 mb-4'></div>
-        <div className='h-4 bg-gray-200 rounded w-full mb-2'></div>
-        <div className='h-4 bg-gray-200 rounded w-5/6 mb-6'></div>
-        <div className='h-12 bg-gray-200 rounded w-32'></div>
-      </div>
+      <Container maxWidth='lg' sx={{ py: 4 }}>
+        <Box aria-busy='true' aria-live='polite'>
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Box
+              sx={{ height: 300, bgcolor: 'grey.200', borderRadius: 2, mb: 2 }}
+            />
+            <Box
+              sx={{
+                height: 40,
+                bgcolor: 'grey.200',
+                borderRadius: 1,
+                mb: 2,
+                width: '75%',
+              }}
+            />
+            <Box
+              sx={{ height: 20, bgcolor: 'grey.200', borderRadius: 1, mb: 1 }}
+            />
+            <Box
+              sx={{
+                height: 20,
+                bgcolor: 'grey.200',
+                borderRadius: 1,
+                width: '80%',
+              }}
+            />
+          </Paper>
+        </Box>
+      </Container>
     );
   }
 
   return (
-    <div className='bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden'>
-      {/* Course Image */}
-      {course.image && (
-        <div className='aspect-video bg-gray-100 relative'>
-          <Image
-            src={course.image}
-            alt={course.title}
-            fill
-            className='object-cover'
-          />
-        </div>
-      )}
-
-      <div className='p-6'>
-        {/* Course Header */}
-        <div className='mb-6'>
-          <h1 className='text-3xl font-bold text-gray-900 mb-4'>
-            {course.title}
-          </h1>
-
-          <div className='flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-4'>
-            {course.date && (
-              <div className='flex items-center'>
-                <svg
-                  className='w-4 h-4 mr-1.5'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                  aria-hidden='true'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 002 2v12a2 2 0 002 2z'
-                  />
-                </svg>
-                {format(course.date, 'PPP', { locale: de })}
-              </div>
-            )}
-
-            {course.capacity && (
-              <div className='flex items-center'>
-                <svg
-                  className='w-4 h-4 mr-1.5'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                  aria-hidden='true'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'
-                  />
-                </svg>
-                {course.availableSpots !== null ? (
-                  <span>
-                    {course.availableSpots} von {course.capacity} Plätzen
-                    verfügbar
-                  </span>
-                ) : (
-                  <span>{course.capacity} Plätze</span>
-                )}
-              </div>
-            )}
-
-            <div className='flex items-center'>
-              <svg
-                className='w-4 h-4 mr-1.5'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-                aria-hidden='true'
+    <Container maxWidth='lg' sx={{ py: 4 }}>
+      <Grid container spacing={3}>
+        {/* Main Content - Left Column */}
+        <Grid item xs={12} md={8}>
+          {/* Hero Section with Image */}
+          <Card sx={{ mb: 3 }}>
+            {course.image && (
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: '100%',
+                  height: 400,
+                  bgcolor: 'grey.100',
+                }}
               >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1'
+                <Image
+                  src={course.image}
+                  alt={course.title}
+                  fill
+                  style={{ objectFit: 'cover' }}
                 />
-              </svg>
-              {formatCurrency(course.price, course.currency)}
-            </div>
-          </div>
-
-          {/* Course Status Badges */}
-          <div className='flex flex-wrap gap-2 mb-4'>
-            {/* Internal booking indicator */}
-            <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800'>
-              Interne Buchung
-            </span>
-
-            {!course.isPublished && (
-              <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800'>
-                Nicht veröffentlicht
-              </span>
+              </Box>
             )}
-
-            {course.userBookingStatus === 'PAID' && (
-              <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800'>
-                ✓ Gebucht
-              </span>
-            )}
-
-            {course.userBookingStatus === 'PENDING' && (
-              <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800'>
-                ⏳ Zahlung ausstehend
-              </span>
-            )}
-
-            {course.availableSpots === 0 && (
-              <span
-                className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800'
-                data-testid='course-detail-sold-out-badge'
+            <CardContent>
+              <Typography
+                variant='h3'
+                component='h1'
+                gutterBottom
+                fontWeight='bold'
               >
-                Ausgebucht
-              </span>
-            )}
+                {course.title}
+              </Typography>
 
-            {course.date && course.date < new Date() && (
-              <span className='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800'>
-                Vergangen
-              </span>
-            )}
-          </div>
-        </div>
+              {/* Status Badges */}
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                <Chip label='Interne Buchung' color='primary' size='small' />
 
-        {/* Course Description */}
-        {course.description && (
-          <div className='mb-8'>
-            <h2 className='text-xl font-semibold text-gray-900 mb-3'>
-              Kursbeschreibung
-            </h2>
-            <div className='text-gray-700 leading-relaxed whitespace-pre-wrap'>
-              {course.description}
-            </div>
-          </div>
-        )}
+                {!course.isPublished && (
+                  <Chip
+                    label='Nicht veröffentlicht'
+                    color='warning'
+                    size='small'
+                  />
+                )}
 
-        {/* Booking Information */}
-        <div className='bg-gray-50 rounded-lg p-6 mb-6'>
-          <h3 className='font-semibold text-gray-900 mb-3'>
-            Buchungsinformationen
-          </h3>
-          <dl className='space-y-2 text-sm text-gray-600'>
-            <div className='flex justify-between'>
-              <dt>Preis:</dt>
-              <dd className='font-medium text-gray-900'>
-                {formatCurrency(course.price, course.currency)}
-              </dd>
-            </div>
+                {course.userBookingStatus === 'PAID' && (
+                  <Chip
+                    icon={<CheckCircle />}
+                    label='Gebucht'
+                    color='success'
+                    size='small'
+                  />
+                )}
 
-            {course.capacity && (
-              <div className='flex justify-between'>
-                <dt>Verfügbare Plätze:</dt>
-                <dd className='font-medium text-gray-900'>
-                  {course.availableSpots ?? course.capacity}
-                </dd>
-              </div>
-            )}
+                {course.userBookingStatus === 'PENDING' && (
+                  <Chip
+                    icon={<HourglassEmpty />}
+                    label='Zahlung ausstehend'
+                    color='warning'
+                    size='small'
+                  />
+                )}
 
-            {course.totalBookings !== undefined && (
-              <div className='flex justify-between'>
-                <dt>Bereits gebucht:</dt>
-                <dd className='font-medium text-gray-900'>
-                  {course.totalBookings}
-                </dd>
-              </div>
-            )}
-          </dl>
-        </div>
+                {course.availableSpots === 0 && (
+                  <Chip
+                    label='Ausgebucht'
+                    color='error'
+                    size='small'
+                    data-testid='course-detail-sold-out-badge'
+                  />
+                )}
 
-        {/* Booking Button */}
-        <div className='flex justify-between items-center'>
-          <div className='text-sm text-gray-500'>
-            Erstellt{' '}
-            {formatDistanceToNow(course.createdAt, {
-              addSuffix: true,
-              locale: de,
-            })}
-          </div>
+                {course.date && course.date < new Date() && (
+                  <Chip icon={<EventBusy />} label='Vergangen' size='small' />
+                )}
+              </Box>
 
-          {onBookNow && (
-            <div className='flex flex-col items-end'>
-              <button
-                onClick={handleBookNow}
-                disabled={isBookingDisabled()}
-                title={getDisableReason() || undefined}
-                aria-disabled={isBookingDisabled()}
-                aria-busy={isBooking || undefined}
-                type='button'
-                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                  isBookingDisabled()
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
-                }`}
-                data-testid='course-detail-book-cta'
-              >
-                {getBookingButtonText()}
-              </button>
-              {/* Screen reader Statusausgabe */}
-              <span className='sr-only' aria-live='polite'>
-                {isBooking ? 'Buchung läuft' : ''}
-              </span>
-              {isBookingDisabled() && getDisableReason() && (
-                <span
-                  className='mt-2 text-xs text-gray-500'
-                  data-testid='course-detail-disable-reason'
-                >
-                  {getDisableReason()}
-                </span>
+              {/* Course Meta Information */}
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
+                {course.date && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CalendarToday fontSize='small' color='action' />
+                    <Typography variant='body2' color='text.secondary'>
+                      {format(course.date, 'PPP', { locale: de })}
+                    </Typography>
+                  </Box>
+                )}
+
+                {course.capacity && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <People fontSize='small' color='action' />
+                    <Typography variant='body2' color='text.secondary'>
+                      {course.availableSpots !== null
+                        ? `${course.availableSpots} von ${course.capacity} Plätzen verfügbar`
+                        : `${course.capacity} Plätze`}
+                    </Typography>
+                  </Box>
+                )}
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Euro fontSize='small' color='action' />
+                  <Typography
+                    variant='body2'
+                    color='text.secondary'
+                    fontWeight='medium'
+                  >
+                    {formatCurrency(course.price, course.currency)}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Divider sx={{ my: 3 }} />
+
+              {/* Course Description */}
+              {course.description && (
+                <Box sx={{ mb: 4 }}>
+                  <Typography variant='h5' gutterBottom fontWeight='bold'>
+                    Kursbeschreibung
+                  </Typography>
+                  <Typography
+                    variant='body1'
+                    color='text.secondary'
+                    sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.8 }}
+                  >
+                    {course.description}
+                  </Typography>
+                </Box>
               )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+            </CardContent>
+          </Card>
+
+          {/* Video Section */}
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}
+              >
+                <PlayCircleOutline color='primary' />
+                <Typography variant='h5' fontWeight='bold'>
+                  Kursimpressionen
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: '100%',
+                  height: 400,
+                  bgcolor: 'grey.200',
+                  borderRadius: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Typography variant='body1' color='text.secondary'>
+                  Video-Placeholder: Hier werden bald Kursimpressionen zu sehen
+                  sein
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+
+          {/* Participant Testimonial Section */}
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}
+              >
+                <FormatQuote color='primary' />
+                <Typography variant='h5' fontWeight='bold'>
+                  Erfahrungen aus der Praxis
+                </Typography>
+              </Box>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 3,
+                  bgcolor: 'grey.50',
+                  borderLeft: 4,
+                  borderColor: 'primary.main',
+                  position: 'relative',
+                }}
+              >
+                <Typography
+                  variant='body1'
+                  paragraph
+                  sx={{ fontStyle: 'italic', lineHeight: 1.8 }}
+                >
+                  &quot;Dieser Kurs hat meine Erwartungen übertroffen. Die
+                  praktischen Übungen und die kompetente Betreuung haben mir
+                  geholfen, mein Wissen direkt anzuwenden. Ich kann diesen Kurs
+                  jedem empfehlen, der sich in diesem Bereich weiterentwickeln
+                  möchte.&quot;
+                </Typography>
+                <Typography
+                  variant='subtitle2'
+                  color='text.secondary'
+                  fontWeight='bold'
+                >
+                  — Maria Schmidt, Kursteilnehmerin
+                </Typography>
+              </Paper>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Right Sidebar */}
+        <Grid item xs={12} md={4}>
+          {/* Booking Card */}
+          <Card sx={{ position: 'sticky', top: 20 }}>
+            <CardContent>
+              <Typography variant='h5' gutterBottom fontWeight='bold'>
+                Buchungsinformationen
+              </Typography>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box sx={{ mb: 3 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    mb: 2,
+                  }}
+                >
+                  <Typography variant='body2' color='text.secondary'>
+                    Preis:
+                  </Typography>
+                  <Typography variant='h6' fontWeight='bold' color='primary'>
+                    {formatCurrency(course.price, course.currency)}
+                  </Typography>
+                </Box>
+
+                {course.capacity && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      mb: 2,
+                    }}
+                  >
+                    <Typography variant='body2' color='text.secondary'>
+                      Verfügbare Plätze:
+                    </Typography>
+                    <Typography variant='body1' fontWeight='medium'>
+                      {course.availableSpots ?? course.capacity}
+                    </Typography>
+                  </Box>
+                )}
+
+                {course.totalBookings !== undefined && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      mb: 2,
+                    }}
+                  >
+                    <Typography variant='body2' color='text.secondary'>
+                      Bereits gebucht:
+                    </Typography>
+                    <Typography variant='body1' fontWeight='medium'>
+                      {course.totalBookings}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Booking Button */}
+              {onBookNow && (
+                <Box>
+                  <Button
+                    variant='contained'
+                    size='large'
+                    fullWidth
+                    onClick={handleBookNow}
+                    disabled={isBookingDisabled()}
+                    aria-disabled={isBookingDisabled()}
+                    aria-busy={isBooking || undefined}
+                    data-testid='course-detail-book-cta'
+                    sx={{
+                      py: 1.5,
+                      fontSize: '1.1rem',
+                      fontWeight: 'bold',
+                      textTransform: 'none',
+                    }}
+                  >
+                    {getBookingButtonText()}
+                  </Button>
+
+                  {/* Screen reader status */}
+                  <span
+                    style={{ position: 'absolute', left: '-10000px' }}
+                    aria-live='polite'
+                  >
+                    {isBooking ? 'Buchung läuft' : ''}
+                  </span>
+
+                  {isBookingDisabled() && getDisableReason() && (
+                    <Alert
+                      severity='info'
+                      sx={{ mt: 2 }}
+                      data-testid='course-detail-disable-reason'
+                    >
+                      {getDisableReason()}
+                    </Alert>
+                  )}
+                </Box>
+              )}
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography
+                variant='caption'
+                color='text.secondary'
+                display='block'
+                textAlign='center'
+              >
+                Erstellt{' '}
+                {formatDistanceToNow(course.createdAt, {
+                  addSuffix: true,
+                  locale: de,
+                })}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Container>
   );
 };
 
