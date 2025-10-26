@@ -6,26 +6,26 @@ This document describes all API endpoints including public, authenticated user, 
 
 ### Public Endpoints (No Authentication)
 
-| Endpoint         | Method | Description                    |
-| ---------------- | ------ | ------------------------------ |
-| `/api/courses`   | GET    | Browse all published courses   |
+| Endpoint       | Method | Description                  |
+| -------------- | ------ | ---------------------------- |
+| `/api/courses` | GET    | Browse all published courses |
 
 ### Authenticated Endpoints (User Login Required)
 
-| Endpoint         | Method | Description                    |
-| ---------------- | ------ | ------------------------------ |
-| `/api/bookings`  | GET    | Get user's booked courses      |
-| `/api/bookings`  | POST   | Create a new course booking    |
+| Endpoint        | Method | Description                 |
+| --------------- | ------ | --------------------------- |
+| `/api/bookings` | GET    | Get user's booked courses   |
+| `/api/bookings` | POST   | Create a new course booking |
 
 ### Admin Endpoints (Admin Role Required)
 
-| Endpoint                | Method | Description                    |
-| ----------------------- | ------ | ------------------------------ |
-| `/api/admin/users`      | GET    | User management with stats     |
-| `/api/admin/courses`    | GET    | Course management with stats   |
-| `/api/admin/analytics`  | GET    | Analytics and metrics          |
-| `/api/admin/errors`     | GET    | Error monitoring and logs      |
-| `/api/admin/errors`     | POST   | Error management actions       |
+| Endpoint               | Method | Description                  |
+| ---------------------- | ------ | ---------------------------- |
+| `/api/admin/users`     | GET    | User management with stats   |
+| `/api/admin/courses`   | GET    | Course management with stats |
+| `/api/admin/analytics` | GET    | Analytics and metrics        |
+| `/api/admin/errors`    | GET    | Error monitoring and logs    |
+| `/api/admin/errors`    | POST   | Error management actions     |
 
 ## Overview
 
