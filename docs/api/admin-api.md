@@ -1,16 +1,45 @@
-# Admin API Documentation
+# API Documentation
 
-This document describes the non-public admin API endpoints that are configured to allow external
-applications to read and write data.
+This document describes all API endpoints including public, authenticated user, and admin endpoints.
+
+## Quick Reference
+
+### Public Endpoints (No Authentication)
+
+| Endpoint         | Method | Description                    |
+| ---------------- | ------ | ------------------------------ |
+| `/api/courses`   | GET    | Browse all published courses   |
+
+### Authenticated Endpoints (User Login Required)
+
+| Endpoint         | Method | Description                    |
+| ---------------- | ------ | ------------------------------ |
+| `/api/bookings`  | GET    | Get user's booked courses      |
+| `/api/bookings`  | POST   | Create a new course booking    |
+
+### Admin Endpoints (Admin Role Required)
+
+| Endpoint                | Method | Description                    |
+| ----------------------- | ------ | ------------------------------ |
+| `/api/admin/users`      | GET    | User management with stats     |
+| `/api/admin/courses`    | GET    | Course management with stats   |
+| `/api/admin/analytics`  | GET    | Analytics and metrics          |
+| `/api/admin/errors`     | GET    | Error monitoring and logs      |
+| `/api/admin/errors`     | POST   | Error management actions       |
 
 ## Overview
 
-The admin API endpoints are secured with:
+The API endpoints are organized by authentication level:
 
-- **Authentication**: Clerk-based user authentication
-- **Authorization**: Admin role verification
-- **CORS**: Cross-Origin Resource Sharing enabled for external apps
+- **Public Endpoints**: Accessible without authentication for browsing public data
+- **Authenticated Endpoints**: Require user login for personal data and actions
+- **Admin Endpoints**: Require authentication and admin role for management functions
+
+All endpoints use:
+
 - **Standardized Responses**: Consistent JSON format with error codes and request IDs
+- **CORS**: Cross-Origin Resource Sharing enabled where appropriate
+- **Error Handling**: Comprehensive error responses with Rollbar monitoring
 
 ## Base URL
 
@@ -19,10 +48,22 @@ The admin API endpoints are secured with:
 
 ## Authentication
 
-All admin endpoints require:
+Authentication requirements vary by endpoint type:
 
-1. A valid Clerk authentication session
-2. User with `admin` role in their `publicMetadata`
+**Public Endpoints** (`/api/courses`)
+
+- No authentication required
+- Accessible to anyone
+
+**Authenticated Endpoints** (`/api/bookings`)
+
+- Requires a valid Clerk authentication session
+- User must be logged in
+
+**Admin Endpoints** (`/api/admin/*`)
+
+- Requires a valid Clerk authentication session
+- User must have `admin` role in their `publicMetadata`
 
 ### Authentication Methods
 
@@ -43,13 +84,17 @@ Authorization: Bearer <clerk-session-token>
 testing purposes. For production environments, you should restrict origins to specific trusted
 domains.
 
-All admin endpoints currently support CORS with:
+**CORS is enabled only on admin endpoints** (`/api/admin/*`) to allow external applications to
+access administrative data:
 
 - **Allowed Origins**: `*` (all origins) - **⚠️ Change this in production!**
 - **Allowed Methods**: Vary by endpoint (GET, POST, OPTIONS)
 - **Allowed Headers**: `Content-Type`, `Authorization`
 
-Preflight requests (OPTIONS) are supported on all endpoints.
+Preflight requests (OPTIONS) are supported on all admin endpoints.
+
+**Note**: Public and authenticated user endpoints do not have CORS headers as they are intended for
+same-origin usage within the web application.
 
 ### Production CORS Configuration
 
