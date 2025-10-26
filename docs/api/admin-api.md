@@ -39,13 +39,42 @@ Authorization: Bearer <clerk-session-token>
 
 ## CORS Configuration
 
-All admin endpoints support CORS with:
+⚠️ **Security Warning**: The current configuration uses wildcard CORS (`*`) for development and
+testing purposes. For production environments, you should restrict origins to specific trusted
+domains.
 
-- **Allowed Origins**: `*` (all origins)
+All admin endpoints currently support CORS with:
+
+- **Allowed Origins**: `*` (all origins) - **⚠️ Change this in production!**
 - **Allowed Methods**: Vary by endpoint (GET, POST, OPTIONS)
 - **Allowed Headers**: `Content-Type`, `Authorization`
 
 Preflight requests (OPTIONS) are supported on all endpoints.
+
+### Production CORS Configuration
+
+For production, update the `corsHeaders` in each admin route file to restrict origins:
+
+```typescript
+// Example: Restrict to specific domains
+const corsHeaders = {
+  'Access-Control-Allow-Origin': 'https://trusted-app.example.com',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Example: Allow multiple trusted domains
+const allowedOrigins = ['https://trusted-app-1.example.com', 'https://trusted-app-2.example.com'];
+
+const origin = request.headers.get('origin');
+const corsOrigin = allowedOrigins.includes(origin || '') ? origin : allowedOrigins[0];
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': corsOrigin,
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+```
 
 ## Endpoints
 
@@ -373,16 +402,95 @@ async function getAnalytics(timeframe = '24h', type = 'summary') {
 
 ## Security Considerations
 
-1. **Authentication Required**: All endpoints require valid Clerk authentication
-2. **Admin Role Required**: All endpoints require admin role in user metadata
-3. **CORS Enabled**: Endpoints are accessible from external origins
-4. **Request Tracking**: All requests include a unique request ID for tracing
-5. **Error Monitoring**: All errors are logged to Rollbar (constitutional requirement)
+⚠️ **Important Security Warnings for Production**
+
+1. **Wildcard CORS**: Current implementation uses `*` for CORS origin, allowing any domain to access
+   admin endpoints. **You MUST restrict this to specific trusted domains in production.**
+
+2. **No Rate Limiting**: No rate limiting is currently implemented. **You MUST add rate limiting
+   before deploying to production** to prevent abuse and DoS attacks.
+
+3. **Authentication Required**: All endpoints require valid Clerk authentication
+
+4. **Admin Role Required**: All endpoints require admin role in user metadata
+
+5. **CORS Enabled**: Endpoints are accessible from external origins (see warning #1)
+
+6. **Request Tracking**: All requests include a unique request ID for tracing
+
+7. **Error Monitoring**: All errors are logged to Rollbar (constitutional requirement)
+
+### Production Deployment Checklist
+
+Before deploying to production, ensure you:
+
+- [ ] Restrict CORS origins to specific trusted domains
+- [ ] Implement rate limiting on all admin endpoints
+- [ ] Set up proper monitoring and alerting for admin API usage
+- [ ] Review and test authentication flows
+- [ ] Verify admin role assignment process is secure
+- [ ] Enable API usage logging and auditing
+- [ ] Consider implementing API key authentication for machine-to-machine access
+- [ ] Test with production-like load and traffic patterns
 
 ## Rate Limiting
 
-Currently, no rate limiting is implemented on these endpoints. Consider implementing rate limiting
-for production use to prevent abuse.
+⚠️ **Security Warning**: Currently, no rate limiting is implemented on these endpoints. This poses a
+security risk for production use, especially with wildcard CORS enabled.
+
+### Recommended Implementation
+
+For production, implement rate limiting using one of these approaches:
+
+**Option 1: Use existing middleware**
+
+The project already has a `withRateLimit` middleware in `lib/middleware/api-error-handling.ts`.
+Apply it to admin routes:
+
+```typescript
+import { withRateLimit } from '@/lib/middleware/api-error-handling';
+
+export const GET = withRateLimit(
+  100,
+  15 * 60 * 1000
+)(async (request: NextRequest) => {
+  // Your handler code
+});
+```
+
+**Option 2: Use Vercel Rate Limiting**
+
+Configure rate limiting in `vercel.json`:
+
+```json
+{
+  "functions": {
+    "app/api/admin/**/*.ts": {
+      "maxDuration": 10,
+      "rateLimit": {
+        "requests": 100,
+        "window": "1m"
+      }
+    }
+  }
+}
+```
+
+**Option 3: Use a third-party service**
+
+Consider using services like:
+
+- [Upstash Rate Limiting](https://upstash.com/docs/redis/sdks/ratelimit-ts/overview)
+- [Unkey](https://www.unkey.com/)
+- [Redis-based rate limiting](https://github.com/tj/node-ratelimiter)
+
+### Recommended Rate Limits for Admin Endpoints
+
+- **Users/Courses**: 100 requests per 15 minutes
+- **Analytics**: 50 requests per 15 minutes
+- **Error Management**: 200 requests per 15 minutes
+
+Adjust these based on your production usage patterns and monitoring data.
 
 ## Support
 
