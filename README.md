@@ -103,3 +103,57 @@ Failure to monitor constitutes a process violation per the constitution
     `JEST_WORKER_ID`) or cleaned up in a teardown.
   - Database/containers: If you use Testcontainers, ensure proper teardown (`afterAll`) and call
     `prisma.$disconnect()` after DB tests.
+
+## Tests
+
+### Unit & Contracts
+
+```bash
+npm run test:unit
+npm run test:contracts
+```
+
+### E2E (Playwright)
+
+Standard (Playwright startet lokalen Dev-Server auf :3000, sofern frei):
+
+```bash
+npx playwright test
+```
+
+UI-Runner:
+
+```bash
+npx playwright test --ui
+```
+
+Headed-Modus:
+
+```bash
+npx playwright test --headed
+```
+
+#### Port und Base-URL steuern
+
+Playwright unterstützt flexible Ports und Base-URLs:
+
+- `PW_PORT`: Port, auf dem Playwright den lokalen Next.js-Server startet (Default: `3000`).
+- `PLAYWRIGHT_BASE_URL`: Absolute Base-URL (z. B. Vercel Preview/Prod). Wenn gesetzt, startet
+  Playwright keinen lokalen Server.
+- `PW_WEB_SERVER_COMMAND`: Optional eigener Startbefehl. Standard ist `npx next dev -p $PW_PORT`.
+
+Beispiele:
+
+```bash
+# Lokal auf Port 3002, Playwright startet Next selbst
+PW_PORT=3002 npx playwright test
+
+# Gegen laufenden lokalen Server (keinen Server starten)
+PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test
+
+# Gegen Vercel-Preview mit SSO-Bypass-Header (CI setzt Secret)
+PLAYWRIGHT_BASE_URL=https://<vercel-preview>.vercel.app npx playwright test
+
+# Eigenen Startbefehl nutzen (z. B. Production-Build)
+PW_PORT=3002 PW_WEB_SERVER_COMMAND='next start -p 3002' npx playwright test
+```

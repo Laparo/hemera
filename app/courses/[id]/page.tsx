@@ -261,7 +261,7 @@ export default function CourseDetailPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <>
       {/* JSON-LD Strukturierte Daten */}
       {(() => {
         const url = `${SITE_CONFIG.url}/courses/${course.id}`;
@@ -349,17 +349,105 @@ export default function CourseDetailPage() {
         ));
       })()}
 
-      {/* Header */}
-      <header className='bg-white border-b border-gray-200'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='flex justify-between items-center h-16'>
-            <div className='flex items-center'>
-              <button
-                onClick={() => router.back()}
-                className='mr-4 p-2 text-gray-400 hover:text-gray-600'
+      <div className='min-h-screen bg-gray-50'>
+        {/* Header */}
+        <header className='bg-white border-b border-gray-200'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+            <div className='flex justify-between items-center h-16'>
+              <div className='flex items-center'>
+                <button
+                  onClick={() => router.back()}
+                  className='mr-4 p-2 text-gray-400 hover:text-gray-600'
+                >
+                  <svg
+                    className='w-5 h-5'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M15 19l-7-7 7-7'
+                    />
+                  </svg>
+                </button>
+                <h1 className='text-xl font-semibold text-gray-900'>
+                  {course.title}
+                </h1>
+              </div>
+              <nav className='flex items-center space-x-6'>
+                <a
+                  href='/courses'
+                  className='text-gray-600 hover:text-gray-900 transition-colors'
+                >
+                  Alle Kurse
+                </a>
+                {isSignedIn && (
+                  <a
+                    href='/dashboard'
+                    className='text-gray-600 hover:text-gray-900 transition-colors'
+                  >
+                    Dashboard
+                  </a>
+                )}
+                {!isSignedIn && isLoaded && (
+                  <a
+                    href='/auth/signin'
+                    className='text-blue-600 hover:text-blue-700 transition-colors'
+                  >
+                    Anmelden
+                  </a>
+                )}
+              </nav>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+          {(() => {
+            // Kompatible Props für die Komponente herstellen (Date-Objekte statt ISO-Strings)
+            const courseForComponent = {
+              ...course,
+              date: course.date ? new Date(course.date as any) : null,
+            } as any;
+            return (
+              <CourseDetail
+                course={courseForComponent}
+                isLoading={false}
+                onBookNow={handleBookCourse}
+              />
+            );
+          })()}
+          {/* Related Courses Section */}
+          <section className='mt-16'>
+            <h2 className='text-2xl font-bold text-gray-900 mb-8'>
+              Ähnliche Kurse
+            </h2>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+              {/* Placeholder for related courses */}
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={index}
+                  className='bg-white rounded-lg shadow-sm p-6 border border-gray-200'
+                >
+                  <div className='h-4 bg-gray-200 rounded w-3/4 mb-3'></div>
+                  <div className='h-3 bg-gray-200 rounded w-full mb-2'></div>
+                  <div className='h-3 bg-gray-200 rounded w-2/3 mb-4'></div>
+                  <div className='h-8 bg-gray-200 rounded w-1/2'></div>
+                </div>
+              ))}
+            </div>
+            <div className='text-center mt-8'>
+              <a
+                href='/courses'
+                className='inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700'
               >
+                Alle Kurse ansehen
                 <svg
-                  className='w-5 h-5'
+                  className='ml-2 -mr-1 w-5 h-5'
                   fill='none'
                   stroke='currentColor'
                   viewBox='0 0 24 24'
@@ -368,111 +456,25 @@ export default function CourseDetailPage() {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     strokeWidth={2}
-                    d='M15 19l-7-7 7-7'
+                    d='M9 5l7 7-7 7'
                   />
                 </svg>
-              </button>
-              <h1 className='text-xl font-semibold text-gray-900'>
-                {course.title}
-              </h1>
-            </div>
-            <nav className='flex items-center space-x-6'>
-              <a
-                href='/courses'
-                className='text-gray-600 hover:text-gray-900 transition-colors'
-              >
-                Alle Kurse
               </a>
-              {isSignedIn && (
-                <a
-                  href='/dashboard'
-                  className='text-gray-600 hover:text-gray-900 transition-colors'
-                >
-                  Dashboard
-                </a>
-              )}
-              {!isSignedIn && isLoaded && (
-                <a
-                  href='/auth/signin'
-                  className='text-blue-600 hover:text-blue-700 transition-colors'
-                >
-                  Anmelden
-                </a>
-              )}
-            </nav>
-          </div>
-        </div>
-      </header>
+            </div>
+          </section>
+        </main>
 
-      {/* Main Content */}
-      <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-        {(() => {
-          // Kompatible Props für die Komponente herstellen (Date-Objekte statt ISO-Strings)
-          const courseForComponent = {
-            ...course,
-            date: course.date ? new Date(course.date as any) : null,
-          } as any;
-          return (
-            <CourseDetail
-              course={courseForComponent}
-              isLoading={false}
-              onBookNow={handleBookCourse}
-            />
-          );
-        })()}
-        {/* Related Courses Section */}
-        <section className='mt-16'>
-          <h2 className='text-2xl font-bold text-gray-900 mb-8'>
-            Ähnliche Kurse
-          </h2>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {/* Placeholder for related courses */}
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div
-                key={index}
-                className='bg-white rounded-lg shadow-sm p-6 border border-gray-200'
-              >
-                <div className='h-4 bg-gray-200 rounded w-3/4 mb-3'></div>
-                <div className='h-3 bg-gray-200 rounded w-full mb-2'></div>
-                <div className='h-3 bg-gray-200 rounded w-2/3 mb-4'></div>
-                <div className='h-8 bg-gray-200 rounded w-1/2'></div>
-              </div>
-            ))}
+        {/* Footer */}
+        <footer className='bg-white border-t border-gray-200 mt-16'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+            <div className='text-center'>
+              <p className='text-gray-500 text-sm'>
+                © 2025 Hemera Learning Platform. Alle Rechte vorbehalten.
+              </p>
+            </div>
           </div>
-          <div className='text-center mt-8'>
-            <a
-              href='/courses'
-              className='inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700'
-            >
-              Alle Kurse ansehen
-              <svg
-                className='ml-2 -mr-1 w-5 h-5'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M9 5l7 7-7 7'
-                />
-              </svg>
-            </a>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className='bg-white border-t border-gray-200 mt-16'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-          <div className='text-center'>
-            <p className='text-gray-500 text-sm'>
-              © 2025 Hemera Learning Platform. Alle Rechte vorbehalten.
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </>
   );
 }
