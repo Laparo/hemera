@@ -5,9 +5,48 @@
 
 import { withErrorHandling } from '@/lib/errors';
 import { errorAnalytics } from '@/lib/services/error-analytics';
+import { checkUserAdminStatus } from '@/lib/auth/helpers';
+import { createErrorResponse, ErrorCodes } from '@/lib/utils/api-response';
+import { getOrCreateRequestId } from '@/lib/utils/request-id';
+import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
+// CORS headers for external app access
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export const GET = withErrorHandling(async (request: NextRequest) => {
+  const requestId = getOrCreateRequestId(request);
+
+  // Authentication check
+  const { userId } = await auth();
+  if (!userId) {
+    return createErrorResponse(
+      'Unauthorized access',
+      ErrorCodes.UNAUTHORIZED,
+      requestId,
+      401
+    );
+  }
+
+  // Admin authorization check
+  const isAdmin = await checkUserAdminStatus(userId);
+  if (!isAdmin) {
+    return createErrorResponse(
+      'Admin privileges required',
+      ErrorCodes.FORBIDDEN,
+      requestId,
+      403
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action') || 'metrics';
   const timeRange = (searchParams.get('timeRange') || 'day') as
@@ -17,53 +56,97 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '50');
 
+  let responseData;
   switch (action) {
     case 'metrics':
       const metrics = errorAnalytics.getErrorMetrics(timeRange);
-      return NextResponse.json(metrics);
+      responseData = NextResponse.json(metrics);
+      break;
 
     case 'logs':
       const logs = errorAnalytics.getRecentErrors(page, limit);
-      return NextResponse.json(logs);
+      responseData = NextResponse.json(logs);
+      break;
 
     default:
-      return NextResponse.json(
+      responseData = NextResponse.json(
         { error: 'Invalid action. Use "metrics" or "logs".' },
         { status: 400 }
       );
   }
+
+  // Add CORS headers to response
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    responseData.headers.set(key, value);
+  });
+
+  return responseData;
 });
 
 export const POST = withErrorHandling(async (request: NextRequest) => {
+  const requestId = getOrCreateRequestId(request);
+
+  // Authentication check
+  const { userId } = await auth();
+  if (!userId) {
+    return createErrorResponse(
+      'Unauthorized access',
+      ErrorCodes.UNAUTHORIZED,
+      requestId,
+      401
+    );
+  }
+
+  // Admin authorization check
+  const isAdmin = await checkUserAdminStatus(userId);
+  if (!isAdmin) {
+    return createErrorResponse(
+      'Admin privileges required',
+      ErrorCodes.FORBIDDEN,
+      requestId,
+      403
+    );
+  }
+
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
 
+  let responseData;
   switch (action) {
     case 'resolve':
       const { errorId } = await request.json();
       const resolved = errorAnalytics.resolveError(errorId);
 
-      return NextResponse.json({
+      responseData = NextResponse.json({
         success: resolved,
         message: resolved ? 'Error marked as resolved' : 'Error not found',
       });
+      break;
 
     case 'clear':
       // Only allow in development
       if (process.env.NODE_ENV === 'development') {
         errorAnalytics.clearLogs();
-        return NextResponse.json({ message: 'Error logs cleared' });
+        responseData = NextResponse.json({ message: 'Error logs cleared' });
+      } else {
+        responseData = NextResponse.json(
+          { error: 'Action not allowed in production' },
+          { status: 403 }
+        );
       }
-
-      return NextResponse.json(
-        { error: 'Action not allowed in production' },
-        { status: 403 }
-      );
+      break;
 
     default:
-      return NextResponse.json(
+      responseData = NextResponse.json(
         { error: 'Invalid action. Use "resolve" or "clear".' },
         { status: 400 }
       );
   }
+
+  // Add CORS headers to response
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    responseData.headers.set(key, value);
+  });
+
+  return responseData;
 });

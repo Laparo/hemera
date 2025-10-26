@@ -16,7 +16,18 @@ import {
   getOrCreateRequestId,
 } from '@/lib/utils/request-id';
 import { auth } from '@clerk/nextjs/server';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+
+// CORS headers for external app access
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
 
 export async function GET(request: NextRequest) {
   const requestId = getOrCreateRequestId(request);
@@ -123,7 +134,7 @@ export async function GET(request: NextRequest) {
     // Track request completion
     logger.trackRequestCompletion(200);
 
-    return createSuccessResponse(
+    const response = createSuccessResponse(
       {
         report: responseData,
         metadata: {
@@ -135,6 +146,13 @@ export async function GET(request: NextRequest) {
       },
       requestId
     );
+
+    // Add CORS headers to response
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
+
+    return response;
   } catch (error) {
     logger.error('Error generating analytics report', error as Error);
     logger.trackRequestCompletion(500);
