@@ -25,25 +25,59 @@ export async function GET(request: NextRequest) {
 
   try {
     // Authentication check
-    const { userId } = await auth();
-    if (!userId) {
-      return createErrorResponse(
+    let userId: string | null = null;
+    try {
+      const authResult = await auth();
+      userId = authResult.userId;
+    } catch (authError) {
+      // In E2E test mode, auth() might fail, return 401
+      const errorResponse = createErrorResponse(
         'Unauthorized access',
         ErrorCodes.UNAUTHORIZED,
         requestId,
         401
       );
+
+      // Add CORS headers to error response
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        errorResponse.headers.set(key, value);
+      });
+
+      return errorResponse;
+    }
+
+    if (!userId) {
+      const errorResponse = createErrorResponse(
+        'Unauthorized access',
+        ErrorCodes.UNAUTHORIZED,
+        requestId,
+        401
+      );
+
+      // Add CORS headers to error response
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        errorResponse.headers.set(key, value);
+      });
+
+      return errorResponse;
     }
 
     // Admin authorization check
     const isAdmin = await checkUserAdminStatus(userId);
     if (!isAdmin) {
-      return createErrorResponse(
+      const errorResponse = createErrorResponse(
         'Admin privileges required',
         ErrorCodes.FORBIDDEN,
         requestId,
         403
       );
+
+      // Add CORS headers to error response
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        errorResponse.headers.set(key, value);
+      });
+
+      return errorResponse;
     }
 
     const courses = await prisma.course.findMany({
@@ -74,11 +108,18 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
-    return createErrorResponse(
+    const errorResponse = createErrorResponse(
       'Failed to fetch courses',
       ErrorCodes.INTERNAL_ERROR,
       requestId,
       500
     );
+
+    // Add CORS headers to error response
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      errorResponse.headers.set(key, value);
+    });
+
+    return errorResponse;
   }
 }

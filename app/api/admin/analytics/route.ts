@@ -41,26 +41,62 @@ export async function GET(request: NextRequest) {
   try {
     logger.info('Analytics data request started');
 
-    const { userId } = await auth();
-    if (!userId) {
-      logger.warn('Unauthorized analytics access attempt');
-      return createErrorResponse(
+    // Authentication check
+    let userId: string | null = null;
+    try {
+      const authResult = await auth();
+      userId = authResult.userId;
+    } catch (authError) {
+      // In E2E test mode, auth() might fail, return 401
+      logger.warn('Auth failed', authError);
+      const errorResponse = createErrorResponse(
         'Unauthorized access',
         ErrorCodes.UNAUTHORIZED,
         requestId,
         401
       );
+
+      // Add CORS headers to error response
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        errorResponse.headers.set(key, value);
+      });
+
+      return errorResponse;
+    }
+
+    if (!userId) {
+      logger.warn('Unauthorized analytics access attempt');
+      const errorResponse = createErrorResponse(
+        'Unauthorized access',
+        ErrorCodes.UNAUTHORIZED,
+        requestId,
+        401
+      );
+
+      // Add CORS headers to error response
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        errorResponse.headers.set(key, value);
+      });
+
+      return errorResponse;
     }
 
     const isAdmin = await checkUserAdminStatus(userId);
     if (!isAdmin) {
       logger.warn('Non-admin user attempted to access analytics', { userId });
-      return createErrorResponse(
+      const errorResponse = createErrorResponse(
         'Admin privileges required',
         ErrorCodes.FORBIDDEN,
         requestId,
         403
       );
+
+      // Add CORS headers to error response
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        errorResponse.headers.set(key, value);
+      });
+
+      return errorResponse;
     }
 
     const { searchParams } = new URL(request.url);
@@ -97,12 +133,19 @@ export async function GET(request: NextRequest) {
       case 'trace':
         const traceRequestId = searchParams.get('requestId');
         if (!traceRequestId) {
-          return createErrorResponse(
+          const errorResponse = createErrorResponse(
             'Request ID required for trace report',
             ErrorCodes.INVALID_INPUT,
             requestId,
             400
           );
+
+          // Add CORS headers to error response
+          Object.entries(corsHeaders).forEach(([key, value]) => {
+            errorResponse.headers.set(key, value);
+          });
+
+          return errorResponse;
         }
         responseData = {
           trace: analytics.getRequestTrace(traceRequestId),
@@ -110,12 +153,19 @@ export async function GET(request: NextRequest) {
         break;
 
       default:
-        return createErrorResponse(
+        const errorResponse = createErrorResponse(
           'Invalid report type',
           ErrorCodes.INVALID_INPUT,
           requestId,
           400
         );
+
+        // Add CORS headers to error response
+        Object.entries(corsHeaders).forEach(([key, value]) => {
+          errorResponse.headers.set(key, value);
+        });
+
+        return errorResponse;
     }
 
     logger.info('Analytics report generated successfully', {
@@ -157,11 +207,18 @@ export async function GET(request: NextRequest) {
     logger.error('Error generating analytics report', error as Error);
     logger.trackRequestCompletion(500);
 
-    return createErrorResponse(
+    const errorResponse = createErrorResponse(
       'Failed to generate analytics report',
       ErrorCodes.INTERNAL_ERROR,
       requestId,
       500
     );
+
+    // Add CORS headers to error response
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      errorResponse.headers.set(key, value);
+    });
+
+    return errorResponse;
   }
 }
