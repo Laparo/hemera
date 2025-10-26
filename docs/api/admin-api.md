@@ -312,34 +312,46 @@ Admin endpoints require both authentication and admin role privileges.
 **Description**: Retrieve all courses with their booking statistics (admin endpoint for management
 purposes).
 
-**Authentication**: ❌ Not required
+**Authentication**: ✅ Required (admin role required)
 
-**Note**: This endpoint is similar to `/api/courses` but includes additional administrative data
-like booking counts. For public course listings, use `/api/courses` instead.
+**CORS**: ✅ Enabled
+
+**Note**: This endpoint requires admin authentication. For public course listings without
+authentication, use `/api/courses` instead.
 
 **Response**:
 
 ```json
 {
-  "courses": [
-    {
-      "id": 1,
-      "title": "Introduction to React",
-      "description": "Learn React basics",
-      "price": 99.99,
-      "duration": 8,
-      "createdAt": "2025-01-01T00:00:00.000Z",
-      "_count": {
-        "bookings": 25
+  "success": true,
+  "data": {
+    "courses": [
+      {
+        "id": 1,
+        "title": "Introduction to React",
+        "description": "Learn React basics",
+        "price": 99.99,
+        "duration": 8,
+        "createdAt": "2025-01-01T00:00:00.000Z",
+        "_count": {
+          "bookings": 25
+        }
       }
-    }
-  ],
-  "total": 5
+    ],
+    "total": 5
+  },
+  "meta": {
+    "requestId": "req_def456",
+    "timestamp": "2025-01-15T10:30:00.000Z",
+    "version": "1.0"
+  }
 }
 ```
 
 **Error Responses**:
 
+- `401 UNAUTHORIZED`: Not authenticated
+- `403 FORBIDDEN`: Not an admin user
 - `500 INTERNAL_ERROR`: Server error
 
 ### 3. Analytics
