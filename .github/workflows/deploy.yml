@@ -407,12 +407,12 @@ jobs:
             'public/.*'
             'styles/.*\.(css|scss|sass)$'
           )
-          
+
           # Exclude API routes
           exclude_patterns=(
             'app/api/.*'
           )
-          
+
           # Get changed files
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             # For PRs, compare with base branch
@@ -421,9 +421,9 @@ jobs:
             # For pushes, compare with previous commit
             changed_files=$(git diff --name-only HEAD~1 HEAD)
           fi
-          
+
           has_frontend_changes=false
-          
+
           # Check each changed file against patterns
           while IFS= read -r file; do
             # Skip if matches exclude patterns
@@ -448,7 +448,7 @@ jobs:
               fi
             done
           done <<< "$changed_files"
-          
+
           echo "has_frontend_changes=$has_frontend_changes" >> "$GITHUB_OUTPUT"
           echo "Frontend changes detected: $has_frontend_changes"
 
@@ -462,7 +462,6 @@ jobs:
       needs.check-frontend-changes.outputs.has_frontend_changes == 'true' &&
       ((github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.environment == 'production'))
     timeout-minutes: 20
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
