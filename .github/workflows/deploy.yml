@@ -434,11 +434,11 @@ jobs:
                 break
               fi
             done
-            
+
             if [ "$excluded" = true ]; then
               continue
             fi
-            
+
             # Check if matches frontend patterns
             for pattern in "${frontend_patterns[@]}"; do
               if echo "$file" | grep -qE "$pattern"; then
