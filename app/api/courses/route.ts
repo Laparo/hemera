@@ -37,16 +37,8 @@ export async function GET(request: NextRequest) {
   try {
     logger.info('Starting course list request');
 
+    // Public endpoint - no authentication required
     const user = await currentUser();
-    if (!user) {
-      logger.warn('Unauthorized access attempt');
-      return createErrorResponse(
-        'Unautorisiert',
-        ErrorCodes.UNAUTHORIZED,
-        requestId,
-        401
-      );
-    }
 
     const { searchParams } = new URL(request.url);
     const queryParams = Object.fromEntries(searchParams.entries());
@@ -65,7 +57,7 @@ export async function GET(request: NextRequest) {
     }
 
     logger.info('Fetching courses', {
-      userId: user.id,
+      userId: user?.id,
       params: validatedParams,
     });
 
