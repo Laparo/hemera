@@ -27,14 +27,14 @@ describe('Contract: Web Vitals gating', () => {
 
     expect(isWebVitalsEnabled()).toBe(true);
     expect(isPublicPath('/')).toBe(true);
-    expect(isPublicPath('/auth/signin')).toBe(false);
+    expect(isPublicPath('/sign-in')).toBe(false);
 
     // init should succeed for public path, and do nothing for private
     const sent: any[] = [];
     const sender = (m: any) => sent.push(m);
 
     const okPublic = await initWebVitals(sender, { path: '/' });
-    const okPrivate = await initWebVitals(sender, { path: '/auth/signin' });
+    const okPrivate = await initWebVitals(sender, { path: '/sign-in' });
 
     // If web-vitals is available, okPublic should be true; otherwise false.
     // In both cases okPublic must be a boolean and not throw.

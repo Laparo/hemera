@@ -12,34 +12,37 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const course = await prisma.course.findFirst({
+    const courseRecord = await prisma.course.findFirst({
       where: {
-        id: id,
         isPublished: true,
+        OR: [{ id }, { slug: id }],
+      },
+      include: {
+        bookings: {
+          where: {
+            paymentStatus: { in: [PaymentStatus.PAID, PaymentStatus.PENDING] },
+          },
+          select: { id: true },
+        },
       },
     });
 
-    if (!course) {
+    if (!courseRecord) {
       return NextResponse.json(
         { success: false, error: 'Course not found' },
         { status: 404 }
       );
     }
 
-    // Determine availability from internal bookings (PAID or PENDING count)
-    let totalBookings = 0;
-    if (course.capacity !== null && course.capacity !== undefined) {
-      totalBookings = await prisma.booking.count({
-        where: {
-          courseId: course.id,
-          paymentStatus: { in: [PaymentStatus.PAID, PaymentStatus.PENDING] },
-        },
-      });
-    }
+    const { bookings, ...course } = courseRecord as typeof courseRecord & {
+      bookings: Array<{ id: string }>;
+    };
+
+    const totalBookings = bookings.length;
 
     const availableSpots =
       course.capacity !== null && course.capacity !== undefined
-        ? Math.max(0, course.capacity - totalBookings)
+        ? Math.max(0, Number(course.capacity) - totalBookings)
         : null;
 
     return NextResponse.json({

@@ -149,3 +149,12 @@ Kursdetailsseite
 parsebar
 failen
 jsons
+
+Stabilitätsrichtlinien
+Workerzahl
+Navigationen
+Cheatsheet
+Verfügbarkeitsindikator
+Interaktionstest
+Stabilitäts-Anker
+Sichtbarkeits

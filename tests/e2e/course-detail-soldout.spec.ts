@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { gotoStable } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
@@ -12,9 +13,7 @@ test.describe('Course Detail – Ausgebucht-Zustand', () => {
   }) => {
     test.setTimeout(120000);
 
-    await page.goto('/courses', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-    });
+    await gotoStable(page, '/courses', { waitForTestId: 'course-overview' });
 
     // Warte bis Übersicht gerendert
     await expect(page.getByTestId('course-overview')).toBeVisible({
@@ -67,9 +66,7 @@ test.describe('Course Detail – Ausgebucht-Zustand', () => {
     let foundSoldOut = false;
 
     for (const id of courseIds) {
-      await page.goto(`/courses/${id}`, {
-        waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-      });
+      await gotoStable(page, `/courses/${id}`);
 
       // Warte kurz auf CTA
       const cta = page.getByTestId('course-detail-book-cta');

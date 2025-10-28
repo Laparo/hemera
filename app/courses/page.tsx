@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   Card,
+  CardActionArea,
   CardContent,
   Container,
   Grid,
@@ -30,8 +31,7 @@ export default async function CoursesPage() {
           key={index}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
-            // JSON-LD muss als Plain-JSON eingebettet werden (nicht base64)
-            __html: JSON.stringify(schema, null, 2),
+            __html: JSON.stringify(schema),
           }}
         />
       ))}
@@ -97,182 +97,183 @@ export default async function CoursesPage() {
           <Container maxWidth='lg'>
             {courses.length > 0 ? (
               <Grid container spacing={4}>
-                {courses.map(course => (
-                  <Grid item xs={12} md={6} lg={4} key={course.id}>
-                    <Card
-                      data-testid='course-card'
-                      sx={{
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-8px)',
-                          boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
-                        },
-                      }}
-                    >
-                      {/* Course Image Placeholder */}
-                      <Box
-                        sx={{
-                          position: 'relative',
-                          height: 160,
-                          bgcolor: 'primary.light',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
+                {courses.map(course => {
+                  const isSoldOut =
+                    typeof course.availableSpots === 'number' &&
+                    course.capacity !== null &&
+                    course.capacity !== undefined &&
+                    course.availableSpots === 0;
+
+                  const courseHref = `/courses/${course.slug || course.id}`;
+
+                  return (
+                    <Grid item xs={12} md={6} lg={4} key={course.id}>
+                      <Link
+                        href={courseHref}
+                        style={{ textDecoration: 'none' }}
                       >
-                        {/* Sold out badge */}
-                        {typeof course.availableSpots === 'number' &&
-                          course.capacity !== null &&
-                          course.capacity !== undefined &&
-                          course.availableSpots === 0 && (
+                        <Card
+                          data-testid='course-card'
+                          sx={{
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'translateY(-8px)',
+                              boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+                            },
+                          }}
+                        >
+                          <CardActionArea
+                            sx={{
+                              height: '100%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'stretch',
+                            }}
+                          >
+                            {/* Course Image Placeholder */}
                             <Box
                               sx={{
-                                position: 'absolute',
-                                top: 8,
-                                right: 8,
-                                bgcolor: 'error.main',
-                                color: 'error.contrastText',
-                                px: 1.5,
-                                py: 0.5,
-                                borderRadius: 1,
-                                fontSize: '0.75rem',
-                                fontWeight: 700,
-                                textTransform: 'uppercase',
-                                boxShadow: 2,
+                                position: 'relative',
+                                height: 160,
+                                bgcolor: 'primary.light',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
                               }}
-                              data-testid='sold-out-badge'
                             >
-                              Ausgebucht
+                              {/* Sold out badge */}
+                              {isSoldOut && (
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    top: 8,
+                                    right: 8,
+                                    bgcolor: 'error.main',
+                                    color: 'error.contrastText',
+                                    px: 1.5,
+                                    py: 0.5,
+                                    borderRadius: 1,
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    textTransform: 'uppercase',
+                                    boxShadow: 2,
+                                  }}
+                                  data-testid='sold-out-badge'
+                                >
+                                  Ausgebucht
+                                </Box>
+                              )}
+                              <Typography
+                                variant='h4'
+                                sx={{ color: 'primary.contrastText' }}
+                              >
+                                {course.title.charAt(0)}
+                              </Typography>
                             </Box>
-                          )}
-                        <Typography
-                          variant='h4'
-                          sx={{ color: 'primary.contrastText' }}
-                        >
-                          {course.title.charAt(0)}
-                        </Typography>
-                      </Box>
 
-                      <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                        <Typography
-                          variant='h6'
-                          component='h3'
-                          gutterBottom
-                          data-testid='course-title'
-                          sx={{ fontWeight: 600, mb: 1 }}
-                        >
-                          {course.title}
-                        </Typography>
+                            <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                              <Typography
+                                variant='h6'
+                                component='h3'
+                                gutterBottom
+                                data-testid='course-title'
+                                sx={{ fontWeight: 600, mb: 1 }}
+                              >
+                                {course.title}
+                              </Typography>
 
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          sx={{ mb: 2, fontSize: '0.875rem' }}
-                        >
-                          Dozent: Expert:in
-                        </Typography>
+                              <Typography
+                                variant='body2'
+                                color='text.secondary'
+                                sx={{ mb: 2, fontSize: '0.875rem' }}
+                              >
+                                Dozent: Expert:in
+                              </Typography>
 
-                        {/* Rating */}
-                        <Box
-                          sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
-                        >
-                          <Typography variant='body2' sx={{ mr: 1 }}>
-                            ⭐⭐⭐⭐⭐
-                          </Typography>
-                          <Typography variant='body2' color='text.secondary'>
-                            (4.8)
-                          </Typography>
-                        </Box>
+                              {/* Rating */}
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  mb: 2,
+                                }}
+                              >
+                                <Typography variant='body2' sx={{ mr: 1 }}>
+                                  ⭐⭐⭐⭐⭐
+                                </Typography>
+                                <Typography
+                                  variant='body2'
+                                  color='text.secondary'
+                                >
+                                  (4.8)
+                                </Typography>
+                              </Box>
 
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          paragraph
-                          data-testid='course-description'
-                          sx={{ fontSize: '0.875rem', lineHeight: 1.4 }}
-                        >
-                          {course.description && course.description.length > 100
-                            ? course.description.substring(0, 100) + '...'
-                            : course.description ||
-                              'Keine Beschreibung verfügbar'}
-                        </Typography>
+                              <Typography
+                                variant='body2'
+                                color='text.secondary'
+                                paragraph
+                                data-testid='course-description'
+                                sx={{ fontSize: '0.875rem', lineHeight: 1.4 }}
+                              >
+                                {course.description &&
+                                course.description.length > 100
+                                  ? course.description.substring(0, 100) + '...'
+                                  : course.description ||
+                                    'Keine Beschreibung verfügbar'}
+                              </Typography>
 
-                        <Typography
-                          variant='body2'
-                          color='primary'
-                          sx={{
-                            mb: 2,
-                            fontWeight: 'medium',
-                            textTransform: 'uppercase',
-                            fontSize: '0.75rem',
-                          }}
-                          data-testid='course-level'
-                        >
-                          Einsteiger
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            mt: 2,
-                          }}
-                        >
-                          <Typography variant='body2' color='text.secondary'>
-                            8 Stunden
-                          </Typography>
-                          <Typography
-                            variant='h6'
-                            component='span'
-                            sx={{ fontWeight: 'bold' }}
-                          >
-                            {course.price && Number(course.price) > 0
-                              ? '€' + (Number(course.price) / 100).toFixed(2)
-                              : 'Free'}
-                          </Typography>
-                        </Box>
-                        {typeof course.availableSpots === 'number' &&
-                        course.capacity !== null &&
-                        course.capacity !== undefined &&
-                        course.availableSpots === 0 ? (
-                          <Button
-                            variant='outlined'
-                            fullWidth
-                            disabled
-                            sx={{
-                              mt: 2,
-                              fontWeight: 'bold',
-                              textTransform: 'none',
-                            }}
-                            data-testid='sold-out-cta'
-                          >
-                            Ausgebucht
-                          </Button>
-                        ) : (
-                          <Button
-                            component={Link}
-                            href={'/courses/' + course.id}
-                            variant='contained'
-                            fullWidth
-                            sx={{
-                              mt: 2,
-                              fontWeight: 'bold',
-                              textTransform: 'none',
-                            }}
-                          >
-                            Zum Kurs
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
+                              <Typography
+                                variant='body2'
+                                color='primary'
+                                sx={{
+                                  mb: 2,
+                                  fontWeight: 'medium',
+                                  textTransform: 'uppercase',
+                                  fontSize: '0.75rem',
+                                }}
+                                data-testid='course-level'
+                              >
+                                Einsteiger
+                              </Typography>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  mt: 2,
+                                }}
+                              >
+                                <Typography
+                                  variant='body2'
+                                  color='text.secondary'
+                                >
+                                  8 Stunden
+                                </Typography>
+                                <Typography
+                                  variant='h6'
+                                  component='span'
+                                  sx={{ fontWeight: 'bold' }}
+                                >
+                                  {course.price && Number(course.price) > 0
+                                    ? '€' +
+                                      (Number(course.price) / 100).toFixed(2)
+                                    : 'Free'}
+                                </Typography>
+                              </Box>
+                            </CardContent>
+                          </CardActionArea>
+                        </Card>
+                      </Link>
+                    </Grid>
+                  );
+                })}
               </Grid>
             ) : (
               <Box

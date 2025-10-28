@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { gotoStable, clickAndWait } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
@@ -6,9 +7,7 @@ test.describe('Course detail JSON-LD', () => {
   test('enthält strukturierte Daten (application/ld+json)', async ({
     page,
   }) => {
-    await page.goto('/courses', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-    });
+    await gotoStable(page, '/courses', { waitForTestId: 'course-overview' });
 
     const overview = page.getByTestId('course-overview');
     let detailLink = overview
@@ -27,8 +26,9 @@ test.describe('Course detail JSON-LD', () => {
       return;
     }
 
-    await detailLink.click();
-    await expect(page).toHaveURL(/\/courses\/[\w-]+/);
+    await clickAndWait(page, () => detailLink, {
+      expectUrl: /\/courses\/[\w-]+/,
+    });
 
     const jsonLdScripts = page.locator('script[type="application/ld+json"]');
     const count = await jsonLdScripts.count();

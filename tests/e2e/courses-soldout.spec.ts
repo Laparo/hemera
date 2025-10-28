@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { gotoStable } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
@@ -12,13 +13,7 @@ test.describe('Courses Page – Ausgebucht-Zustand', () => {
   }) => {
     test.setTimeout(90000);
 
-    await page.goto('/courses', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-    });
-
-    await expect(page.getByTestId('course-overview')).toBeVisible({
-      timeout: 30000,
-    });
+    await gotoStable(page, '/courses', { waitForTestId: 'course-overview' });
 
     // Suche nach irgendeinem Kurs mit Ausgebucht-Badge
     const soldOutBadges = page.getByTestId('sold-out-badge');

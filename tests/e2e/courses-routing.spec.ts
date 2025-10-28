@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { clickAndWait, gotoStable } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
@@ -6,9 +7,7 @@ test.describe('Courses routing', () => {
   test('List → Detail → Sign-in redirect on booking', async ({ page }) => {
     test.setTimeout(120000);
 
-    await page.goto('/courses', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-    });
+    await gotoStable(page, '/courses', { waitForTestId: 'course-overview' });
 
     await expect(page.getByTestId('course-overview')).toBeVisible({
       timeout: 30000,
@@ -33,11 +32,10 @@ test.describe('Courses routing', () => {
     }
     await expect(detailLink).toBeVisible();
 
-    // Bei Client-Side Routing kann kein Navigation-Event feuern – stattdessen URL abwarten
-    await detailLink.click();
-
-    // Wir sollten jetzt auf /courses/{id} sein
-    await expect(page).toHaveURL(/\/courses\/[\w-]+/);
+    // Client-Side Routing: Klick + URL-Expectation stabil abwarten
+    await clickAndWait(page, () => detailLink, {
+      expectUrl: /\/courses\/[\w-]+/,
+    });
 
     // CTA klicken – als Gast sollte ein Redirect zur Anmeldung erfolgen
     const bookCta = page.getByTestId('course-detail-book-cta');
@@ -54,17 +52,14 @@ test.describe('Courses routing', () => {
       return;
     }
 
-    await Promise.all([
-      page.waitForNavigation({
-        waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-      }),
-      bookCta.click(),
-    ]);
+    await clickAndWait(page, () => bookCta, {
+      expectUrl: /\/sign-in\?redirect_url=/,
+    });
 
-    // Erwartung: /auth/signin?returnUrl=...bookings/new?courseId=...
-    await expect(page).toHaveURL(/\/auth\/signin\?returnUrl=/);
+    // Erwartung: Clerk Sign-In mit redirect_url=...bookings/new?courseId=...
+    await expect(page).toHaveURL(/\/sign-in\?redirect_url=/);
     const url = new URL(page.url());
-    const returnUrl = url.searchParams.get('returnUrl') || '';
+    const returnUrl = url.searchParams.get('redirect_url') || '';
     expect(returnUrl).toMatch(/\/bookings\/new\?courseId=/);
   });
 });

@@ -8,6 +8,8 @@ const e2eEnvPrefix =
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
+  // Lower worker count locally to reduce DB pool contention and flakiness
+  workers: process.env.CI ? 4 : 3,
   retries: process.env.CI ? 2 : 1, // Add retry for local development
   timeout: 60000, // Increase test timeout to 60 seconds
   reporter: [['list'], ['html', { open: 'never' }]],

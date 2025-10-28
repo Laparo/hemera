@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { gotoStable } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
@@ -9,28 +10,27 @@ test.describe('Courses SEO & A11y', () => {
   }) => {
     test.setTimeout(120000);
 
-    await page.goto('/courses', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
+    await gotoStable(page, '/courses', { waitForTestId: 'course-overview' });
+
+    // Warte darauf, dass mindestens ein JSON-LD Script geladen ist
+    await page.waitForSelector('script[type="application/ld+json"]', {
+      state: 'attached',
+      timeout: 10000,
     });
 
-    await expect(page.getByTestId('course-overview')).toBeVisible({
-      timeout: 30000,
-    });
-
-    // SEO: JSON-LD vorhanden und parsebar (base64 in diesem Projekt)
-    const base64Schemas = await page.$$eval(
+    // SEO: JSON-LD vorhanden und parsebar (plain JSON)
+    const jsonSchemas = await page.$$eval(
       'script[type="application/ld+json"]',
       els => els.map(e => e.textContent || '')
     );
 
-    expect(base64Schemas.length).toBeGreaterThan(0);
+    expect(jsonSchemas.length).toBeGreaterThan(0);
 
     let parsedAny = false;
-    for (const content of base64Schemas) {
+    for (const content of jsonSchemas) {
       if (!content) continue;
       try {
-        const jsonStr = Buffer.from(content, 'base64').toString('utf8');
-        const data = JSON.parse(jsonStr);
+        const data = JSON.parse(content);
         const items = Array.isArray(data) ? data : [data];
         for (const item of items) {
           if (item && typeof item['@context'] === 'string') {

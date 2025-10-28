@@ -1,4 +1,5 @@
 import { expect, test, Page } from '@playwright/test';
+import { gotoStable, clickAndWait } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
@@ -12,9 +13,7 @@ test.describe('Course detail OG/Twitter metadata', () => {
   test('og:image absolute, og:title enthält Titel, twitter:card vorhanden', async ({
     page,
   }) => {
-    await page.goto('/courses', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-    });
+    await gotoStable(page, '/courses', { waitForTestId: 'course-overview' });
 
     const overview = page.getByTestId('course-overview');
     let detailLink = overview
@@ -33,8 +32,9 @@ test.describe('Course detail OG/Twitter metadata', () => {
       return;
     }
 
-    await detailLink.click();
-    await expect(page).toHaveURL(/\/courses\/[\w-]+/);
+    await clickAndWait(page, () => detailLink, {
+      expectUrl: /\/courses\/[\w-]+/,
+    });
 
     // H1 Titel extrahieren
     const heading = page.getByRole('heading', { level: 1 }).first();

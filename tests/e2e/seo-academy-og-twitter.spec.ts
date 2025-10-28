@@ -1,4 +1,5 @@
 import { expect, test, Page } from '@playwright/test';
+import { gotoStable } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
@@ -10,9 +11,7 @@ async function getMetaContent(page: Page, selector: string) {
 
 test.describe('Academy OpenGraph & Twitter', () => {
   test('OG & Twitter-Meta sind vorhanden und plausibel', async ({ page }) => {
-    await page.goto('/academy', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-    });
+    await gotoStable(page, '/academy');
 
     const ogTitle = await getMetaContent(page, 'meta[property="og:title"]');
     const ogDesc = await getMetaContent(

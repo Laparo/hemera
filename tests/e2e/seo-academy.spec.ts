@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
+import { gotoStable } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
 function decodeJsonLd(content: string): any {
   try {
-    const decoded = Buffer.from(content, 'base64').toString('utf-8');
-    return JSON.parse(decoded);
+    return JSON.parse(content);
   } catch (e) {
     return null;
   }
@@ -13,8 +13,12 @@ function decodeJsonLd(content: string): any {
 
 test.describe('Academy SEO & A11y', () => {
   test('JSON-LD vorhanden und valide', async ({ page }) => {
-    await page.goto('/academy', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
+    await gotoStable(page, '/academy');
+
+    // Warte darauf, dass mindestens ein JSON-LD Script geladen ist
+    await page.waitForSelector('script[type="application/ld+json"]', {
+      state: 'attached',
+      timeout: 10000,
     });
 
     const scripts = await page

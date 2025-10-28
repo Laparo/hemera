@@ -10,11 +10,11 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { id: identifier } = await params;
 
   try {
     // Use relative fetch to work in both dev and prod, and keep absolute URLs only for canonical
-    const res = await fetch(`/api/courses/${encodeURIComponent(id)}`, {
+    const res = await fetch(`/api/courses/${encodeURIComponent(identifier)}`, {
       // Metadata is static-ish but course content can change; allow a short revalidate window
       next: { revalidate: 60 },
     });
@@ -24,7 +24,7 @@ export async function generateMetadata({
       return generateSEOMetadata({
         title: 'Kurs',
         description: 'Kursdetails und Informationen.',
-        canonicalUrl: `${SITE_CONFIG.url}/courses/${id}`,
+        canonicalUrl: `${SITE_CONFIG.url}/courses/${identifier}`,
       });
     }
 
@@ -39,6 +39,7 @@ export async function generateMetadata({
       | undefined;
 
     const title = course?.title ?? 'Kurs';
+    const canonicalSlug = course?.slug ?? identifier;
     const description = truncateDescription(
       course?.description ??
         'Kursdetails der Hemera Academy: Inhalte, Termine und Buchungsinformationen.',
@@ -52,7 +53,7 @@ export async function generateMetadata({
     return generateSEOMetadata({
       title,
       description,
-      canonicalUrl: `${SITE_CONFIG.url}/courses/${id}`,
+      canonicalUrl: `${SITE_CONFIG.url}/courses/${canonicalSlug}`,
       ogImage,
     });
   } catch (_) {
@@ -60,7 +61,7 @@ export async function generateMetadata({
     return generateSEOMetadata({
       title: 'Kurs',
       description: 'Kursdetails und Informationen.',
-      canonicalUrl: `${SITE_CONFIG.url}/courses/${id}`,
+      canonicalUrl: `${SITE_CONFIG.url}/courses/${identifier}`,
     });
   }
 }

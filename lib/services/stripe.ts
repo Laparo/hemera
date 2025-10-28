@@ -20,6 +20,7 @@ import { PaymentStatus } from './course';
 
 export class StripeService {
   private stripe: Stripe | null = null;
+  private configured = false;
 
   constructor() {
     // Skip Stripe initialization during build time
@@ -31,23 +32,39 @@ export class StripeService {
       return;
     }
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new StripeConfigurationError('STRIPE_SECRET_KEY');
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+
+    if (!stripeKey) {
+      if (process.env.NODE_ENV === 'production') {
+        throw new StripeConfigurationError('STRIPE_SECRET_KEY');
+      }
+
+      serverInstance.warn(
+        'Stripe secret key not configured, disabling StripeService',
+        {
+          service: 'StripeService',
+          env: process.env.NODE_ENV,
+        }
+      );
+      return;
     }
 
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    this.stripe = new Stripe(stripeKey, {
       apiVersion: STRIPE_API_VERSION,
       typescript: true,
     });
+    this.configured = true;
   }
 
   private ensureStripe(): Stripe {
     if (!this.stripe) {
-      throw new Error(
-        'Stripe not initialized - service unavailable during build'
-      );
+      throw new StripeConfigurationError('STRIPE_SECRET_KEY');
     }
     return this.stripe;
+  }
+
+  isReady(): boolean {
+    return this.configured;
   }
 
   /**
@@ -528,6 +545,9 @@ export class StripeService {
 
       return paymentIntent;
     } catch (error) {
+      if (error instanceof StripeConfigurationError) {
+        throw error;
+      }
       logError('Payment intent creation failed', error as Record<string, any>);
       throw new PaymentProcessingError(
         'Failed to create payment intent',
@@ -548,6 +568,9 @@ export class StripeService {
 
       return paymentIntent;
     } catch (error) {
+      if (error instanceof StripeConfigurationError) {
+        throw error;
+      }
       logError('Payment intent retrieval failed', error as Record<string, any>);
       throw new PaymentProcessingError(
         'Failed to retrieve payment intent',
@@ -595,3 +618,5 @@ export const createPaymentIntent = (
 
 export const retrievePaymentIntent = (paymentIntentId: string) =>
   stripeService.retrievePaymentIntent(paymentIntentId);
+
+export const isStripeConfigured = () => stripeService.isReady();

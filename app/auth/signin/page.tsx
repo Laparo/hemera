@@ -2,12 +2,10 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 interface PageProps {
-  searchParams: Promise<{ redirect_url?: string; returnUrl?: string }>;
+  searchParams: Promise<{ returnUrl?: string; redirect_url?: string }>;
 }
 
-export default async function CustomSignInRedirect({
-  searchParams,
-}: PageProps) {
+export default async function SignInRedirectPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const redirectUrl = params?.redirect_url || params?.returnUrl || undefined;
 
@@ -15,7 +13,7 @@ export default async function CustomSignInRedirect({
   const rawBase = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL?.trim();
   const candidateBase = rawBase && rawBase.length > 0 ? rawBase : fallbackPath;
   const isAbsolute = /^https?:\/\//i.test(candidateBase);
-  const normalizedCurrentPath = '/auth/custom-sign-in';
+  const normalizedCurrentPath = '/auth/signin';
 
   let url: URL;
 

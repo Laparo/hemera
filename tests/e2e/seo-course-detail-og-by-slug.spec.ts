@@ -1,4 +1,5 @@
 import { expect, test, Page } from '@playwright/test';
+import { gotoStable, clickAndWait } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
@@ -13,9 +14,7 @@ test.describe('Course detail OG image by slug', () => {
     page,
     request,
   }) => {
-    await page.goto('/courses', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-    });
+    await gotoStable(page, '/courses', { waitForTestId: 'course-overview' });
 
     const overview = page.getByTestId('course-overview');
     let detailLink = overview
@@ -34,9 +33,10 @@ test.describe('Course detail OG image by slug', () => {
       return;
     }
 
-    await detailLink.click();
+    await clickAndWait(page, () => detailLink, {
+      expectUrl: /\/courses\/[\w-]+/,
+    });
     const url = page.url();
-    await expect(page).toHaveURL(/\/courses\/[\w-]+/);
 
     const idMatch = url.match(/\/courses\/([\w-]+)/);
     if (!idMatch) {

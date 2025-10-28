@@ -1,5 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { AuthHelper, TEST_USERS } from './auth-helper';
+import { gotoStable } from './helpers/nav';
 
 /**
  * User Dashboard Management - Simplified for CI
@@ -26,11 +27,8 @@ test.describe('User Dashboard E2E - Simplified', () => {
         TEST_USERS.DASHBOARD.password
       );
 
-      // Navigate to dashboard
-      await page.goto('/dashboard');
-      await page.waitForSelector('[data-testid="user-dashboard"]', {
-        timeout: 10000,
-      });
+      // Navigate to dashboard (stable)
+      await gotoStable(page, '/dashboard', { waitForTestId: 'user-dashboard' });
     }
   });
 

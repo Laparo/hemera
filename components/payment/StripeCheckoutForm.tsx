@@ -36,13 +36,26 @@ export default function StripeCheckoutForm({
 }: StripeCheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
+  const stripeConfigured = Boolean(
+    process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  );
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<
+    'success' | 'error' | 'info' | null
+  >(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     if (!stripe) {
+      if (!stripeConfigured) {
+        setMessage(
+          'Zahlungen sind deaktiviert, da Stripe nicht konfiguriert ist.'
+        );
+        setMessageType('error');
+        setIsLoaded(true);
+      }
       return;
     }
 
@@ -54,23 +67,27 @@ export default function StripeCheckoutForm({
     stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
       switch (paymentIntent?.status) {
         case 'succeeded':
-          setMessage('Payment succeeded!');
+          setMessage('Zahlung erfolgreich!');
+          setMessageType('success');
           onSuccess(paymentIntent);
           break;
         case 'processing':
-          setMessage('Your payment is processing.');
+          setMessage('Deine Zahlung wird verarbeitet.');
+          setMessageType('info');
           break;
         case 'requires_payment_method':
-          setMessage('Your payment was not successful, please try again.');
+          setMessage(null);
+          setMessageType(null);
           break;
         default:
-          setMessage('Something went wrong.');
+          setMessage('Etwas ist schiefgelaufen.');
+          setMessageType('error');
           break;
       }
     });
 
     setIsLoaded(true);
-  }, [stripe, clientSecret, onSuccess]);
+  }, [stripe, clientSecret, onSuccess, stripeConfigured]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -81,6 +98,7 @@ export default function StripeCheckoutForm({
 
     setIsProcessing(true);
     setMessage(null);
+    setMessageType(null);
 
     try {
       const { error, paymentIntent } = await stripe.confirmPayment({
@@ -93,25 +111,48 @@ export default function StripeCheckoutForm({
 
       if (error) {
         if (error.type === 'card_error' || error.type === 'validation_error') {
-          setMessage(error.message || 'An error occurred.');
-          onError(error.message || 'Payment failed');
+          const errorMessage =
+            error.message || 'Es ist ein Fehler aufgetreten.';
+          setMessage(errorMessage);
+          setMessageType('error');
+          onError(error.message || 'Zahlung fehlgeschlagen');
         } else {
-          setMessage('An unexpected error occurred.');
-          onError('Unexpected error occurred');
+          setMessage('Ein unerwarteter Fehler ist aufgetreten.');
+          setMessageType('error');
+          onError('Unerwarteter Fehler');
         }
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        setMessage('Payment succeeded!');
+        setMessage('Zahlung erfolgreich!');
+        setMessageType('success');
         onSuccess(paymentIntent);
       } else {
-        setMessage('Payment processing...');
+        setMessage('Zahlung wird verarbeitet ...');
+        setMessageType('info');
       }
     } catch (err) {
-      setMessage('An unexpected error occurred.');
-      onError('Unexpected error occurred');
+      setMessage('Ein unerwarteter Fehler ist aufgetreten.');
+      setMessageType('error');
+      onError('Unerwarteter Fehler');
     } finally {
       setIsProcessing(false);
     }
   };
+
+  if (!stripeConfigured) {
+    return (
+      <Paper elevation={2} sx={{ p: 3, maxWidth: 500, mx: 'auto' }}>
+        <Alert severity='warning' sx={{ mb: 2 }}>
+          Stripe-Zahlungen sind für diese Umgebung nicht konfiguriert.
+          Hinterlege <code>NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</code> und die
+          zugehörigen Server-Schlüssel, um den Checkout zu aktivieren.
+        </Alert>
+        <Typography variant='body2' color='text.secondary'>
+          Du kannst die Kursdetails weiterhin ansehen, aber Zahlungen sind erst
+          möglich, wenn Stripe-Zugangsdaten eingetragen wurden.
+        </Typography>
+      </Paper>
+    );
+  }
 
   if (!stripe || !elements || !isLoaded) {
     return (
@@ -123,7 +164,7 @@ export default function StripeCheckoutForm({
       >
         <CircularProgress />
         <Typography variant='body2' sx={{ ml: 2 }}>
-          Loading payment form...
+          Zahlungsformular wird geladen ...
         </Typography>
       </Box>
     );
@@ -132,11 +173,11 @@ export default function StripeCheckoutForm({
   return (
     <Paper elevation={2} sx={{ p: 3, maxWidth: 500, mx: 'auto' }}>
       <Typography variant='h6' gutterBottom>
-        Complete Your Purchase
+        Kauf abschließen
       </Typography>
 
       <Typography variant='body2' color='text.secondary' gutterBottom>
-        Course: {courseName}
+        Kurs: {courseName}
       </Typography>
 
       <Typography variant='h6' color='primary' gutterBottom>
@@ -148,7 +189,7 @@ export default function StripeCheckoutForm({
       <form onSubmit={handleSubmit} data-testid='stripe-payment-form'>
         <Box sx={{ mb: 3 }}>
           <Typography variant='subtitle2' gutterBottom>
-            Payment Information
+            Zahlungsinformationen
           </Typography>
           <PaymentElement
             data-testid='stripe-payment-element'
@@ -161,7 +202,7 @@ export default function StripeCheckoutForm({
 
         <Box sx={{ mb: 3 }}>
           <Typography variant='subtitle2' gutterBottom>
-            Billing Address
+            Rechnungsadresse
           </Typography>
           <AddressElement
             data-testid='stripe-address-element'
@@ -174,7 +215,13 @@ export default function StripeCheckoutForm({
 
         {message && (
           <Alert
-            severity={message.includes('succeeded') ? 'success' : 'error'}
+            severity={
+              messageType === 'success'
+                ? 'success'
+                : messageType === 'info'
+                  ? 'info'
+                  : 'error'
+            }
             sx={{ mb: 2 }}
             data-testid='payment-message'
           >
@@ -198,10 +245,10 @@ export default function StripeCheckoutForm({
           {isProcessing ? (
             <>
               <CircularProgress size={20} sx={{ mr: 1 }} />
-              Processing...
+              Verarbeitung ...
             </>
           ) : (
-            `Pay ${(amount / 100).toFixed(2)} ${currency.toUpperCase()}`
+            `Jetzt ${(amount / 100).toFixed(2)} ${currency.toUpperCase()} zahlen`
           )}
         </Button>
 
@@ -210,7 +257,7 @@ export default function StripeCheckoutForm({
           color='text.secondary'
           sx={{ display: 'block', textAlign: 'center', mt: 2 }}
         >
-          Secure payment powered by Stripe
+          Sichere Zahlung über Stripe
         </Typography>
       </form>
     </Paper>

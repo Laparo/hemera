@@ -1,12 +1,11 @@
 'use client';
 
 import StripeCheckoutForm from '@/components/payment/StripeCheckoutForm';
-import { useUser } from '@clerk/nextjs';
 import {
-  AttachMoneyOutlined,
-  SchoolOutlined,
-  ShoppingCartOutlined,
-} from '@mui/icons-material';
+  stripeAppearance,
+  stripePromise,
+} from '@/components/payment/StripeProvider';
+import { useUser } from '@clerk/nextjs';
 import {
   Alert,
   Box,
@@ -14,13 +13,15 @@ import {
   Container,
   Paper,
   Stack,
-  Step,
-  StepLabel,
-  Stepper,
   Typography,
 } from '@mui/material';
+import { Elements } from '@stripe/react-stripe-js';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
+
+const STRIPE_ENABLED = Boolean(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+const STRIPE_UNAVAILABLE_MESSAGE =
+  'Stripe-Zahlungen sind für diese Umgebung nicht konfiguriert. Bitte hinterlege die erforderlichen Stripe-Schlüssel, um den Checkout zu aktivieren.';
 
 interface Course {
   id: string;
@@ -43,7 +44,12 @@ function CheckoutContent() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const courseId = searchParams.get('courseId');
+  // Accept slug or id via multiple param names for flexibility; prefer `courseId` for backward-compatibility
+  const courseRef =
+    searchParams.get('courseId') ||
+    searchParams.get('course') ||
+    searchParams.get('courseSlug') ||
+    searchParams.get('slug');
 
   const [course, setCourse] = useState<Course | null>(null);
   const [paymentIntent, setPaymentIntent] = useState<PaymentIntentData | null>(
@@ -51,9 +57,7 @@ function CheckoutContent() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeStep, setActiveStep] = useState(0);
-
-  const steps = ['Course Selection', 'Payment Details', 'Confirmation'];
+  const stripeEnabled = STRIPE_ENABLED;
 
   // Handle authentication redirect
   useEffect(() => {
@@ -70,8 +74,14 @@ function CheckoutContent() {
   useEffect(() => {
     if (!isLoaded || !user) return;
 
-    if (!courseId) {
-      setError('No course selected');
+    if (!stripeEnabled) {
+      setError(STRIPE_UNAVAILABLE_MESSAGE);
+      setLoading(false);
+      return;
+    }
+
+    if (!courseRef) {
+      setError('Kein Kurs ausgewählt');
       setLoading(false);
       return;
     }
@@ -86,18 +96,21 @@ function CheckoutContent() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ courseId }),
+          // Send as `courseId` for backward-compatibility; server resolves id or slug
+          body: JSON.stringify({ courseId: courseRef }),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to create payment intent');
+          throw new Error(
+            errorData.error || 'Fehler beim Erstellen der Payment Intent'
+          );
         }
 
         const data = await response.json();
 
         setCourse({
-          id: courseId!,
+          id: courseRef as string,
           title: data.courseName,
           description: null,
           price: data.amount,
@@ -105,10 +118,11 @@ function CheckoutContent() {
         });
 
         setPaymentIntent(data);
-        setActiveStep(1);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : 'Failed to load payment form'
+          err instanceof Error
+            ? err.message
+            : 'Fehler beim Laden des Zahlungsformulars'
         );
       } finally {
         setLoading(false);
@@ -116,12 +130,10 @@ function CheckoutContent() {
     };
 
     fetchCourseAndCreatePaymentIntent();
-  }, [isLoaded, user, courseId]);
+  }, [isLoaded, user, courseRef, stripeEnabled]);
 
   const handlePaymentSuccess = async (paymentIntentResult: any) => {
     try {
-      setActiveStep(2);
-
       const response = await fetch('/api/payment/confirm', {
         method: 'POST',
         headers: {
@@ -133,13 +145,15 @@ function CheckoutContent() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to confirm payment');
+        throw new Error('Fehler bei der Zahlungsbestätigung');
       }
 
       const confirmationData = await response.json();
       router.push(`/booking-success?bookingId=${confirmationData.bookingId}`);
     } catch (err) {
-      setError('Payment processing failed. Please contact support.');
+      setError(
+        'Zahlung konnte nicht verarbeitet werden. Bitte wende dich an den Support.'
+      );
     }
   };
 
@@ -173,7 +187,7 @@ function CheckoutContent() {
             <Stack spacing={2} alignItems='center'>
               <CircularProgress />
               <Typography variant='body2' color='text.secondary'>
-                Verifying authentication...
+                Anmeldung wird überprüft ...
               </Typography>
             </Stack>
           </Box>
@@ -184,77 +198,67 @@ function CheckoutContent() {
 
   return (
     <Container maxWidth='md' sx={{ py: 4 }} data-testid='checkout-page'>
-      <Paper elevation={2} sx={{ p: 4 }}>
-        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-          {steps.map((label, index) => (
-            <Step key={label}>
-              <StepLabel
-                icon={
-                  index === 0 ? (
-                    <SchoolOutlined />
-                  ) : index === 1 ? (
-                    <AttachMoneyOutlined />
-                  ) : (
-                    <ShoppingCartOutlined />
-                  )
-                }
+      {error && (
+        <Alert severity='error' sx={{ mb: 3 }} data-testid='checkout-error'>
+          {error}
+        </Alert>
+      )}
+
+      {loading ? (
+        <Box
+          display='flex'
+          justifyContent='center'
+          alignItems='center'
+          minHeight='300px'
+        >
+          <Stack spacing={2} alignItems='center'>
+            <CircularProgress />
+            <Typography variant='body2' color='text.secondary'>
+              Checkout wird vorbereitet ...
+            </Typography>
+          </Stack>
+        </Box>
+      ) : course && paymentIntent ? (
+        <Box
+          display='flex'
+          justifyContent='center'
+          sx={{ mt: { xs: 4, md: 8 }, width: '100%' }}
+        >
+          <Box maxWidth={500} width='100%'>
+            {stripePromise ? (
+              <Elements
+                key={paymentIntent.clientSecret}
+                stripe={stripePromise}
+                options={{
+                  clientSecret: paymentIntent.clientSecret,
+                  locale: 'de',
+                  appearance: stripeAppearance,
+                  loader: 'auto',
+                }}
               >
-                {label}
-              </StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-
-        {error && (
-          <Alert severity='error' sx={{ mb: 3 }} data-testid='checkout-error'>
-            {error}
-          </Alert>
-        )}
-
-        {loading ? (
-          <Box
-            display='flex'
-            justifyContent='center'
-            alignItems='center'
-            minHeight='300px'
-          >
-            <Stack spacing={2} alignItems='center'>
-              <CircularProgress />
-              <Typography variant='body2' color='text.secondary'>
-                Preparing your checkout...
-              </Typography>
-            </Stack>
+                <StripeCheckoutForm
+                  clientSecret={paymentIntent.clientSecret}
+                  amount={paymentIntent.amount}
+                  currency={paymentIntent.currency}
+                  courseName={paymentIntent.courseName}
+                  onSuccess={handlePaymentSuccess}
+                  onError={handlePaymentError}
+                />
+              </Elements>
+            ) : (
+              <Alert severity='error'>
+                Stripe ist nicht korrekt konfiguriert. Bitte wende dich an den
+                Support.
+              </Alert>
+            )}
           </Box>
-        ) : course && paymentIntent ? (
-          <Box>
-            <Paper variant='outlined' sx={{ p: 3, mb: 3 }}>
-              <Typography variant='h6' gutterBottom>
-                Course Summary
-              </Typography>
-              <Typography variant='h5' color='primary' gutterBottom>
-                {course.title}
-              </Typography>
-              <Typography variant='h4' color='primary'>
-                {(course.price / 100).toFixed(2)}{' '}
-                {course.currency.toUpperCase()}
-              </Typography>
-            </Paper>
-
-            <StripeCheckoutForm
-              clientSecret={paymentIntent.clientSecret}
-              amount={paymentIntent.amount}
-              currency={paymentIntent.currency}
-              courseName={paymentIntent.courseName}
-              onSuccess={handlePaymentSuccess}
-              onError={handlePaymentError}
-            />
-          </Box>
-        ) : (
-          <Alert severity='error'>
-            Failed to load course information. Please try again.
-          </Alert>
-        )}
-      </Paper>
+        </Box>
+      ) : error ? null : (
+        <Alert severity='error'>
+          Kursinformationen konnten nicht geladen werden. Bitte versuche es
+          erneut.
+        </Alert>
+      )}
     </Container>
   );
 }

@@ -154,12 +154,13 @@ export async function POST(req: NextRequest) {
 
     // Generate URLs
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const courseSlug = course.slug || course.id;
     const successUrl =
       validatedData.successUrl ||
       `${baseUrl}/bookings/success?session_id={CHECKOUT_SESSION_ID}&booking_id=${booking.id}`;
     const cancelUrl =
       validatedData.cancelUrl ||
-      `${baseUrl}/courses/${course.id}?cancelled=true`;
+      `${baseUrl}/courses/${courseSlug}?cancelled=true`;
 
     // Create Stripe checkout session
     const checkoutResult = await createCheckoutSession({

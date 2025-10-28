@@ -52,7 +52,6 @@ export default function AcademyPage() {
           key={index}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
-            // JSON-LD muss als Plain-JSON eingebettet werden (nicht base64)
             __html: JSON.stringify(schema, null, 2),
           }}
         />

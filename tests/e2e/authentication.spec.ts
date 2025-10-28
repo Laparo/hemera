@@ -1,4 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
+import { gotoStable } from './helpers/nav';
 import { AuthHelper, TEST_USERS } from './auth-helper';
 
 /**
@@ -20,7 +21,7 @@ test.describe('Authentication Flow', () => {
     }
 
     // Attempt to access protected area without authentication
-    await page.goto('/dashboard');
+    await gotoStable(page, '/dashboard');
 
     // Should redirect to sign-in page - be more flexible for CI
     // Local environment with full Clerk integration
@@ -54,7 +55,7 @@ test.describe('Authentication Flow', () => {
       );
 
       // Navigate to dashboard to verify access
-      await page.goto('/dashboard');
+      await gotoStable(page, '/dashboard');
 
       // Should show authenticated user interface
       await expect(page.locator('[data-testid=dashboard-title]')).toBeVisible();
@@ -83,7 +84,7 @@ test.describe('Authentication Flow', () => {
     }
 
     // Test invalid credentials
-    await page.goto('/sign-in');
+    await gotoStable(page, '/sign-in');
 
     // Wait for Clerk component to load
     await page.waitForSelector('input[name="identifier"]', { timeout: 10000 });
@@ -121,7 +122,7 @@ test.describe('Authentication Flow', () => {
     );
 
     // Navigate to dashboard
-    await page.goto('/dashboard');
+    await gotoStable(page, '/dashboard');
 
     // Verify we're logged in by checking for dashboard content
     await expect(page.locator('[data-testid=dashboard-title]')).toBeVisible();
@@ -139,7 +140,7 @@ test.describe('Authentication Flow', () => {
     });
 
     // Verify session is cleared - attempting to access protected area should redirect
-    await page.goto('/dashboard');
+    await gotoStable(page, '/dashboard');
     await expect(page).toHaveURL(/\/sign-in/, { timeout: 10000 });
   });
 
@@ -166,7 +167,7 @@ test.describe('Authentication Flow', () => {
     );
 
     // Navigate to dashboard
-    await page.goto('/dashboard');
+    await gotoStable(page, '/dashboard');
 
     // Refresh the page
     await page.reload();
@@ -192,7 +193,7 @@ test.describe('Authentication Flow', () => {
     await page.route('**/clerk-frontend-api/**', route => route.abort());
     await page.route('**/clerk.*.js', route => route.abort());
 
-    await page.goto('/dashboard');
+    await gotoStable(page, '/dashboard');
 
     // Should show appropriate error handling, not crash
     // This might redirect to error page or show fallback UI

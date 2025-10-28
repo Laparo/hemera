@@ -166,18 +166,45 @@ export async function getFeaturedCourses(limit = 3): Promise<Course[]> {
  */
 export async function getCourseById(id: string): Promise<Course> {
   try {
-    const course = await prisma.course.findUnique({
+    const courseRecord = await prisma.course.findUnique({
       where: {
         id,
-        isPublished: true,
+      },
+      include: {
+        bookings: {
+          where: {
+            paymentStatus: {
+              in: [PaymentStatus.PAID, PaymentStatus.PENDING],
+            },
+          },
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
-    if (!course) {
+    if (!courseRecord || !courseRecord.isPublished) {
       throw new CourseNotFoundError(id);
     }
 
-    return course;
+    const { bookings, ...course } = courseRecord as typeof courseRecord & {
+      bookings: Array<{ id: string }>;
+    };
+
+    const totalBookings = bookings.length;
+    const availableSpots =
+      course.capacity !== null && course.capacity !== undefined
+        ? Math.max(0, Number(course.capacity) - totalBookings)
+        : null;
+
+    return {
+      ...course,
+      currency: course.currency || 'EUR',
+      availableSpots,
+      totalBookings,
+      userBookingStatus: null,
+    } as Course;
   } catch (error) {
     if (error instanceof CourseNotFoundError) {
       throw error; // Re-throw our custom error
@@ -194,22 +221,49 @@ export async function getCourseById(id: string): Promise<Course> {
  */
 export async function getCourseBySlug(slug: string): Promise<Course> {
   try {
-    const course = await prisma.course.findUnique({
+    const courseRecord = await prisma.course.findUnique({
       where: {
         slug,
-        isPublished: true,
+      },
+      include: {
+        bookings: {
+          where: {
+            paymentStatus: {
+              in: [PaymentStatus.PAID, PaymentStatus.PENDING],
+            },
+          },
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
-    if (!course) {
+    if (!courseRecord) {
       throw new CourseNotFoundError(`slug:${slug}`);
     }
 
-    if (!course.isPublished) {
-      throw new CourseNotPublishedError(course.id);
+    if (!courseRecord.isPublished) {
+      throw new CourseNotPublishedError(courseRecord.id);
     }
 
-    return course;
+    const { bookings, ...course } = courseRecord as typeof courseRecord & {
+      bookings: Array<{ id: string }>;
+    };
+
+    const totalBookings = bookings.length;
+    const availableSpots =
+      course.capacity !== null && course.capacity !== undefined
+        ? Math.max(0, Number(course.capacity) - totalBookings)
+        : null;
+
+    return {
+      ...course,
+      currency: course.currency || 'EUR',
+      availableSpots,
+      totalBookings,
+      userBookingStatus: null,
+    } as Course;
   } catch (error) {
     if (
       error instanceof CourseNotFoundError ||

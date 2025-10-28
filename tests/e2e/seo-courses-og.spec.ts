@@ -1,4 +1,5 @@
 import { expect, test, Page } from '@playwright/test';
+import { gotoStable, clickAndWait } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
@@ -10,9 +11,7 @@ async function getMetaContent(page: Page, selector: string) {
 
 test.describe('Courses OG metadata', () => {
   test('Course list: og:image ist absolut', async ({ page }) => {
-    await page.goto('/courses', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-    });
+    await gotoStable(page, '/courses', { waitForTestId: 'course-overview' });
 
     const ogImage = await getMetaContent(page, 'meta[property="og:image"]');
     expect(ogImage).toBeTruthy();
@@ -22,9 +21,7 @@ test.describe('Courses OG metadata', () => {
   test('Course detail: og:image ist, wenn vorhanden, absolut', async ({
     page,
   }) => {
-    await page.goto('/courses', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-    });
+    await gotoStable(page, '/courses', { waitForTestId: 'course-overview' });
 
     const overview = page.getByTestId('course-overview');
     let detailLink = overview
@@ -43,8 +40,9 @@ test.describe('Courses OG metadata', () => {
       return;
     }
 
-    await detailLink.click();
-    await expect(page).toHaveURL(/\/courses\/[\w-]+/);
+    await clickAndWait(page, () => detailLink, {
+      expectUrl: /\/courses\/[\w-]+/,
+    });
 
     const ogImage = await getMetaContent(page, 'meta[property="og:image"]');
     if (!ogImage) {

@@ -28,7 +28,7 @@ export default function RootLayout({
     process.env.NEXT_PUBLIC_DISABLE_CLERK === '1';
 
   return (
-    <html lang='de'>
+    <html lang='de' suppressHydrationWarning>
       <body className={inter.className}>
         <Providers isE2E={isE2E}>{children}</Providers>
         <BuildInfo />
