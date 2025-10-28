@@ -27,15 +27,17 @@ function formatCurrency(amount: number, currency: string) {
 }
 
 interface BookingSuccessPageProps {
-  searchParams?: {
+  // Next.js 15 passes searchParams as a Promise for better streaming.
+  // Support that shape here to satisfy PageProps constraint during build.
+  searchParams?: Promise<{
     bookingId?: string;
-  };
+  }>;
 }
 
 export default async function BookingSuccessPage({
   searchParams,
 }: BookingSuccessPageProps) {
-  const bookingId = searchParams?.bookingId;
+  const { bookingId } = (await searchParams) ?? {};
 
   if (!bookingId) {
     notFound();
