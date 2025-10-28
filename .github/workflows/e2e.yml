@@ -14,11 +14,85 @@ on:
   deployment_status:
 
 jobs:
+  check-frontend-changes:
+    name: Check Frontend Changes
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    outputs:
+      has_frontend_changes: ${{ steps.check.outputs.has_frontend_changes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for frontend changes
+        id: check
+        run: |
+          # Define patterns for frontend files
+          # - Pages and layouts in app/ (excluding api/)
+          # - Components
+          # - Public assets
+          # - Styles
+          frontend_patterns=(
+            'app/.*\.(tsx|jsx)$'
+            'components/.*\.(tsx|jsx|ts|js)$'
+            'public/.*'
+            'styles/.*\.(css|scss|sass)$'
+          )
+
+          # Exclude API routes
+          exclude_patterns=(
+            'app/api/.*'
+          )
+
+          # Get changed files
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            # For PRs, compare with base branch
+            changed_files=$(git diff --name-only ${{ github.event.pull_request.base.sha }}..${{ github.sha }})
+          else
+            # For pushes, compare with previous commit
+            changed_files=$(git diff --name-only HEAD~1 HEAD)
+          fi
+
+          has_frontend_changes=false
+
+          # Check each changed file against patterns
+          while IFS= read -r file; do
+            # Skip if matches exclude patterns
+            excluded=false
+            for exclude_pattern in "${exclude_patterns[@]}"; do
+              if echo "$file" | grep -qE "$exclude_pattern"; then
+                excluded=true
+                break
+              fi
+            done
+
+            if [ "$excluded" = true ]; then
+              continue
+            fi
+
+            # Check if matches frontend patterns
+            for pattern in "${frontend_patterns[@]}"; do
+              if echo "$file" | grep -qE "$pattern"; then
+                echo "Found frontend change: $file"
+                has_frontend_changes=true
+                break 2
+              fi
+            done
+          done <<< "$changed_files"
+
+          echo "has_frontend_changes=$has_frontend_changes" >> "$GITHUB_OUTPUT"
+          echo "Frontend changes detected: $has_frontend_changes"
+
   e2e:
     runs-on: ubuntu-latest
-    # Run on PR events or when a preview deployment succeeds
+    needs: [check-frontend-changes]
+    # Run on PR events with frontend changes or on other trigger events
+    # Skip if PR with no frontend changes detected
     if: |
-      github.event_name != 'deployment_status' ||
+      (github.event_name == 'pull_request' && needs.check-frontend-changes.result == 'success' && needs.check-frontend-changes.outputs.has_frontend_changes == 'true') ||
+      (github.event_name == 'workflow_dispatch') ||
       (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success')
     steps:
       - name: Resolve ref to checkout
