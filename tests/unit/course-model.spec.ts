@@ -1,7 +1,24 @@
-import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+} from '@jest/globals';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
+
+beforeAll(() => {
+  // Initialisiere Prisma erst nach globalem Test-Setup, damit DATABASE_URL sicher gesetzt ist
+  prisma = new PrismaClient();
+});
+
+afterAll(async () => {
+  await prisma?.$disconnect();
+});
 
 describe('Course Model Validations', () => {
   beforeEach(async () => {
