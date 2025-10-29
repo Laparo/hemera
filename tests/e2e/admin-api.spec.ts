@@ -10,7 +10,11 @@ import { expect, test } from '@playwright/test';
  * - Return proper error responses
  */
 
-const baseURL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+// Prefer Playwright's BASE_URL for external runs; fall back to app URL or localhost for internal dev-server runs
+const baseURL =
+  process.env.PLAYWRIGHT_BASE_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  'http://localhost:3000';
 
 test.describe('Admin API Authentication & Authorization', () => {
   test('GET /api/admin/users - should require authentication', async ({

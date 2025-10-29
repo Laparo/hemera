@@ -220,6 +220,8 @@ jobs:
     name: Deploy Production
     runs-on: ubuntu-latest
     needs: quality-gates
+    outputs:
+      deploy_url: ${{ steps.deploy.outputs.url }}
     # Run on push to main, or manual dispatch on main targeting production
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.environment == 'production')
     # Production deploys on Vercel can take longer (build + finalize). Bump timeout to avoid premature cancellation.
@@ -256,6 +258,8 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           BUILD_TIME: ${{ env.BUILD_TIME }}
+          # Enable client-side Web Vitals collection in production builds
+          NEXT_PUBLIC_ENABLE_WEB_VITALS: '1'
 
       - name: Deploy Project Artifacts to Vercel (non-blocking with fallback)
         id: deploy
@@ -481,7 +485,10 @@ jobs:
       - name: Run E2E tests against production
         run: npx playwright test --project=chromium
         env:
-          PLAYWRIGHT_BASE_URL: ${{ env.PRODUCTION_ALIAS }}
+          # Prefer the freshly deployed URL (in case the alias lags or is protected)
+          PLAYWRIGHT_BASE_URL: ${{ needs.deploy-production.outputs.deploy_url || env.PRODUCTION_ALIAS }}
+          # Optional: support protected prod with bypass header (if configured)
+          VERCEL_PROTECTION_BYPASS: ${{ secrets.VERCEL_PROTECTION_BYPASS }}
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@v4
