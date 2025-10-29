@@ -6,6 +6,7 @@ import ClerkProviderWrapper from '@/components/auth/ClerkProviderWrapper';
 import StripeProvider from '@/components/payment/StripeProvider';
 import ConditionalPublicNavigation from '@/components/navigation/ConditionalPublicNavigation';
 import { RollbarProviderWrapper } from '@/lib/monitoring/rollbar-react-official';
+import MonitoringInit from '@/components/MonitoringInit';
 import * as React from 'react';
 
 type ProvidersProps = {
@@ -22,6 +23,7 @@ export default function Providers({ children, isE2E }: ProvidersProps) {
           <ErrorBoundary>
             <ConditionalPublicNavigation />
             {children}
+            <MonitoringInit />
           </ErrorBoundary>
         </ThemeRegistry>
       ) : (
@@ -31,6 +33,7 @@ export default function Providers({ children, isE2E }: ProvidersProps) {
               <ErrorBoundary>
                 <ConditionalPublicNavigation />
                 {children}
+                <MonitoringInit />
               </ErrorBoundary>
             </StripeProvider>
           </ThemeRegistry>
