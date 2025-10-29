@@ -103,3 +103,5 @@ Failure to monitor constitutes a process violation per the constitution
     `JEST_WORKER_ID`) or cleaned up in a teardown.
   - Database/containers: If you use Testcontainers, ensure proper teardown (`afterAll`) and call
     `prisma.$disconnect()` after DB tests.
+
+<!-- chore: trigger production deploy 2025-10-29T17:43:30Z -->
