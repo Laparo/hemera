@@ -103,6 +103,23 @@ export async function getCourseById(
 }
 
 /**
+ * Get course by ID or slug
+ * Convenience helper to resolve a course reference that may be a UUID (id) or a human-friendly slug.
+ */
+export async function getCourseByIdOrSlug(
+  idOrSlug: string
+): Promise<CourseWithBookings | null> {
+  return (await prisma.course.findFirst({
+    where: {
+      OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+    },
+    include: {
+      bookings: true,
+    },
+  })) as unknown as CourseWithBookings | null;
+}
+
+/**
  * Check if a course has available spots
  */
 export function isCourseAvailable(course: CourseWithBookings): boolean {

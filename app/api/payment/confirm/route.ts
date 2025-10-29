@@ -1,15 +1,31 @@
 import { updateBookingStatus } from '@/lib/services/booking';
-import { retrievePaymentIntent } from '@/lib/services/stripe';
+import { StripeConfigurationError } from '@/lib/errors';
+import {
+  isStripeConfigured,
+  retrievePaymentIntent,
+} from '@/lib/services/stripe';
 import { serverInstance } from '@/lib/monitoring/rollbar-official';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
+const STRIPE_UNAVAILABLE_ERROR =
+  'Stripe payments are temporarily unavailable. Please contact support.';
+
 export async function POST(request: NextRequest) {
+  let userId: string | null = null;
   try {
     // Authenticate user
-    const { userId } = await auth();
+    const authResult = await auth();
+    userId = authResult.userId;
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!isStripeConfigured()) {
+      return NextResponse.json(
+        { error: STRIPE_UNAVAILABLE_ERROR },
+        { status: 503 }
+      );
     }
 
     // Parse request body
@@ -61,10 +77,22 @@ export async function POST(request: NextRequest) {
       message: getPaymentStatusMessage(paymentIntent.status),
     });
   } catch (error) {
-    serverInstance.error('Payment confirmation failed', {
-      error: error instanceof Error ? error.message : String(error),
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const context = {
+      error: errorMessage,
+      userId: userId || 'unknown',
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    if (error instanceof StripeConfigurationError) {
+      serverInstance.warn('Stripe configuration missing', context);
+      return NextResponse.json(
+        { error: STRIPE_UNAVAILABLE_ERROR },
+        { status: 503 }
+      );
+    }
+
+    serverInstance.error('Payment confirmation failed', context);
     return NextResponse.json(
       { error: 'Failed to confirm payment' },
       { status: 500 }

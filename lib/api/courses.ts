@@ -4,6 +4,7 @@
  */
 
 import { prisma } from '@/lib/db/prisma';
+import { PaymentStatus } from '@prisma/client';
 import {
   CourseNotFoundError,
   CourseNotPublishedError,
@@ -55,15 +56,48 @@ export async function getPublishedCourses(): Promise<Course[]> {
     // SQLite may store boolean as 1/0, so we check for truthy values
     const courses = allCourses.filter(course => !!course.isPublished);
 
+    // Compute availability (FR-011): derive from internal capacities/bookings
+    const courseIds = courses.map(c => c.id);
+    let countsMap = new Map<string, number>();
+    if (courseIds.length > 0) {
+      const relatedBookings = await prisma.booking.findMany({
+        where: {
+          courseId: { in: courseIds },
+          paymentStatus: { in: [PaymentStatus.PAID, PaymentStatus.PENDING] },
+        },
+        select: { courseId: true },
+      });
+
+      countsMap = relatedBookings.reduce((acc, b) => {
+        acc.set(b.courseId, (acc.get(b.courseId) || 0) + 1);
+        return acc;
+      }, new Map<string, number>());
+    }
+
+    const enriched = courses.map(course => {
+      const totalBookings = countsMap.get(course.id) || 0;
+      const availableSpots =
+        course.capacity !== null && course.capacity !== undefined
+          ? Math.max(0, Number(course.capacity) - totalBookings)
+          : null;
+      return {
+        ...course,
+        currency: course.currency || 'EUR',
+        availableSpots,
+        totalBookings,
+        userBookingStatus: null,
+      } as Course;
+    });
+
     if (process.env.NODE_ENV !== 'production') {
       try {
-        const samplePreview = courses.slice(0, 3).map(course => ({
+        const samplePreview = enriched.slice(0, 3).map(course => ({
           id: course.id,
           slug: course.slug,
           published: course.isPublished,
         }));
         console.info('[getPublishedCourses]', {
-          count: courses.length,
+          count: enriched.length,
           sample: samplePreview,
         });
       } catch (logError) {
@@ -74,7 +108,7 @@ export async function getPublishedCourses(): Promise<Course[]> {
       }
     }
 
-    return courses;
+    return enriched;
   } catch (error) {
     logError(error, { operation: 'getPublishedCourses' });
     throw error;
@@ -132,18 +166,45 @@ export async function getFeaturedCourses(limit = 3): Promise<Course[]> {
  */
 export async function getCourseById(id: string): Promise<Course> {
   try {
-    const course = await prisma.course.findUnique({
+    const courseRecord = await prisma.course.findUnique({
       where: {
         id,
-        isPublished: true,
+      },
+      include: {
+        bookings: {
+          where: {
+            paymentStatus: {
+              in: [PaymentStatus.PAID, PaymentStatus.PENDING],
+            },
+          },
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
-    if (!course) {
+    if (!courseRecord || !courseRecord.isPublished) {
       throw new CourseNotFoundError(id);
     }
 
-    return course;
+    const { bookings, ...course } = courseRecord as typeof courseRecord & {
+      bookings: Array<{ id: string }>;
+    };
+
+    const totalBookings = bookings.length;
+    const availableSpots =
+      course.capacity !== null && course.capacity !== undefined
+        ? Math.max(0, Number(course.capacity) - totalBookings)
+        : null;
+
+    return {
+      ...course,
+      currency: course.currency || 'EUR',
+      availableSpots,
+      totalBookings,
+      userBookingStatus: null,
+    } as Course;
   } catch (error) {
     if (error instanceof CourseNotFoundError) {
       throw error; // Re-throw our custom error
@@ -160,22 +221,49 @@ export async function getCourseById(id: string): Promise<Course> {
  */
 export async function getCourseBySlug(slug: string): Promise<Course> {
   try {
-    const course = await prisma.course.findUnique({
+    const courseRecord = await prisma.course.findUnique({
       where: {
         slug,
-        isPublished: true,
+      },
+      include: {
+        bookings: {
+          where: {
+            paymentStatus: {
+              in: [PaymentStatus.PAID, PaymentStatus.PENDING],
+            },
+          },
+          select: {
+            id: true,
+          },
+        },
       },
     });
 
-    if (!course) {
+    if (!courseRecord) {
       throw new CourseNotFoundError(`slug:${slug}`);
     }
 
-    if (!course.isPublished) {
-      throw new CourseNotPublishedError(course.id);
+    if (!courseRecord.isPublished) {
+      throw new CourseNotPublishedError(courseRecord.id);
     }
 
-    return course;
+    const { bookings, ...course } = courseRecord as typeof courseRecord & {
+      bookings: Array<{ id: string }>;
+    };
+
+    const totalBookings = bookings.length;
+    const availableSpots =
+      course.capacity !== null && course.capacity !== undefined
+        ? Math.max(0, Number(course.capacity) - totalBookings)
+        : null;
+
+    return {
+      ...course,
+      currency: course.currency || 'EUR',
+      availableSpots,
+      totalBookings,
+      userBookingStatus: null,
+    } as Course;
   } catch (error) {
     if (
       error instanceof CourseNotFoundError ||

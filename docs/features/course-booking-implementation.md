@@ -100,7 +100,7 @@ graph TD
 
 ### 📁 **Dateistruktur der neuen Features**
 
-```
+```text
 app/
 ├── (protected)/
 │   └── bookings/
@@ -166,3 +166,32 @@ Die **Hemera Academy Kurs-Buchungsfunktion** ist vollständig implementiert und 
 
 _Implementiert am: 6. Oktober 2025_  
 _Status: ✅ Produktionsbereit_
+
+---
+
+## ℹ️ Hinweise (Okt 2025)
+
+### Slug-basierter Checkout und vereinfachte Weiterleitungen
+
+- Der Checkout akzeptiert jetzt sprechende Slugs oder IDs als Kursreferenz.
+  - URL: `/checkout?courseId=<slug|id>` (Param-Name bleibt aus Abwärtskompatibilität `courseId`).
+  - Server-API `POST /api/payment/create-intent` akzeptiert zusätzlich `courseSlug` oder `course` im
+    Body. Intern wird per `getCourseByIdOrSlug` aufgelöst.
+- Kursliste und Kursdetail generieren Checkout-Links bevorzugt mit `slug`, fallback auf `id`.
+- Nicht angemeldete Nutzer:innen werden beim Aufruf des Checkouts automatisch zu
+  `/sign-in?redirect_url=<checkout-url>` umgeleitet (Redirect geschieht innerhalb der
+  Checkout-Seite). Upstream-Seiten müssen das nicht mehr selbst erledigen.
+
+### Entfernt/abgelöst: CourseDetailClientWrapper
+
+- `CourseDetailClientWrapper` wird nicht mehr benötigt. Die Detailseite rendert `CourseDetail`
+  direkt und übergibt ein `bookNowHref` auf den Checkout (`/checkout?courseId=<slug|id>`).
+- Vorteil: Weniger doppelter Auth-Redirect-Logik, klarerer Flow (CTA → Checkout → ggf. Sign-In →
+  zurück zum Checkout).
+
+### Test-/Docs-Kompatibilität
+
+- E2E-Tests bleiben stabil, da `courseId` als Param-Name erhalten bleibt. Der Wert kann jetzt ein
+  Slug sein.
+- Bei Redirect-Assertions im Kontext „Gast klickt CTA“ sollte die erwartete `redirect_url` auf den
+  Checkout verweisen (z. B. `/checkout?courseId=…`).

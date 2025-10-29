@@ -10,3 +10,27 @@
 
 **Tipp:** Wenn du neue E2E-Tests schreibst, prüfe immer, ob sie auch auf einer SSO-geschützten
 Preview sinnvoll durchlaufen können.
+
+## Bypass für SSO-geschützte Previews (empfohlen statt SSO komplett zu deaktivieren)
+
+Wenn Previews durch Vercel SSO geschützt sind, kannst du einen Protection-Bypass-Token verwenden:
+
+1. In Vercel → Project → Settings → Protection → „Bypass Tokens“ einen Token erzeugen.
+2. Diesen als Secret in GitHub hinterlegen, z. B. `VERCEL_PROTECTION_BYPASS`.
+3. Playwright sendet den Header automatisch, wenn die Env-Var gesetzt ist:
+   - Header: `x-vercel-protection-bypass: <TOKEN>`
+   - Local: `VERCEL_PROTECTION_BYPASS=<TOKEN> PLAYWRIGHT_BASE_URL=<Preview-URL> npx playwright test`
+   - CI: Das Workflow `E2E External` liest `VERCEL_PROTECTION_BYPASS` aus `secrets` aus.
+
+Damit laufen E2E-Tests gegen geschützte Previews ohne SSO global abzuschalten.
+
+## SSO temporär deaktivieren (Alternative)
+
+Falls du SSO kurzzeitig für Previews abschalten willst:
+
+- Vercel → Project → Settings → Protection → „Preview Deployments“ → „Require Authentication / SSO“
+  deaktivieren.
+- Nach den Tests wieder aktivieren.
+
+Beachte: Temporäres Abschalten erlaubt externe Zugriffe; der Bypass-Token ist in der Regel sicherer
+und nachvollziehbarer.

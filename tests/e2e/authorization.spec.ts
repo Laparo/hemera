@@ -1,5 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { AuthHelper } from './auth-helper';
+import { gotoStable } from './helpers/nav';
 
 /**
  * Role-Based Authorization E2E
@@ -77,7 +78,7 @@ test.describe('Role-Based Navigation Contract', () => {
     await signInAsUser(page);
 
     // Attempt to navigate directly to admin section
-    await page.goto('/admin');
+    await gotoStable(page, '/admin');
 
     // Should be denied access or redirected
     // This could manifest as:

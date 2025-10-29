@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db/prisma';
+import { PaymentStatus } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -11,19 +12,38 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const course = await prisma.course.findFirst({
+    const courseRecord = await prisma.course.findFirst({
       where: {
-        id: id,
         isPublished: true,
+        OR: [{ id }, { slug: id }],
+      },
+      include: {
+        bookings: {
+          where: {
+            paymentStatus: { in: [PaymentStatus.PAID, PaymentStatus.PENDING] },
+          },
+          select: { id: true },
+        },
       },
     });
 
-    if (!course) {
+    if (!courseRecord) {
       return NextResponse.json(
         { success: false, error: 'Course not found' },
         { status: 404 }
       );
     }
+
+    const { bookings, ...course } = courseRecord as typeof courseRecord & {
+      bookings: Array<{ id: string }>;
+    };
+
+    const totalBookings = bookings.length;
+
+    const availableSpots =
+      course.capacity !== null && course.capacity !== undefined
+        ? Math.max(0, Number(course.capacity) - totalBookings)
+        : null;
 
     return NextResponse.json({
       success: true,
@@ -39,6 +59,9 @@ export async function GET(
         isPublished: course.isPublished,
         createdAt: course.createdAt,
         updatedAt: course.updatedAt,
+        availableSpots,
+        totalBookings,
+        userBookingStatus: null,
       },
     });
   } catch (error) {

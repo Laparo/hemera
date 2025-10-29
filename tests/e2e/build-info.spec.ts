@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { gotoStable } from './helpers/nav';
 
 /**
  * BuildInfo badge smoke test
@@ -15,7 +16,7 @@ test.skip(
 
 test('build info badge is present on home', async ({ page }) => {
   // In E2E/dev mode, die App zeigt das BuildInfo-Badge immer an.
-  await page.goto('/');
+  await gotoStable(page, '/', { waitForTestId: 'build-info' });
   // The badge may render asynchronously after hydration
   const badge = page.getByTestId('build-info');
   await expect(badge).toBeVisible({ timeout: 10000 });

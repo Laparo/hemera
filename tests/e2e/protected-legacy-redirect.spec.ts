@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { gotoStable } from './helpers/nav';
 
 test.describe('Legacy /protected redirect', () => {
   test.skip(
@@ -8,7 +9,7 @@ test.describe('Legacy /protected redirect', () => {
   test('GET /protected/foo should redirect to /dashboard (final URL)', async ({
     page,
   }) => {
-    await page.goto('/protected/foo');
+    await gotoStable(page, '/protected/foo');
     await expect(page).toHaveURL(/\/dashboard$/);
   });
 });

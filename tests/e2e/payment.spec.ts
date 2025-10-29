@@ -1,5 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { AuthHelper, TEST_USERS } from './auth-helper';
+import { gotoStable } from './helpers/nav';
 
 /**
  * Payment Flow Integration - Simplified for CI
@@ -19,14 +20,8 @@ test.describe('Stripe React Elements Payment Flow E2E - Simplified', () => {
     if (process.env.CI) {
       await renderPaymentFixture(page);
     } else {
-      // Navigate to home page with extended timeout
-      await page.goto('/', {
-        waitUntil: 'domcontentloaded',
-        timeout: 30000,
-      });
-
-      // Wait for page to be interactive
-      await page.waitForLoadState('domcontentloaded');
+      // Navigate to home page with extended timeout (stable)
+      await gotoStable(page, '/', { timeout: 30000 });
     }
   });
 

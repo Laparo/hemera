@@ -11,7 +11,8 @@ export default function SignUpPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        py: 4,
+        py: 8,
+        pt: 12,
       }}
     >
       <Container maxWidth='sm'>
@@ -29,7 +30,7 @@ export default function SignUpPage() {
             variant='h4'
             sx={{ mb: 3, fontWeight: 'bold' }}
           >
-            Join Hemera Academy
+            Registriere dich bei Hemera
           </Typography>
 
           <Typography
@@ -37,7 +38,7 @@ export default function SignUpPage() {
             color='text.secondary'
             sx={{ mb: 4, textAlign: 'center' }}
           >
-            Create your account and start your learning journey today
+            Erstelle dein Konto und beginne deine Lernreise noch heute
           </Typography>
 
           <Box

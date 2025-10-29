@@ -153,10 +153,12 @@ export function generateBreadcrumbSchema(
  */
 export function generateCourseSchema(course: {
   id: string;
+  slug?: string | null;
   title: string;
   description?: string | null;
   price?: number | null;
 }) {
+  const courseSlug = course.slug ?? course.id;
   return {
     '@context': 'https://schema.org',
     '@type': 'Course',
@@ -178,7 +180,7 @@ export function generateCourseSchema(course: {
       priceCurrency: 'EUR',
       availability: 'https://schema.org/InStock',
     },
-    url: `${ORGANIZATION_CONFIG.url}/courses/${course.id}`,
+    url: `${ORGANIZATION_CONFIG.url}/courses/${courseSlug}`,
     inLanguage: 'de-DE',
   };
 }

@@ -22,7 +22,13 @@ export function isWebVitalsEnabled(): boolean {
 export function isPublicPath(pathname: string | undefined): boolean {
   if (!pathname) return true;
   // Heuristic: treat these prefixes as private areas
-  const privatePrefixes = ['/auth', '/protected', '/admin'];
+  const privatePrefixes = [
+    '/auth',
+    '/protected',
+    '/admin',
+    '/sign-in',
+    '/sign-up',
+  ];
   return !privatePrefixes.some(prefix => pathname.startsWith(prefix));
 }
 

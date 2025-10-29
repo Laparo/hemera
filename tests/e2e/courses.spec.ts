@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { gotoStable } from './helpers/nav';
 
 const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
 
@@ -8,14 +9,7 @@ test.describe('Courses Page', () => {
     test.setTimeout(90000);
 
     // In production (external base), avoid 'networkidle' to reduce flakiness due to long-lived connections
-    await page.goto('/courses', {
-      waitUntil: isExternalBase ? 'domcontentloaded' : 'networkidle',
-    });
-
-    // Warten bis Section vorhanden ist (with longer timeout)
-    await expect(page.getByTestId('course-overview')).toBeVisible({
-      timeout: 30000,
-    });
+    await gotoStable(page, '/courses', { waitForTestId: 'course-overview' });
 
     // Mindestens eine Kurskarte ODER E2E-Fallback sichtbar
     const cards = page.getByTestId('course-card');

@@ -42,6 +42,7 @@ pnpm-debug.log*
 playwright-report/
 playwright-artifact/
 playwright-report-*.zip
+playwright-report-external/
 test-results/
 /test-results/
 

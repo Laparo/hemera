@@ -2,6 +2,25 @@
 
 <!--
 SYNC IMPACT REPORT - Constitution Amendment
+Version Change: 1.9.0 → 1.10.0
+Amendment Date: 2025-10-28
+Amendment Type: MINOR (Add Stripe Integration Fundamentals as a dedicated section)
+
+Modified Sections:
+- Added: VII. Stripe Integration Fundamentals (new section consolidating payment rules)
+
+Key Changes:
+- Formalized end-to-end Stripe rules: configuration, intent flow, metadata, security, webhooks,
+  localization, testing, and observability
+- Clarified server-side authority for amount/currency and course resolution (id or slug)
+- Documented booking lifecycle (PENDING → CONFIRMED) and duplicate booking protection
+
+Rationale: Centralize critical payment integration standards in one section to ensure consistent,
+secure, and testable payment flows across features and environments.
+-->
+
+<!--
+SYNC IMPACT REPORT - Constitution Amendment
 Version Change: 1.8.0 → 1.9.0
 Amendment Date: 2025-10-18
 Amendment Type: MINOR (Mandatory live monitoring of Deploy workflow via GitHub Actions VS Code extension)
@@ -370,6 +389,72 @@ Modular, reusable component design principles:
 - **Component Testing**: Each UI component has dedicated unit tests for behavior and rendering
 - **Accessibility Standards**: WCAG 2.1 AA compliance for all interactive elements
 - **Performance Optimization**: Lazy loading, code splitting, and bundle optimization
+
+### VII. Stripe Integration Fundamentals
+
+Constitutional rules for secure, reliable, and localized payment processing with Stripe.
+
+#### Configuration & Keys
+
+- Server-side secret key MUST be configured via `STRIPE_SECRET_KEY` and NEVER exposed to client
+  code.
+- Client-side publishable key MUST be configured via `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`.
+- A runtime guard (e.g., `isStripeConfigured()`) MUST block payment endpoints when keys are missing
+  and respond with a clear service-unavailable message.
+- Test/Live mode separation MUST be respected with environment-specific keys.
+
+#### Payment Intent Flow (Server Authority)
+
+- Amounts MUST be computed server-side from the authoritative source of truth (e.g., course price)
+  using minor units (cents); client-provided amounts MUST be ignored.
+- Course references MAY be id or slug in requests; the server MUST resolve them (id OR slug) and
+  operate on the canonical `course.id`.
+- A booking record MUST be created with status `PENDING` before creating the PaymentIntent.
+- PaymentIntent metadata MUST include `courseId`, `userId`, `bookingId`, and `courseName` for audit
+  and reconciliation.
+- Idempotency keys SHOULD be used for intent-creation requests to protect against duplicate posts.
+- Currency normalization: Stripe API calls MUST use lowercase currency (e.g., `eur`), storage and
+  presentation MAY use uppercase (`EUR`), with formatting via the appropriate locale.
+
+#### Client Integration (Stripe Elements)
+
+- Elements MUST be instantiated with the `clientSecret` returned from the server, locale set to
+  `'de'`, and the publishable key from `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`.
+- Secret keys MUST NOT be embedded client-side.
+- After confirmation, clients SHOULD call a server confirmation endpoint to persist final booking
+  updates and return a user-facing success route.
+
+#### Webhooks & State Transitions
+
+- Webhook endpoints MUST verify Stripe signatures and handle at minimum succeeded, failed, canceled
+  events.
+- On successful payment (`payment_intent.succeeded`), the related booking MUST transition from
+  `PENDING` to `CONFIRMED` (or `PAID` depending on domain terms) and persist the Stripe IDs.
+- Duplicate booking protection MUST be enforced at the database layer (e.g., unique
+  `userId_courseId`).
+
+#### Security & Observability
+
+- Never trust client-provided prices, currency, or discounts—server authoritative only.
+- All payment-related errors MUST be logged through the central monitoring solution (Rollbar) with
+  structured context (userId, requestId, bookingId, courseId, timestamp, error details).
+- Sensitive data (PII, tokens) MUST be excluded from logs and events.
+
+#### Localization & UX
+
+- Currency values MUST be formatted using
+  `Intl.NumberFormat('de-DE', { style: 'currency', currency })` with amounts in minor units
+  converted to major units for display.
+- User-facing messages MUST be localized to German and provide clear recovery guidance for
+  processing/failed states.
+
+#### Testing & Environments
+
+- Development and E2E testing MUST use Stripe test mode.
+- If Stripe is not configured in an environment, the app MUST display a clear, user-friendly
+  unavailability message without breaking the overall UX.
+- E2E tests MAY exercise a simplified Elements flow and MUST avoid real network calls in CI unless
+  explicitly configured.
 
 ## Development Standards
 

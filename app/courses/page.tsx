@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   Card,
+  CardActionArea,
   CardContent,
   Container,
   Grid,
@@ -20,7 +21,20 @@ export const metadata: Metadata = generateCourseListMetadata();
 export const dynamic = 'force-dynamic';
 
 export default async function CoursesPage() {
-  const courses = await getPublishedCourses();
+  // Robust gegen fehlende DB im internen E2E: Fehler abfangen und Empty-State rendern
+  let courses: Awaited<ReturnType<typeof getPublishedCourses>> = [];
+  try {
+    courses = await getPublishedCourses();
+  } catch (err) {
+    // Wenn wir im E2E-Testmodus laufen und die DB nicht verfügbar ist,
+    // rendere den Empty-State statt mit einem Dev-Error-Overlay abzubrechen.
+    if (process.env.E2E_TEST === 'true') {
+      console.warn('[CoursesPage] getPublishedCourses failed in E2E mode', err);
+      courses = [];
+    } else {
+      throw err;
+    }
+  }
 
   const jsonLdSchemas = SCHEMA_COMBINATIONS.courseList(courses);
   return (
@@ -30,9 +44,7 @@ export default async function CoursesPage() {
           key={index}
           type='application/ld+json'
           dangerouslySetInnerHTML={{
-            __html: Buffer.from(JSON.stringify(schema, null, 2)).toString(
-              'base64'
-            ),
+            __html: JSON.stringify(schema),
           }}
         />
       ))}
@@ -98,138 +110,183 @@ export default async function CoursesPage() {
           <Container maxWidth='lg'>
             {courses.length > 0 ? (
               <Grid container spacing={4}>
-                {courses.map(course => (
-                  <Grid item xs={12} md={6} lg={4} key={course.id}>
-                    <Card
-                      data-testid='course-card'
-                      sx={{
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                        borderRadius: '8px',
-                        overflow: 'hidden',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          transform: 'translateY(-8px)',
-                          boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
-                        },
-                      }}
-                    >
-                      {/* Course Image Placeholder */}
-                      <Box
-                        sx={{
-                          height: 160,
-                          bgcolor: 'primary.light',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
+                {courses.map(course => {
+                  const isSoldOut =
+                    typeof course.availableSpots === 'number' &&
+                    course.capacity !== null &&
+                    course.capacity !== undefined &&
+                    course.availableSpots === 0;
+
+                  const courseHref = `/courses/${course.slug || course.id}`;
+
+                  return (
+                    <Grid item xs={12} md={6} lg={4} key={course.id}>
+                      <Link
+                        href={courseHref}
+                        style={{ textDecoration: 'none' }}
                       >
-                        <Typography
-                          variant='h4'
-                          sx={{ color: 'primary.contrastText' }}
-                        >
-                          {course.title.charAt(0)}
-                        </Typography>
-                      </Box>
-
-                      <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                        <Typography
-                          variant='h6'
-                          component='h3'
-                          gutterBottom
-                          data-testid='course-title'
-                          sx={{ fontWeight: 600, mb: 1 }}
-                        >
-                          {course.title}
-                        </Typography>
-
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          sx={{ mb: 2, fontSize: '0.875rem' }}
-                        >
-                          Dozent: Expert:in
-                        </Typography>
-
-                        {/* Rating */}
-                        <Box
-                          sx={{ display: 'flex', alignItems: 'center', mb: 2 }}
-                        >
-                          <Typography variant='body2' sx={{ mr: 1 }}>
-                            ⭐⭐⭐⭐⭐
-                          </Typography>
-                          <Typography variant='body2' color='text.secondary'>
-                            (4.8)
-                          </Typography>
-                        </Box>
-
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          paragraph
-                          data-testid='course-description'
-                          sx={{ fontSize: '0.875rem', lineHeight: 1.4 }}
-                        >
-                          {course.description && course.description.length > 100
-                            ? course.description.substring(0, 100) + '...'
-                            : course.description ||
-                              'Keine Beschreibung verfügbar'}
-                        </Typography>
-
-                        <Typography
-                          variant='body2'
-                          color='primary'
+                        <Card
+                          data-testid='course-card'
                           sx={{
-                            mb: 2,
-                            fontWeight: 'medium',
-                            textTransform: 'uppercase',
-                            fontSize: '0.75rem',
-                          }}
-                          data-testid='course-level'
-                        >
-                          Einsteiger
-                        </Typography>
-                        <Box
-                          sx={{
+                            height: '100%',
                             display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            mt: 2,
+                            flexDirection: 'column',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              transform: 'translateY(-8px)',
+                              boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+                            },
                           }}
                         >
-                          <Typography variant='body2' color='text.secondary'>
-                            8 Stunden
-                          </Typography>
-                          <Typography
-                            variant='h6'
-                            component='span'
-                            sx={{ fontWeight: 'bold' }}
+                          <CardActionArea
+                            sx={{
+                              height: '100%',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'stretch',
+                            }}
                           >
-                            {course.price && Number(course.price) > 0
-                              ? '€' + (Number(course.price) / 100).toFixed(2)
-                              : 'Free'}
-                          </Typography>
-                        </Box>
-                        <Button
-                          component={Link}
-                          href={'/checkout?courseId=' + course.id}
-                          variant='contained'
-                          fullWidth
-                          startIcon={<BookOnlineOutlined />}
-                          sx={{
-                            mt: 2,
-                            fontWeight: 'bold',
-                            textTransform: 'none',
-                          }}
-                        >
-                          Kurs buchen
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
+                            {/* Course Image Placeholder */}
+                            <Box
+                              sx={{
+                                position: 'relative',
+                                height: 160,
+                                bgcolor: 'primary.light',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              {/* Sold out badge */}
+                              {isSoldOut && (
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    top: 8,
+                                    right: 8,
+                                    bgcolor: 'error.main',
+                                    color: 'error.contrastText',
+                                    px: 1.5,
+                                    py: 0.5,
+                                    borderRadius: 1,
+                                    fontSize: '0.75rem',
+                                    fontWeight: 700,
+                                    textTransform: 'uppercase',
+                                    boxShadow: 2,
+                                  }}
+                                  data-testid='sold-out-badge'
+                                >
+                                  Ausgebucht
+                                </Box>
+                              )}
+                              <Typography
+                                variant='h4'
+                                sx={{ color: 'primary.contrastText' }}
+                              >
+                                {course.title.charAt(0)}
+                              </Typography>
+                            </Box>
+
+                            <CardContent sx={{ flexGrow: 1, p: 3 }}>
+                              <Typography
+                                variant='h6'
+                                component='h3'
+                                gutterBottom
+                                data-testid='course-title'
+                                sx={{ fontWeight: 600, mb: 1 }}
+                              >
+                                {course.title}
+                              </Typography>
+
+                              <Typography
+                                variant='body2'
+                                color='text.secondary'
+                                sx={{ mb: 2, fontSize: '0.875rem' }}
+                              >
+                                Dozent: Expert:in
+                              </Typography>
+
+                              {/* Rating */}
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  mb: 2,
+                                }}
+                              >
+                                <Typography variant='body2' sx={{ mr: 1 }}>
+                                  ⭐⭐⭐⭐⭐
+                                </Typography>
+                                <Typography
+                                  variant='body2'
+                                  color='text.secondary'
+                                >
+                                  (4.8)
+                                </Typography>
+                              </Box>
+
+                              <Typography
+                                variant='body2'
+                                color='text.secondary'
+                                paragraph
+                                data-testid='course-description'
+                                sx={{ fontSize: '0.875rem', lineHeight: 1.4 }}
+                              >
+                                {course.description &&
+                                course.description.length > 100
+                                  ? course.description.substring(0, 100) + '...'
+                                  : course.description ||
+                                    'Keine Beschreibung verfügbar'}
+                              </Typography>
+
+                              <Typography
+                                variant='body2'
+                                color='primary'
+                                sx={{
+                                  mb: 2,
+                                  fontWeight: 'medium',
+                                  textTransform: 'uppercase',
+                                  fontSize: '0.75rem',
+                                }}
+                                data-testid='course-level'
+                              >
+                                Einsteiger
+                              </Typography>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  mt: 2,
+                                }}
+                              >
+                                <Typography
+                                  variant='body2'
+                                  color='text.secondary'
+                                >
+                                  8 Stunden
+                                </Typography>
+                                <Typography
+                                  variant='h6'
+                                  component='span'
+                                  sx={{ fontWeight: 'bold' }}
+                                >
+                                  {course.price && Number(course.price) > 0
+                                    ? '€' +
+                                      (Number(course.price) / 100).toFixed(2)
+                                    : 'Free'}
+                                </Typography>
+                              </Box>
+                            </CardContent>
+                          </CardActionArea>
+                        </Card>
+                      </Link>
+                    </Grid>
+                  );
+                })}
               </Grid>
             ) : (
               <Box

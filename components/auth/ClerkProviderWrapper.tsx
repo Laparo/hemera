@@ -2,6 +2,7 @@
 
 import { clerkConfig } from '@/lib/auth/clerk-config';
 import { ClerkProvider } from '@clerk/nextjs';
+import { deDE } from '@clerk/localizations';
 import { ReactNode } from 'react';
 
 interface ClerkProviderWrapperProps {
@@ -48,14 +49,10 @@ export default function ClerkProviderWrapper({
     return <>{children}</>;
   }
 
-  // Only log config in development to avoid hydration issues
-  if (process.env.NODE_ENV === 'development') {
-    // Clerk Config logged in development mode only
-  }
-
   return (
     <ClerkProvider
       publishableKey={publishableKey}
+      localization={deDE}
       signInUrl={clerkConfig.signInUrl}
       signUpUrl={clerkConfig.signUpUrl}
       signInFallbackRedirectUrl={clerkConfig.signInFallbackRedirectUrl}

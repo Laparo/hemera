@@ -1,6 +1,7 @@
 import Providers from '@/components/Providers';
 import BuildInfo from '@/components/BuildInfo';
 import type { Metadata } from 'next';
+import { SITE_CONFIG } from '@/lib/seo/constants';
 import { Inter } from 'next/font/google';
 import * as React from 'react';
 import './globals.css';
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
   },
   description:
     'Transform your career with expert-led courses in technology, business, and creative skills.',
+  metadataBase: new URL(SITE_CONFIG.url),
 };
 
 export default function RootLayout({
@@ -26,7 +28,7 @@ export default function RootLayout({
     process.env.NEXT_PUBLIC_DISABLE_CLERK === '1';
 
   return (
-    <html lang='de'>
+    <html lang='de' suppressHydrationWarning>
       <body className={inter.className}>
         <Providers isE2E={isE2E}>{children}</Providers>
         <BuildInfo />

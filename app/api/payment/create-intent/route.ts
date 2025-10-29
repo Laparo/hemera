@@ -1,9 +1,14 @@
-import { createBooking } from '@/lib/services/booking';
-import { getCourseById } from '@/lib/services/course';
-import { createPaymentIntent } from '@/lib/services/stripe';
+import { getCurrentUserWithSync } from '@/lib/api/users';
+import { StripeConfigurationError } from '@/lib/errors';
 import { serverInstance } from '@/lib/monitoring/rollbar-official';
+import { getCourseByIdOrSlug } from '@/lib/services/course';
+import { createBooking } from '@/lib/services/booking';
+import { createPaymentIntent, isStripeConfigured } from '@/lib/services/stripe';
 import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
+
+const STRIPE_UNAVAILABLE_ERROR =
+  'Stripe payments are temporarily unavailable. Please contact support.';
 
 export async function POST(request: NextRequest) {
   let userId: string | null = null;
@@ -15,25 +20,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse request body
-    const { courseId } = await request.json();
-    if (!courseId) {
+    if (!isStripeConfigured()) {
       return NextResponse.json(
-        { error: 'Course ID is required' },
+        { error: STRIPE_UNAVAILABLE_ERROR },
+        { status: 503 }
+      );
+    }
+
+    // Parse request body (accept id or slug for course reference)
+    const body = await request.json();
+    // Backward-compatible: allow { courseId } as today, but also accept { courseSlug } or { course }
+    const courseRef: string | undefined =
+      body?.courseId || body?.courseSlug || body?.course;
+    if (!courseRef) {
+      return NextResponse.json(
+        { error: 'Course reference (id or slug) is required' },
         { status: 400 }
       );
     }
 
-    // Get course details
-    const course = await getCourseById(courseId);
+    // Get course details (resolve by id or slug)
+    const course = await getCourseByIdOrSlug(courseRef);
     if (!course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
+    // Ensure the Clerk user exists in the local database before booking creation
+    const syncedUser = await getCurrentUserWithSync();
+    userId = syncedUser.id;
+
     // Create booking with initial PENDING status
     const booking = await createBooking({
-      userId,
-      courseId,
+      userId: syncedUser.id,
+      courseId: course.id,
       amount: course.price,
       currency: course.currency,
     });
@@ -43,11 +62,11 @@ export async function POST(request: NextRequest) {
       // Amounts are stored in cents in our DB schema
       amount: course.price,
       currency: course.currency.toLowerCase(),
-      courseId,
-      userId,
+      courseId: course.id,
+      userId: syncedUser.id,
       metadata: {
-        courseId,
-        userId,
+        courseId: course.id,
+        userId: syncedUser.id,
         bookingId: booking.id,
         courseName: course.title,
       },
@@ -62,11 +81,22 @@ export async function POST(request: NextRequest) {
       bookingId: booking.id,
     });
   } catch (error) {
-    serverInstance.error('Payment intent creation failed', {
-      error: error instanceof Error ? error.message : String(error),
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const context = {
+      error: errorMessage,
       userId: userId || 'unknown',
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    if (error instanceof StripeConfigurationError) {
+      serverInstance.warn('Stripe configuration missing', context);
+      return NextResponse.json(
+        { error: STRIPE_UNAVAILABLE_ERROR },
+        { status: 503 }
+      );
+    }
+
+    serverInstance.error('Payment intent creation failed', context);
     return NextResponse.json(
       { error: 'Payment intent creation failed' },
       { status: 500 }

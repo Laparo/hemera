@@ -9,7 +9,6 @@ import {
   createRequestContext,
   getOrCreateRequestId,
 } from '@/lib/utils/request-id';
-import { currentUser } from '@clerk/nextjs/server';
 import { PaymentStatus } from '@prisma/client';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
@@ -35,10 +34,7 @@ export async function GET(request: NextRequest) {
   const logger = createApiLogger(context);
 
   try {
-    logger.info('Starting course list request');
-
-    // Public endpoint - no authentication required
-    const user = await currentUser();
+    logger.info('Starting public course list request');
 
     const { searchParams } = new URL(request.url);
     const queryParams = Object.fromEntries(searchParams.entries());
@@ -56,10 +52,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    logger.info('Fetching courses', {
-      userId: user?.id,
-      params: validatedParams,
-    });
+    logger.info('Fetching courses', { params: validatedParams });
 
     // Kurse von der Mock-Funktion abrufen
     const courses = await getCourses();

@@ -21,6 +21,15 @@ function withSchemaParam(urlStr: string, schema?: string): string {
       url.searchParams.set('schema', schema);
     }
 
+    // In E2E/Dev-Tests erlauben wir längere Pool-Zeitüberschreitung, um Flakiness zu vermeiden
+    if (
+      process.env.E2E_TEST === 'true' &&
+      !url.searchParams.has('pool_timeout')
+    ) {
+      // Sekunden
+      url.searchParams.set('pool_timeout', '30');
+    }
+
     return url.toString();
   } catch {
     // Fallback to previous behavior if URL parsing fails
