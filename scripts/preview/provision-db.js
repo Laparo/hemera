@@ -46,10 +46,22 @@ async function main() {
   }
   const urlWithSchema = withSchemaParam(baseUrl, schema);
   // Run prisma migrate deploy with overridden DATABASE_URL
-  execSync('npx prisma migrate deploy', {
-    stdio: 'inherit',
-    env: { ...process.env, DATABASE_URL: urlWithSchema },
-  });
+  try {
+    execSync('npx prisma migrate deploy', {
+      stdio: 'inherit',
+      env: { ...process.env, DATABASE_URL: urlWithSchema },
+    });
+  } catch (e) {
+    console.warn(
+      '[provision-db] migrate deploy failed, falling back to prisma db push:',
+      e?.message || e
+    );
+    // Fallback for preview/dev: push the current Prisma schema to the target schema
+    execSync('npx prisma db push --accept-data-loss', {
+      stdio: 'inherit',
+      env: { ...process.env, DATABASE_URL: urlWithSchema },
+    });
+  }
   // Seed (TypeScript) via ts-node ESM loader
   execSync('node --loader ts-node/esm prisma/seed.ts', {
     stdio: 'inherit',
