@@ -1,5 +1,6 @@
 import Providers from '@/components/Providers';
 import BuildInfo from '@/components/BuildInfo';
+import MonitoringInit from '@/components/MonitoringInit';
 import type { Metadata } from 'next';
 import { SITE_CONFIG } from '@/lib/seo/constants';
 import { Inter } from 'next/font/google';
@@ -31,6 +32,8 @@ export default function RootLayout({
     <html lang='de' suppressHydrationWarning>
       <body className={inter.className}>
         <Providers isE2E={isE2E}>{children}</Providers>
+        {/* Init client-side monitoring (Web Vitals). Gated in production via flags. */}
+        <MonitoringInit />
         <BuildInfo />
       </body>
     </html>
