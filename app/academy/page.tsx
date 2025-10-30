@@ -44,7 +44,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-static';
 
 export default function AcademyPage() {
-  const jsonLdSchemas = SCHEMA_COMBINATIONS.aboutPage();
+  const jsonLdSchemas = SCHEMA_COMBINATIONS.academyPage();
   return (
     <>
       {jsonLdSchemas.map((schema, index) => (

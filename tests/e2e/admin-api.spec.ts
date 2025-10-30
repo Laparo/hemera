@@ -10,13 +10,11 @@ import { expect, test } from '@playwright/test';
  * - Return proper error responses
  */
 
-const baseURL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
 test.describe('Admin API Authentication & Authorization', () => {
   test('GET /api/admin/users - should require authentication', async ({
     request,
   }) => {
-    const response = await request.get(`${baseURL}/api/admin/users`);
+    const response = await request.get('/api/admin/users');
 
     // Should return 401 Unauthorized
     expect(response.status()).toBe(401);
@@ -30,7 +28,7 @@ test.describe('Admin API Authentication & Authorization', () => {
   test('GET /api/admin/courses - should require authentication', async ({
     request,
   }) => {
-    const response = await request.get(`${baseURL}/api/admin/courses`);
+    const response = await request.get('/api/admin/courses');
 
     // Should return 401 Unauthorized
     expect(response.status()).toBe(401);
@@ -44,7 +42,7 @@ test.describe('Admin API Authentication & Authorization', () => {
   test('GET /api/admin/analytics - should require authentication', async ({
     request,
   }) => {
-    const response = await request.get(`${baseURL}/api/admin/analytics`);
+    const response = await request.get('/api/admin/analytics');
 
     // Should return 401 Unauthorized
     expect(response.status()).toBe(401);
@@ -58,7 +56,7 @@ test.describe('Admin API Authentication & Authorization', () => {
   test('GET /api/admin/errors - should require authentication', async ({
     request,
   }) => {
-    const response = await request.get(`${baseURL}/api/admin/errors`);
+    const response = await request.get('/api/admin/errors');
 
     // Should return 401 Unauthorized
     expect(response.status()).toBe(401);
@@ -74,7 +72,7 @@ test.describe('Admin API CORS Support', () => {
   test('OPTIONS /api/admin/users - should handle preflight request', async ({
     request,
   }) => {
-    const response = await request.fetch(`${baseURL}/api/admin/users`, {
+    const response = await request.fetch('/api/admin/users', {
       method: 'OPTIONS',
     });
 
@@ -91,7 +89,7 @@ test.describe('Admin API CORS Support', () => {
   test('OPTIONS /api/admin/courses - should handle preflight request', async ({
     request,
   }) => {
-    const response = await request.fetch(`${baseURL}/api/admin/courses`, {
+    const response = await request.fetch('/api/admin/courses', {
       method: 'OPTIONS',
     });
 
@@ -108,7 +106,7 @@ test.describe('Admin API CORS Support', () => {
   test('OPTIONS /api/admin/analytics - should handle preflight request', async ({
     request,
   }) => {
-    const response = await request.fetch(`${baseURL}/api/admin/analytics`, {
+    const response = await request.fetch('/api/admin/analytics', {
       method: 'OPTIONS',
     });
 
@@ -125,7 +123,7 @@ test.describe('Admin API CORS Support', () => {
   test('OPTIONS /api/admin/errors - should handle preflight request', async ({
     request,
   }) => {
-    const response = await request.fetch(`${baseURL}/api/admin/errors`, {
+    const response = await request.fetch('/api/admin/errors', {
       method: 'OPTIONS',
     });
 
@@ -142,7 +140,7 @@ test.describe('Admin API CORS Support', () => {
   test('GET /api/admin/users - should include CORS headers in response', async ({
     request,
   }) => {
-    const response = await request.get(`${baseURL}/api/admin/users`);
+    const response = await request.get('/api/admin/users');
 
     // Should include CORS headers even on error responses
     const headers = response.headers();
@@ -152,7 +150,7 @@ test.describe('Admin API CORS Support', () => {
 
 test.describe('Admin API Response Format', () => {
   test('Error responses should include requestId', async ({ request }) => {
-    const response = await request.get(`${baseURL}/api/admin/users`);
+    const response = await request.get('/api/admin/users');
 
     const body = await response.json();
     expect(body.meta).toBeDefined();
@@ -164,7 +162,7 @@ test.describe('Admin API Response Format', () => {
     request,
   }) => {
     // Use an endpoint that requires authentication to test error response format
-    const response = await request.get(`${baseURL}/api/admin/users`);
+    const response = await request.get('/api/admin/users');
 
     const body = await response.json();
     expect(body).toHaveProperty('success');

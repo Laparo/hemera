@@ -213,6 +213,20 @@ export const SCHEMA_COMBINATIONS = {
     ]),
     ...courses.map(course => generateCourseSchema(course)),
   ],
+  academyPage: () => [
+    generateOrganizationSchema(),
+    generateWebPageSchema({
+      title: `Hemera Academy – Über unsere Kurse`,
+      description:
+        'Erfahre mehr über die Hemera Academy: Ziele, Lernformate und wie du mit unseren Kursen durchstartest.',
+      url: `${ORGANIZATION_CONFIG.url}/academy`,
+      type: 'WebPage',
+    }),
+    generateBreadcrumbSchema([
+      { name: 'Home', url: ORGANIZATION_CONFIG.url },
+      { name: 'Academy', url: `${ORGANIZATION_CONFIG.url}/academy` },
+    ]),
+  ],
   aboutPage: () => [
     generateOrganizationSchema(),
     generateWebPageSchema({
