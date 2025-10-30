@@ -1,15 +1,15 @@
 import { expect, test } from '@playwright/test';
 import { gotoStable } from './helpers/nav';
 
-const isExternalBase = !!process.env.PLAYWRIGHT_BASE_URL;
-
 test.describe('Courses empty state', () => {
   test.beforeAll(async ({ request }) => {
-    try {
-      await request.get('http://localhost:3000/', { timeout: 3000 });
-      await request.get('http://localhost:3000/courses', { timeout: 3000 });
-    } catch {
-      // best-effort
+    // Warm cache/buffer regardless of deployment base URL
+    for (const path of ['/', '/courses']) {
+      try {
+        await request.get(path, { timeout: 3000 });
+      } catch {
+        // best-effort only for environments where the route is available
+      }
     }
   });
 
