@@ -40,16 +40,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     // Validate user ID
     if (!targetUserId || targetUserId.trim() === '') {
-      const errorResponse = createErrorResponse(
-        'Ungültige Benutzer-ID',
-        ErrorCodes.VALIDATION_ERROR,
-        requestId,
-        400
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Ungültige Benutzer-ID',
+          ErrorCodes.VALIDATION_ERROR,
+          requestId,
+          400
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     const adminAuth = await requireAdminUser(requestId);
@@ -71,23 +70,21 @@ export async function GET(request: NextRequest, context: RouteContext) {
     });
 
     if (!user) {
-      const errorResponse = createErrorResponse(
-        'Benutzer nicht gefunden',
-        ErrorCodes.NOT_FOUND,
-        requestId,
-        404
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Benutzer nicht gefunden',
+          ErrorCodes.NOT_FOUND,
+          requestId,
+          404
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
-    const successResponse = createSuccessResponse(user, requestId);
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      successResponse.headers.set(key, value);
-    });
-    return successResponse;
+    return applyCorsHeaders(
+      createSuccessResponse(user, requestId),
+      corsHeaders
+    );
   } catch (error) {
     // Log minimal context without full error object
     serverInstance.error('Fehler beim Laden der Benutzerdetails', {
@@ -96,16 +93,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
       requestId,
       error: error instanceof Error ? error.message : 'Unknown error',
     });
-    const errorResponse = createErrorResponse(
-      'Benutzerdetails konnten nicht geladen werden',
-      ErrorCodes.INTERNAL_ERROR,
-      requestId,
-      500
+    return applyCorsHeaders(
+      createErrorResponse(
+        'Benutzerdetails konnten nicht geladen werden',
+        ErrorCodes.INTERNAL_ERROR,
+        requestId,
+        500
+      ),
+      corsHeaders
     );
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      errorResponse.headers.set(key, value);
-    });
-    return errorResponse;
   }
 }
 
@@ -124,16 +120,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     // Validate user ID
     if (!targetUserId || targetUserId.trim() === '') {
-      const errorResponse = createErrorResponse(
-        'Ungültige Benutzer-ID',
-        ErrorCodes.VALIDATION_ERROR,
-        requestId,
-        400
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Ungültige Benutzer-ID',
+          ErrorCodes.VALIDATION_ERROR,
+          requestId,
+          400
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     const adminAuth = await requireAdminUser(requestId);
@@ -148,46 +143,46 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     try {
       body = await request.json();
     } catch (_parseError) {
-      const errorResponse = createErrorResponse(
-        'Ungültiger JSON-Body',
-        ErrorCodes.VALIDATION_ERROR,
-        requestId,
-        400
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Ungültiger JSON-Body',
+          ErrorCodes.VALIDATION_ERROR,
+          requestId,
+          400
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     const parseResult = userPatchSchema.safeParse(body);
     if (!parseResult.success) {
-      const errorResponse = createErrorResponse(
-        `Validierungsfehler: ${parseResult.error.issues.map(e => e.message).join(', ')}`,
-        ErrorCodes.VALIDATION_ERROR,
-        requestId,
-        400
+      const validationMessages = parseResult.error.issues
+        .map(e => e.message)
+        .join(', ');
+      return applyCorsHeaders(
+        createErrorResponse(
+          `Validierungsfehler: ${validationMessages}`,
+          ErrorCodes.VALIDATION_ERROR,
+          requestId,
+          400
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     const { role, isOutperformer } = parseResult.data;
 
     // Prevent self-demotion: admin cannot remove their own admin role
     if (role !== undefined && userId === targetUserId && role !== 'admin') {
-      const errorResponse = createErrorResponse(
-        'Du kannst deine eigene Admin-Rolle nicht entfernen',
-        ErrorCodes.FORBIDDEN,
-        requestId,
-        403
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Du kannst deine eigene Admin-Rolle nicht entfernen',
+          ErrorCodes.FORBIDDEN,
+          requestId,
+          403
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     let updatedUser: unknown = null;
@@ -214,16 +209,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       });
 
       if (!existingUser) {
-        const errorResponse = createErrorResponse(
-          'Benutzer nicht gefunden',
-          ErrorCodes.NOT_FOUND,
-          requestId,
-          404
+        return applyCorsHeaders(
+          createErrorResponse(
+            'Benutzer nicht gefunden',
+            ErrorCodes.NOT_FOUND,
+            requestId,
+            404
+          ),
+          corsHeaders
         );
-        Object.entries(corsHeaders).forEach(([key, value]) => {
-          errorResponse.headers.set(key, value);
-        });
-        return errorResponse;
       }
 
       updatedUser = await prisma.user.update({
@@ -249,24 +243,22 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (updatedUser) {
-      const successResponse = createSuccessResponse(updatedUser, requestId);
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        successResponse.headers.set(key, value);
-      });
-      return successResponse;
+      return applyCorsHeaders(
+        createSuccessResponse(updatedUser, requestId),
+        corsHeaders
+      );
     }
 
     // Should not reach here due to schema validation
-    const errorResponse = createErrorResponse(
-      'Keine gültige Aktion angegeben',
-      ErrorCodes.VALIDATION_ERROR,
-      requestId,
-      400
+    return applyCorsHeaders(
+      createErrorResponse(
+        'Keine gültige Aktion angegeben',
+        ErrorCodes.VALIDATION_ERROR,
+        requestId,
+        400
+      ),
+      corsHeaders
     );
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      errorResponse.headers.set(key, value);
-    });
-    return errorResponse;
   } catch (error) {
     serverInstance.error('Fehler beim Aktualisieren des Benutzers', {
       context: 'AdminUsers.PATCH',
@@ -274,16 +266,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       requestId,
       error: error instanceof Error ? error.message : 'Unknown error',
     });
-    const errorResponse = createErrorResponse(
-      'Benutzer konnte nicht aktualisiert werden',
-      ErrorCodes.INTERNAL_ERROR,
-      requestId,
-      500
+    return applyCorsHeaders(
+      createErrorResponse(
+        'Benutzer konnte nicht aktualisiert werden',
+        ErrorCodes.INTERNAL_ERROR,
+        requestId,
+        500
+      ),
+      corsHeaders
     );
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      errorResponse.headers.set(key, value);
-    });
-    return errorResponse;
   }
 }
 
@@ -301,16 +292,15 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     // Validate user ID
     if (!targetUserId || targetUserId.trim() === '') {
-      const errorResponse = createErrorResponse(
-        'Ungültige Benutzer-ID',
-        ErrorCodes.VALIDATION_ERROR,
-        requestId,
-        400
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Ungültige Benutzer-ID',
+          ErrorCodes.VALIDATION_ERROR,
+          requestId,
+          400
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     const adminAuth = await requireAdminUser(requestId);
@@ -322,16 +312,15 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     // Prevent self-deletion
     if (userId === targetUserId) {
-      const errorResponse = createErrorResponse(
-        'Du kannst dein eigenes Konto nicht löschen',
-        ErrorCodes.FORBIDDEN,
-        requestId,
-        403
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Du kannst dein eigenes Konto nicht löschen',
+          ErrorCodes.FORBIDDEN,
+          requestId,
+          403
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     // Delete user via Clerk
@@ -357,15 +346,14 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       requestId,
       error: error instanceof Error ? error.message : 'Unknown error',
     });
-    const errorResponse = createErrorResponse(
-      'Benutzer konnte nicht gelöscht werden',
-      ErrorCodes.INTERNAL_ERROR,
-      requestId,
-      500
+    return applyCorsHeaders(
+      createErrorResponse(
+        'Benutzer konnte nicht gelöscht werden',
+        ErrorCodes.INTERNAL_ERROR,
+        requestId,
+        500
+      ),
+      corsHeaders
     );
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      errorResponse.headers.set(key, value);
-    });
-    return errorResponse;
   }
 }

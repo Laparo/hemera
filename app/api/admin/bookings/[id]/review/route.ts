@@ -1,6 +1,5 @@
-import { auth } from '@clerk/nextjs/server';
 import { type NextRequest, NextResponse } from 'next/server';
-import { checkUserAdminStatus } from '../../../../../../lib/auth/helpers';
+import { requireAdminUser } from '../../../../../../lib/auth/helpers';
 import { prisma } from '../../../../../../lib/db/prisma';
 import { serverInstance } from '../../../../../../lib/monitoring/rollbar-official';
 import { bookingReviewSchema } from '../../../../../../lib/schemas/admin/booking';
@@ -10,14 +9,14 @@ import {
   createSuccessResponse,
   ErrorCodes,
 } from '../../../../../../lib/utils/api-response';
+import {
+  applyCorsHeaders,
+  getCorsHeaders,
+} from '../../../../../../lib/utils/cors';
 import { getOrCreateRequestId } from '../../../../../../lib/utils/request-id';
 
 // CORS headers for external app access
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'PATCH, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+const corsHeaders = getCorsHeaders();
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
@@ -55,93 +54,54 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     // Validate booking ID
     if (!bookingId || bookingId.trim() === '') {
-      const errorResponse = createErrorResponse(
-        'Invalid booking ID',
-        ErrorCodes.VALIDATION_ERROR,
-        requestId,
-        400
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Invalid booking ID',
+          ErrorCodes.VALIDATION_ERROR,
+          requestId,
+          400
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
-    // Authentication check
-    let userId: string | null = null;
-    try {
-      const authResult = await auth();
-      userId = authResult.userId;
-    } catch (_authError) {
-      const errorResponse = createErrorResponse(
-        'Unauthorized access',
-        ErrorCodes.UNAUTHORIZED,
-        requestId,
-        401
-      );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
+    // Admin authentication + authorization
+    const adminAuth = await requireAdminUser(requestId);
+    if (!adminAuth.authorized) {
+      return applyCorsHeaders(adminAuth.response, corsHeaders);
     }
-
-    if (!userId) {
-      const errorResponse = createErrorResponse(
-        'Unauthorized access',
-        ErrorCodes.UNAUTHORIZED,
-        requestId,
-        401
-      );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
-    }
-
-    // Admin authorization check
-    const isAdmin = await checkUserAdminStatus();
-    if (!isAdmin) {
-      const errorResponse = createErrorResponse(
-        'Admin privileges required',
-        ErrorCodes.FORBIDDEN,
-        requestId,
-        403
-      );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
-    }
+    const userId = adminAuth.userId;
 
     // Parse and validate request body
     let body: unknown;
     try {
       body = await request.json();
     } catch (_parseError) {
-      const errorResponse = createErrorResponse(
-        'Invalid JSON body',
-        ErrorCodes.VALIDATION_ERROR,
-        requestId,
-        400
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Invalid JSON body',
+          ErrorCodes.VALIDATION_ERROR,
+          requestId,
+          400
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     const parseResult = bookingReviewSchema.safeParse(body);
     if (!parseResult.success) {
-      const errorResponse = createErrorResponse(
-        `Validation error: ${parseResult.error.issues.map(e => e.message).join(', ')}`,
-        ErrorCodes.VALIDATION_ERROR,
-        requestId,
-        400
+      const validationMessages = parseResult.error.issues
+        .map(e => e.message)
+        .join(', ');
+      return applyCorsHeaders(
+        createErrorResponse(
+          `Validation error: ${validationMessages}`,
+          ErrorCodes.VALIDATION_ERROR,
+          requestId,
+          400
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     const { action } = parseResult.data;
@@ -165,30 +125,28 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     });
 
     if (!booking) {
-      const errorResponse = createErrorResponse(
-        'Booking not found',
-        ErrorCodes.NOT_FOUND,
-        requestId,
-        404
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Booking not found',
+          ErrorCodes.NOT_FOUND,
+          requestId,
+          404
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     // Ensure booking is in PRE_BOOKED status
     if (booking.paymentStatus !== 'PRE_BOOKED') {
-      const errorResponse = createErrorResponse(
-        'Booking is not in pending review status',
-        ErrorCodes.CONFLICT,
-        requestId,
-        409
+      return applyCorsHeaders(
+        createErrorResponse(
+          'Booking is not in pending review status',
+          ErrorCodes.CONFLICT,
+          requestId,
+          409
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
     }
 
     if (action === 'approve') {
@@ -208,37 +166,35 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
       // Check if the update succeeded (count > 0)
       if (updatedBooking.count === 0) {
-        const errorResponse = createErrorResponse(
-          'Booking status changed during review (possible race condition)',
-          ErrorCodes.CONFLICT,
-          requestId,
-          409
+        return applyCorsHeaders(
+          createErrorResponse(
+            'Booking status changed during review (possible race condition)',
+            ErrorCodes.CONFLICT,
+            requestId,
+            409
+          ),
+          corsHeaders
         );
-        Object.entries(corsHeaders).forEach(([key, value]) => {
-          errorResponse.headers.set(key, value);
-        });
-        return errorResponse;
       }
 
       // Fetch updated booking for response
-      const booking = await prisma.booking.findUnique({
+      const updatedBookingData = await prisma.booking.findUnique({
         where: { id: bookingId },
       });
 
-      const successResponse = createSuccessResponse(
-        {
-          id: booking?.id,
-          paymentStatus: booking?.paymentStatus,
-          reviewedAt: booking?.reviewedAt?.toISOString(),
-          reviewedBy: booking?.reviewedBy,
-          message: 'Booking approved successfully',
-        },
-        requestId
+      return applyCorsHeaders(
+        createSuccessResponse(
+          {
+            id: updatedBookingData?.id,
+            paymentStatus: updatedBookingData?.paymentStatus,
+            reviewedAt: updatedBookingData?.reviewedAt?.toISOString(),
+            reviewedBy: updatedBookingData?.reviewedBy,
+            message: 'Booking approved successfully',
+          },
+          requestId
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        successResponse.headers.set(key, value);
-      });
-      return successResponse;
     } else {
       // Reject: Send rejection email and delete booking
       // Use atomic delete with status precondition to prevent race conditions
@@ -276,29 +232,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
       // Check if deletion succeeded
       if (deleteResult.count === 0) {
-        const errorResponse = createErrorResponse(
-          'Booking status changed during review (possible race condition)',
-          ErrorCodes.CONFLICT,
-          requestId,
-          409
+        return applyCorsHeaders(
+          createErrorResponse(
+            'Booking status changed during review (possible race condition)',
+            ErrorCodes.CONFLICT,
+            requestId,
+            409
+          ),
+          corsHeaders
         );
-        Object.entries(corsHeaders).forEach(([key, value]) => {
-          errorResponse.headers.set(key, value);
-        });
-        return errorResponse;
       }
 
-      const successResponse = createSuccessResponse(
-        {
-          id: bookingId,
-          message: 'Booking rejected and removed',
-        },
-        requestId
+      return applyCorsHeaders(
+        createSuccessResponse(
+          {
+            id: bookingId,
+            message: 'Booking rejected and removed',
+          },
+          requestId
+        ),
+        corsHeaders
       );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        successResponse.headers.set(key, value);
-      });
-      return successResponse;
     }
   } catch (error) {
     // Log minimal context without full error object
@@ -308,15 +262,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       requestId,
       error: error instanceof Error ? error.message : 'Unknown error',
     });
-    const errorResponse = createErrorResponse(
-      'Failed to process booking review',
-      ErrorCodes.INTERNAL_ERROR,
-      requestId,
-      500
+    return applyCorsHeaders(
+      createErrorResponse(
+        'Failed to process booking review',
+        ErrorCodes.INTERNAL_ERROR,
+        requestId,
+        500
+      ),
+      corsHeaders
     );
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      errorResponse.headers.set(key, value);
-    });
-    return errorResponse;
   }
 }

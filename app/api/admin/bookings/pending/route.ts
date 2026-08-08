@@ -1,6 +1,5 @@
-import { auth } from '@clerk/nextjs/server';
 import { type NextRequest, NextResponse } from 'next/server';
-import { checkUserAdminStatus } from '../../../../../lib/auth/helpers';
+import { requireAdminUser } from '../../../../../lib/auth/helpers';
 import { prisma } from '../../../../../lib/db/prisma';
 import { serverInstance } from '../../../../../lib/monitoring/rollbar-official';
 import {
@@ -8,14 +7,14 @@ import {
   createSuccessResponse,
   ErrorCodes,
 } from '../../../../../lib/utils/api-response';
+import {
+  applyCorsHeaders,
+  getCorsHeaders,
+} from '../../../../../lib/utils/cors';
 import { getOrCreateRequestId } from '../../../../../lib/utils/request-id';
 
 // CORS headers for external app access
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+const corsHeaders = getCorsHeaders();
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
@@ -30,50 +29,10 @@ export async function GET(request: NextRequest) {
   const requestId = getOrCreateRequestId(request);
 
   try {
-    // Authentication check
-    let userId: string | null = null;
-    try {
-      const authResult = await auth();
-      userId = authResult.userId;
-    } catch (_authError) {
-      const errorResponse = createErrorResponse(
-        'Unauthorized access',
-        ErrorCodes.UNAUTHORIZED,
-        requestId,
-        401
-      );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
-    }
-
-    if (!userId) {
-      const errorResponse = createErrorResponse(
-        'Unauthorized access',
-        ErrorCodes.UNAUTHORIZED,
-        requestId,
-        401
-      );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
-    }
-
-    // Admin authorization check
-    const isAdmin = await checkUserAdminStatus();
-    if (!isAdmin) {
-      const errorResponse = createErrorResponse(
-        'Admin privileges required',
-        ErrorCodes.FORBIDDEN,
-        requestId,
-        403
-      );
-      Object.entries(corsHeaders).forEach(([key, value]) => {
-        errorResponse.headers.set(key, value);
-      });
-      return errorResponse;
+    // Admin authentication + authorization
+    const adminAuth = await requireAdminUser(requestId);
+    if (!adminAuth.authorized) {
+      return applyCorsHeaders(adminAuth.response, corsHeaders);
     }
 
     // Fetch pending bookings with PRE_BOOKED status
@@ -124,11 +83,10 @@ export async function GET(request: NextRequest) {
       },
     }));
 
-    const successResponse = createSuccessResponse(response, requestId);
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      successResponse.headers.set(key, value);
-    });
-    return successResponse;
+    return applyCorsHeaders(
+      createSuccessResponse(response, requestId),
+      corsHeaders
+    );
   } catch (error) {
     // Log minimal context without full error object
     serverInstance.error('Failed to fetch pending bookings', {
@@ -136,15 +94,14 @@ export async function GET(request: NextRequest) {
       requestId,
       error: error instanceof Error ? error.message : 'Unknown error',
     });
-    const errorResponse = createErrorResponse(
-      'Failed to fetch pending bookings',
-      ErrorCodes.INTERNAL_ERROR,
-      requestId,
-      500
+    return applyCorsHeaders(
+      createErrorResponse(
+        'Failed to fetch pending bookings',
+        ErrorCodes.INTERNAL_ERROR,
+        requestId,
+        500
+      ),
+      corsHeaders
     );
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      errorResponse.headers.set(key, value);
-    });
-    return errorResponse;
   }
 }
