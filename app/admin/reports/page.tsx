@@ -203,7 +203,7 @@ function StatCard({
       <Typography variant='h4' color='primary' gutterBottom>
         {value}
       </Typography>
-      <Typography variant='body1' fontWeight='medium'>
+      <Typography variant='body1' sx={{ fontWeight: 'medium' }}>
         {title}
       </Typography>
       {subtitle && (
@@ -451,10 +451,12 @@ export default function ReportsPage() {
       <Card data-testid='reports-health-section'>
         <CardContent>
           <Stack
-            direction='row'
-            justifyContent='space-between'
-            alignItems='center'
-            sx={{ mb: 2 }}
+            sx={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
           >
             <Typography variant='h6'>{ADMIN_LABELS.systemStatus}</Typography>
             <Button

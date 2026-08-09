@@ -27,7 +27,7 @@ import {
   Tabs,
   Typography,
 } from '@mui/material';
-import Grid from '@mui/material/GridLegacy';
+import Grid from '@mui/material/Grid';
 import { useCallback, useEffect, useState } from 'react';
 import { logClientWarning } from '../../../lib/errors/client';
 
@@ -143,10 +143,12 @@ export default function ErrorDashboard() {
   if (loading && !metrics) {
     return (
       <Box
-        display='flex'
-        justifyContent='center'
-        alignItems='center'
-        minHeight='400px'
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '400px',
+        }}
       >
         <CircularProgress />
       </Box>
@@ -156,16 +158,18 @@ export default function ErrorDashboard() {
   return (
     <Container maxWidth='xl' sx={{ py: 4 }}>
       <Box
-        display='flex'
-        justifyContent='space-between'
-        alignItems='center'
-        mb={4}
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 4,
+        }}
       >
         <Typography variant='h4' component='h1'>
           Error Dashboard
         </Typography>
 
-        <Box display='flex' gap={2} alignItems='center'>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <Box>
             <Button
               variant={timeRange === 'hour' ? 'contained' : 'outlined'}
@@ -225,7 +229,7 @@ export default function ErrorDashboard() {
       {tabValue === 0 && metrics && (
         <Grid container spacing={3}>
           {/* Error Count */}
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Card>
               <CardContent>
                 <Typography variant='h6' gutterBottom>
@@ -239,13 +243,13 @@ export default function ErrorDashboard() {
           </Grid>
 
           {/* Error Categories */}
-          <Grid item xs={12} md={9}>
+          <Grid size={{ xs: 12, md: 9 }}>
             <Card>
               <CardContent>
                 <Typography variant='h6' gutterBottom>
                   Fehler nach Kategorie
                 </Typography>
-                <Box display='flex' gap={1} flexWrap='wrap'>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   {Object.entries(metrics.errorsByCategory).map(
                     ([category, count]) => (
                       <Chip
@@ -263,7 +267,7 @@ export default function ErrorDashboard() {
           </Grid>
 
           {/* Top Errors */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Card>
               <CardContent>
                 <Typography variant='h6' gutterBottom>
