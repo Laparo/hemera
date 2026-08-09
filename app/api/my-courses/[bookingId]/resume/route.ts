@@ -6,52 +6,22 @@
  * GET - Get active resume metadata
  */
 
-import { auth } from '@clerk/nextjs/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import {
+  resolveParticipation,
+  withParticipationGetHandler,
+} from '@/lib/api/participation-route-handler';
 import {
   createResumeDocument,
   deactivateResumeDocument,
   getActiveResume,
-  getParticipationByBookingId,
-} from '../../../../../lib/db/courseParticipation';
-import { serverInstance } from '../../../../../lib/monitoring/rollbar-official';
-import {
-  deleteResume,
-  uploadResume,
-} from '../../../../../lib/utils/resumeUpload';
+} from '@/lib/db/courseParticipation';
+import { serverInstance } from '@/lib/monitoring/rollbar-official';
+import { deleteResume, uploadResume } from '@/lib/utils/resumeUpload';
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ bookingId: string }> }
-) {
-  try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
-
-    const { bookingId } = await params;
-    if (!bookingId) {
-      return NextResponse.json(
-        { error: 'Booking ID is required' },
-        { status: 400 }
-      );
-    }
-
-    const participation = await getParticipationByBookingId(bookingId);
-
-    if (!participation) {
-      return NextResponse.json(
-        { error: 'Participation not found' },
-        { status: 404 }
-      );
-    }
-
-    // Verify ownership
-    if (participation.booking.userId !== userId) {
-      return NextResponse.json({ error: 'No permission' }, { status: 403 });
-    }
-
+export const GET = withParticipationGetHandler(
+  '/api/my-courses/[bookingId]/resume',
+  async ({ participation }) => {
     const activeResume = await getActiveResume(participation.id);
 
     return NextResponse.json({
@@ -66,55 +36,19 @@ export async function GET(
           }
         : null,
     });
-  } catch (error) {
-    serverInstance.error('Error in GET /api/my-courses/[bookingId]/resume', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
   }
-}
+);
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ bookingId: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const resolution = await resolveParticipation(params, 'resume upload');
+    if (!resolution.ok) return resolution.response;
 
-    const { bookingId } = await params;
-    if (!bookingId) {
-      return NextResponse.json(
-        { error: 'Booking ID is required' },
-        { status: 400 }
-      );
-    }
+    const { userId, bookingId, participation } = resolution;
 
-    const participation = await getParticipationByBookingId(bookingId);
-
-    if (!participation) {
-      return NextResponse.json(
-        { error: 'Participation not found' },
-        { status: 404 }
-      );
-    }
-
-    // Verify ownership
-    if (participation.booking.userId !== userId) {
-      serverInstance.warning('Unauthorized resume upload attempt', {
-        userId,
-        bookingId,
-        ownerId: participation.booking.userId,
-      });
-      return NextResponse.json({ error: 'No permission' }, { status: 403 });
-    }
-
-    // Parse multipart form data
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
@@ -122,7 +56,6 @@ export async function POST(
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Upload to Vercel Blob
     const uploadResult = await uploadResume(file, participation.id, userId);
 
     if (!uploadResult.success) {
@@ -132,7 +65,6 @@ export async function POST(
       );
     }
 
-    // Save to database (handles deactivating previous)
     const document = await createResumeDocument({
       participationId: participation.id,
       blobUrl: uploadResult.blobUrl!,
@@ -177,32 +109,10 @@ export async function DELETE(
   { params }: { params: Promise<{ bookingId: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
-    }
+    const resolution = await resolveParticipation(params, 'resume deletion');
+    if (!resolution.ok) return resolution.response;
 
-    const { bookingId } = await params;
-    if (!bookingId) {
-      return NextResponse.json(
-        { error: 'Booking ID is required' },
-        { status: 400 }
-      );
-    }
-
-    const participation = await getParticipationByBookingId(bookingId);
-
-    if (!participation) {
-      return NextResponse.json(
-        { error: 'Participation not found' },
-        { status: 404 }
-      );
-    }
-
-    // Verify ownership
-    if (participation.booking.userId !== userId) {
-      return NextResponse.json({ error: 'No permission' }, { status: 403 });
-    }
+    const { userId, bookingId, participation } = resolution;
 
     const activeResume = await getActiveResume(participation.id);
 
@@ -213,14 +123,12 @@ export async function DELETE(
       );
     }
 
-    // Delete from Vercel Blob
     await deleteResume(activeResume.blobUrl, {
       participationId: participation.id,
       userId,
       reason: 'User requested deletion via API',
     });
 
-    // Deactivate in database
     await deactivateResumeDocument(activeResume.id);
 
     serverInstance.info('Resume deleted successfully', {
