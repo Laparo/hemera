@@ -35,8 +35,12 @@ export abstract class BaseError extends Error {
       Error.captureStackTrace(this, this.constructor);
     }
 
-    // Report to Rollbar
-    this.reportToRollbar();
+    // Report to Rollbar — deferred via microtask so subclass `statusCode`,
+    // `errorCode`, and `category` field initializers have run.  Without the
+    // deferral, `this.statusCode` is still `undefined` here (abstract readonly
+    // fields are initialized after `super()` returns), which caused 404
+    // errors to be reported with the wrong severity (ERROR instead of INFO).
+    queueMicrotask(() => this.reportToRollbar());
   }
 
   /**

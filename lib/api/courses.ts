@@ -13,7 +13,7 @@ import {
 } from '../errors';
 import type { CurriculumModule } from '../schemas/admin/course';
 
-export const featuredCoursesTimeoutMs = 3_000;
+export const featuredCoursesTimeoutMs = 8_000;
 
 async function withTimeout<T>(
   operation: Promise<T>,

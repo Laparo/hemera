@@ -4,7 +4,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { serverInstance } from '../monitoring/rollbar-official';
+import { reportError } from '../monitoring/rollbar-official';
 import { errorAnalytics } from '../services/error-analytics';
 import {
   getRequestContext,
@@ -190,31 +190,38 @@ function getStatusCodeForError(error: Error): number {
 
 /**
  * Error logging utility with structured format
+ *
+ * Lightweight logging that avoids `headers()` / `logErrorWithContext` so that
+ * error logging from statically-rendered Server Components does not force
+ * dynamic rendering (`DYNAMIC_SERVER_USAGE`).  Only `getRequestId()` is used,
+ * which does not touch request headers.
  */
 export function logError(error: unknown, context?: Record<string, unknown>) {
+  // Lightweight logging that avoids `headers()` / `logErrorWithContext`.
+  // Using `logErrorWithContext` here would transitively import `headers()`
+  // from `next/headers`, which forces static Server Components (like the
+  // homepage) into dynamic rendering (`DYNAMIC_SERVER_USAGE`).  Instead, we
+  // generate a request ID directly and report to Rollbar without touching
+  // request headers.
   void Promise.resolve()
-    .then(() => logErrorWithContext(error, context))
-    .catch(loggingError => {
+    .then(async () => {
       try {
-        const requestId =
-          typeof context?.requestId === 'string'
-            ? context.requestId
-            : typeof context?.requestContext === 'object' &&
-                context.requestContext !== null &&
-                'id' in context.requestContext &&
-                typeof context.requestContext.id === 'string'
-              ? context.requestContext.id
-              : undefined;
-
-        serverInstance.error('[http-error-log-fallback]', {
+        const requestId = await getRequestId();
+        const errorToReport =
+          error instanceof Error ? error : new Error(String(error));
+        reportError(errorToReport, {
           requestId,
-          context,
-          originalError: error,
-          loggingError,
+          additionalData: {
+            ...context,
+            source: 'logError',
+          },
         });
       } catch {
         // Logging must never break the caller when request context is unavailable.
       }
+    })
+    .catch(() => {
+      // Swallow any unexpected rejection from the logging path.
     });
 }
 

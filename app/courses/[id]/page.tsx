@@ -98,23 +98,6 @@ export default async function CourseDetailPage({ params }: PageProps) {
     } else {
       throw error;
     }
-
-    try {
-      if (isLikelyCourseId(identifier)) {
-        course = await getCourseBySlug(identifier);
-      } else {
-        course = await getCourseById(identifier);
-      }
-    } catch (innerError) {
-      if (
-        innerError instanceof CourseNotFoundError ||
-        innerError instanceof CourseNotPublishedError
-      ) {
-        notFound();
-      }
-
-      throw innerError;
-    }
   }
 
   if (!course) {

@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 
-fatal() {
-    echo "$*" >&2
-    exit 1
-}
 
-set -e -o pipefail
+set -e +o pipefail
 
 # Set up paths first
 bin_name="codacy-cli-v2"
@@ -59,15 +55,7 @@ get_latest_version() {
     fi
 
     handle_rate_limit "$response"
-    local version
-    if command -v jq > /dev/null 2>&1; then
-        version=$(printf '%s' "$response" | jq -r '.tag_name // empty' 2>/dev/null)
-    else
-        version=$(printf '%s' "$response" | grep -m 1 '"tag_name"' | cut -d'"' -f4)
-    fi
-    if [ -z "$version" ]; then
-        fatal "Error: Could not parse latest Codacy CLI version from GitHub response."
-    fi
+    local version=$(echo "$response" | grep -m 1 tag_name | cut -d'"' -f4)
     echo "$version"
 }
 
@@ -157,5 +145,5 @@ fi
 if [ "$#" -eq 1 ] && [ "$1" = "download" ]; then
     echo "Codacy cli v2 download succeeded"
 else
-    "$run_command" "$@"
+    eval "$run_command $*"
 fi
